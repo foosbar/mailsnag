@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         point="org.eclipse.ui.views">
+      <category
+            name="MailSnag"
+            id="com.foos-bar.mailsnag">
+      </category>
+      <view
+            name="Incoming Messages"
+            icon="icons/logo.gif"
+            category="com.foos-bar.mailsnag"
+            class="com.foosbar.mailsnag.views.MessagesView"
+            id="com.foosbar.mailsnag.views.MessagesView">
+      </view>
+   </extension>
+   <extension
+         point="org.eclipse.ui.perspectiveExtensions">
+      <perspectiveExtension
+            targetID="org.eclipse.jdt.ui.JavaPerspective">
+         <view
+               ratio="0.5"
+               relative="org.eclipse.ui.views.TaskList"
+               relationship="right"
+               id="com.foosbar.mailsnag.views.MessagesView">
+         </view>
+      </perspectiveExtension>
+   </extension>
+   <extension
+         point="org.eclipse.help.contexts">
+      <contexts
+            file="contexts.xml">
+      </contexts>
+   </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            class="com.foosbar.mailsnag.preferences.PreferencePage"
+            id="com.foosbar.mailsnag.preferences.PreferencePage"
+            name="MailSnag">
+      </page>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="com.foosbar.mailsnag.preferences.PreferenceInitializer">
+      </initializer>
+   </extension>
+
+   <!--
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="com.foosbar.mailsnag.editors.MessageEditor"
+            extensions="eml"
+            icon="icons/logo.gif"
+            id="com.foosbar.mailsnag.editors.MessageEditor"
+            name="Email Message">
+      </editor>
+   </extension>
+   -->
+</plugin>
