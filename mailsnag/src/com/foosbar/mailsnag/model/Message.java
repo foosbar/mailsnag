@@ -1,20 +1,27 @@
 package com.foosbar.mailsnag.model;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+/**
+ * Models a message received via SMTP.
+ * 
+ * @author Kevin Kelley (dev@foos-bar.com)
+ */
 public class Message {
 	private String id;
 	private String from;
 	private String subject;
+	private String htmlMessage;
+	private String textMessage;
 	private String message;
-	private List<String> to;
+	private String to;
 	private Date received;
 	private boolean read;
 	
 	public Message() {
-		to = new ArrayList<String>();
+		//to = new ArrayList<String>();
 		received = new Date(System.currentTimeMillis());
 		read = false;
 	}
@@ -25,31 +32,37 @@ public class Message {
 		this.from = from;
 		this.subject = subject;
 		this.message = content;
-		this.to.add(to);
+		this.to = to;
+		
+		parseMessage();
+
 	}
 	
 	public String getId() {
+		if(id == null) {
+			Matcher regexId = Pattern.compile("Message-ID:\\s*(.*)").matcher(message);
+			if(regexId.find())
+				id = regexId.group(1);
+		}
 		return id;
 	}
 	
-	public void setId(String id) {
-		this.id = id;
-	}
-	
 	public String getFrom() {
+		if(from == null) {
+			Matcher regexFrom = Pattern.compile("MAIL FROM:\\s*?<(.*?)>\\s*?").matcher(message);
+			if(regexFrom.find())
+				from = regexFrom.group(1);
+		}
 		return from;
 	}
 	
-	public void setFrom(String from) {
-		this.from = from;
-	}
-	
 	public String getSubject() {
+		if(subject == null) {
+			Matcher regexSubj = Pattern.compile("Subject:\\s*(.*)").matcher(message);
+			if(regexSubj.find())
+				subject = regexSubj.group(1);
+		}
 		return subject;
-	}
-	
-	public void setSubject(String subject) {
-		this.subject = subject;
 	}
 	
 	public String getMessage() {
@@ -58,28 +71,29 @@ public class Message {
 	
 	public void setMessage(String message) {
 		this.message = message;
+		parseMessage();
 	}
 
-	public void addTo(String to) {
+	/*
+	private void addTo(String to) {
 		this.to.add(to);
 	}
+	*/
 	
-	public List<String> getTo() {
-		return to;
-	}
-	
-	public String getToString() {
-		StringBuilder builder = new StringBuilder();
-		for(String addr : to) {
-			if(builder.length() > 0)
-				builder.append("; ");
-			builder.append(addr);
+	public String getTo() {
+		if(to == null) {
+			StringBuilder toSB = new StringBuilder();
+			Matcher regexTo = Pattern.compile("RCPT TO:\\s*?<(.*?)>\\s*?").matcher(message);
+			
+			while(regexTo.find()) {
+				if(toSB.length() > 0)
+					toSB.append("; ");
+				toSB.append(regexTo.group(1));
+			}
+			
+			to = toSB.toString();
 		}
-		return builder.toString();
-	}
-
-	public void setTo(List<String> to) {
-		this.to = to;
+		return to;
 	}
 	
 	public boolean isRead() {
@@ -94,18 +108,32 @@ public class Message {
 		return received;
 	}
 
-	/*
-	public void setReceived(Date received) {
-		this.received = received;
+	public String getHtmlMessage() {
+		return htmlMessage;
 	}
-	*/
-	
+
+	private void setHtmlMessage(String htmlMessage) {
+		this.htmlMessage = htmlMessage;
+	}
+
+	public String getTextMessage() {
+		return textMessage;
+	}
+
+	private void setTextMessage(String textMessage) {
+		this.textMessage = textMessage;
+	}
+
 	public String toString() {
 		StringBuffer buff = new StringBuffer("Message: ");
 		buff.append(getId()).append("\n");
 		buff.append("From: ").append(getFrom()).append("\n");
-		buff.append("To: ").append(getToString()).append("\n");
+		buff.append("To: ").append(getTo()).append("\n");
 		buff.append("Content:\n").append(getMessage());
 		return buff.toString();
+	}
+	
+	private void parseMessage() {
+		
 	}
 }

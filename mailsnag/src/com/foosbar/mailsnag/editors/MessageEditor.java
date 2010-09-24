@@ -16,11 +16,12 @@ import org.eclipse.ui.part.EditorPart;
 
 import com.foosbar.mailsnag.model.Message;
 
+/**
+ * @author Kevin Kelley (dev@foos-bar.com)
+ */
 public class MessageEditor extends EditorPart {
 
 	public final static String ID = "com.foosbar.mailsnag.editors.MessageEditor";
-	//private Label subjectLabel;
-	//private Link link;
 	private Text bodyText;
 	private Message message;
 
@@ -119,7 +120,7 @@ public class MessageEditor extends EditorPart {
 		l.setText("To:  ");
 
 		l = new Label(banner, SWT.WRAP);
-		l.setText(this.message.getToString());
+		l.setText(this.message.getTo());
 		l.setFont(boldFont);
 		l.setLayoutData(spanCell);
 

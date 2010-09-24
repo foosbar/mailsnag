@@ -58,9 +58,24 @@ public class MessagesView extends ViewPart {
 	private Action openMessage;
 	private Action removeMessage;
 	
-	private static final ImageDescriptor IMG_MESSAGE = ImageDescriptor.createFromFile(Activator.class, "/icons/message.gif"); 
-	private static final ImageDescriptor IMG_RUN  = ImageDescriptor.createFromFile(Activator.class, "/icons/run.gif");
-	private static final ImageDescriptor IMG_STOP = ImageDescriptor.createFromFile(Activator.class, "/icons/stop.gif");
+	// View Icon
+	private static final ImageDescriptor IMG_MESSAGE =
+		ImageDescriptor.createFromFile(Activator.class, "/icons/message.gif");
+	
+	// Start Server Icon
+	private static final ImageDescriptor IMG_RUN =
+		ImageDescriptor.createFromFile(Activator.class, "/icons/run.gif");
+	
+	// Stop Server 
+	private static final ImageDescriptor IMG_STOP =
+		ImageDescriptor.createFromFile(Activator.class, "/icons/stop.gif");
+
+
+	/**
+	 * The constructor.
+	 */
+	public MessagesView() {
+	}
 
 	public class ViewContentProvider implements IStructuredContentProvider {
 		List<Message> messages = new ArrayList<Message>();
@@ -89,7 +104,7 @@ public class MessagesView extends ViewPart {
 				case 1:
 					return message.getFrom();
 				case 2:
-					return message.getToString();
+					return message.getTo();
 				case 3:
 					return message.getSubject();
 				case 4:
@@ -108,6 +123,7 @@ public class MessagesView extends ViewPart {
 			return IMG_MESSAGE.createImage();
 		}
 	}
+
 	class NameSorter extends ViewerSorter {
 	}
 
@@ -130,13 +146,6 @@ public class MessagesView extends ViewPart {
 		Table table = viewer.getTable();
 		table.setHeaderVisible(true);
 		table.setLinesVisible(true);
-	}
-
-
-	/**
-	 * The constructor.
-	 */
-	public MessagesView() {
 	}
 
 	/**
@@ -211,6 +220,7 @@ public class MessagesView extends ViewPart {
 				new Thread(server).start();
 			}
 		};
+		
 		runServer.setText("Start");
 		runServer.setToolTipText("Start Email Listener");
 		runServer.setImageDescriptor(IMG_RUN);
@@ -222,6 +232,7 @@ public class MessagesView extends ViewPart {
 				runServer.setEnabled(true);
 			}
 		};
+		
 		stopServer.setText("Stop");
 		stopServer.setToolTipText("Stop Email Listener");
 		stopServer.setImageDescriptor(IMG_STOP);

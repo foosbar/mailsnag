@@ -6,6 +6,9 @@ import org.eclipse.ui.IPersistableElement;
 
 import com.foosbar.mailsnag.model.Message;
 
+/**
+ * @author Kevin Kelley (dev@foos-bar.com)
+ */
 public class MessageEditorInput implements IEditorInput {
 
 	private String participant;

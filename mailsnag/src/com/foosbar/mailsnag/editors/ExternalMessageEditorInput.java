@@ -6,6 +6,9 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IPersistableElement;
 import org.eclipse.ui.IStorageEditorInput;
 
+/**
+ * @author Kevin Kelley (dev@foos-bar.com)
+ */
 public class ExternalMessageEditorInput implements IStorageEditorInput {
 
 	private IStorage storage;

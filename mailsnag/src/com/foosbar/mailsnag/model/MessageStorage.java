@@ -20,7 +20,6 @@ public class MessageStorage implements IStorage {
 	}
 
 	public IPath getFullPath() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -29,12 +28,10 @@ public class MessageStorage implements IStorage {
 	}
 
 	public boolean isReadOnly() {
-		// TODO Auto-generated method stub
 		return true;
 	}
 
 	public Object getAdapter(Class adapter) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
