@@ -16,6 +16,7 @@ public class MessageEditorInput implements IEditorInput {
 	
 	public MessageEditorInput(Message message) {
 		super();
+		participant  = message.getId();
 		this.message = message;
 	}
 	

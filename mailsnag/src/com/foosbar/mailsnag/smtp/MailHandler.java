@@ -11,6 +11,7 @@ import org.eclipse.swt.widgets.Display;
 
 import com.foosbar.mailsnag.Activator;
 import com.foosbar.mailsnag.model.Message;
+import com.foosbar.mailsnag.model.MessageParser;
 import com.foosbar.mailsnag.preferences.PreferenceConstants;
 
 public class MailHandler extends Thread {
@@ -32,7 +33,7 @@ public class MailHandler extends Thread {
 		super("Email Handler Thread");
 		this.socket = socket;
 		this.viewer = viewer;
-		message = new Message();
+		//message = new Message();
 	}
 
 	public void run() {
@@ -108,10 +109,8 @@ public class MailHandler extends Thread {
 				}
 			}
 			
-			message.setMessage(msgBody.toString());
+			message = MessageParser.parse(msgBody.toString());
 			
-			//out.flush();
-
 			//Update the Table Viewer
 			Display.getDefault().asyncExec(new Runnable() {
 				public void run() {

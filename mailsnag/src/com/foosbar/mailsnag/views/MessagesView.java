@@ -1,23 +1,18 @@
 package com.foosbar.mailsnag.views;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.Writer;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
-import org.eclipse.core.filesystem.EFS;
-import org.eclipse.core.filesystem.IFileStore;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
@@ -37,7 +32,6 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.ui.IActionBars;
-import org.eclipse.ui.IEditorRegistry;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
@@ -46,6 +40,7 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.ViewPart;
 
 import com.foosbar.mailsnag.Activator;
+import com.foosbar.mailsnag.editors.MessageEditorInput;
 import com.foosbar.mailsnag.model.Message;
 import com.foosbar.mailsnag.preferences.PreferenceConstants;
 import com.foosbar.mailsnag.smtp.Server;
@@ -128,7 +123,7 @@ public class MessagesView extends ViewPart {
 	}
 
 	private void createColumns(TableViewer viewer, Composite parent) {
-		String[] titles = { "", "From", "To", "Subject", "Received" };
+		String[] titles = { "", "From", "To/Cc", "Subject", "Received" };
 		int[] bounds = { 26, 200, 200, 350, 200};
 		
 		for (int i = 0; i < titles.length; i++) {
@@ -239,10 +234,31 @@ public class MessagesView extends ViewPart {
 		stopServer.setEnabled(false);
 	
 		removeMessage = new Action() {
+			@SuppressWarnings("unchecked")
 			public void run() {
-				Object obj = ((IStructuredSelection) viewer.getSelection()).getFirstElement();
-				if(obj != null && obj instanceof Message)
-					viewer.remove(obj);
+				IStructuredSelection iss = (IStructuredSelection) viewer.getSelection();
+				int size = iss.size();
+				
+				String message = (size == 1) ? 
+						"Are you sure you want to delete this message?" : 
+							"Are you sure you want to delete " + size + " messages?" ;
+				
+				boolean confirm =
+					MessageDialog.openConfirm(
+						viewer.getControl().getShell(),
+						"Confirm Delete",
+						message);
+				
+				if(confirm) {
+					Iterator<Object> it = iss.iterator();
+					while(it.hasNext()) {
+						Object obj = it.next();
+						if(obj != null && obj instanceof Message)
+							viewer.remove(obj);
+						
+						//TODO: Close open editors
+					}
+				}
 			}
 		};
 		removeMessage.setText("Delete");
@@ -318,28 +334,34 @@ public class MessagesView extends ViewPart {
         	Display.getDefault().asyncExec(new Runnable(){
                 public void run() {
         			IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+        			MessageEditorInput input = new MessageEditorInput(m);
         			try {
-        				File fileToOpen = File.createTempFile("email",".eml");
-        				fileToOpen.deleteOnExit();
-        				Writer writer = new BufferedWriter(new FileWriter(fileToOpen));
-        				writer.write(m.getMessage());
-        				writer.close();
-        				if (fileToOpen.exists() && fileToOpen.isFile()) {
-        					IFileStore fileStore = EFS.getLocalFileSystem().getStore(new Path(fileToOpen.getAbsolutePath()));
-        					if (!fileStore.fetchInfo().isDirectory() && fileStore.fetchInfo().exists()) {
-        					    try {
-        					    	IDE.openEditor(page, fileToOpen.toURI(), IEditorRegistry.SYSTEM_EXTERNAL_EDITOR_ID, true);
-        					    	//IDE.openEditor(page, fileToOpen.toURI(), "multitab_editor.editors.MultiPageEditor", true);
-        					    } catch (PartInitException e) {
-        					        /* some code */
-        					    }
-        					}
-        				} else {
-        				    //Do something if the file does not exist
-        				}
-        			} catch(Exception e) {
+        				IDE.openEditor(page, input, "com.foosbar.mailsnag.editors.MessageEditor", true);
+        			} catch(PartInitException e) {
         				e.printStackTrace();
         			}
+//        			try {
+//        				File fileToOpen = File.createTempFile("email",".eml");
+//        				fileToOpen.deleteOnExit();
+//        				Writer writer = new BufferedWriter(new FileWriter(fileToOpen));
+//        				writer.write(m.getMessage());
+//        				writer.close();
+//        				if (fileToOpen.exists() && fileToOpen.isFile()) {
+//        					IFileStore fileStore = EFS.getLocalFileSystem().getStore(new Path(fileToOpen.getAbsolutePath()));
+//        					if (!fileStore.fetchInfo().isDirectory() && fileStore.fetchInfo().exists()) {
+//        					    try {
+//        					    	//IDE.openEditor(page, fileToOpen.toURI(), IEditorRegistry.SYSTEM_EXTERNAL_EDITOR_ID, true);
+//        					    	IDE.openEditor(page, fileToOpen.toURI(), "com.foosbar.mailsnag.editors.MessageEditor", true);
+//        					    } catch (PartInitException e) {
+//        					        /* some code */
+//        					    }
+//        					}
+//        				} else {
+//        				    //Do something if the file does not exist
+//        				}
+//        			} catch(Exception e) {
+//        				e.printStackTrace();
+//        			}
                 }
             });
         	m.setRead(true);

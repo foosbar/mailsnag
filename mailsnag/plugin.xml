@@ -48,17 +48,15 @@
             class="com.foosbar.mailsnag.preferences.PreferenceInitializer">
       </initializer>
    </extension>
-
-   <!--
    <extension
          point="org.eclipse.ui.editors">
       <editor
-            class="com.foosbar.mailsnag.editors.MessageEditor"
+            name="Email Message"
             extensions="eml"
             icon="icons/logo.gif"
-            id="com.foosbar.mailsnag.editors.MessageEditor"
-            name="Email Message">
+            contributorClass="com.foosbar.mailsnag.editors.MessageEditorContributor"
+            class="com.foosbar.mailsnag.editors.MessageEditor"
+            id="com.foosbar.mailsnag.editors.MessageEditor">
       </editor>
    </extension>
-   -->
 </plugin>
