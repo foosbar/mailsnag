@@ -5,7 +5,12 @@
       version="0.2.0.beta">
 
    <description>
-      This plugin is currently an alpha release.  It is an Eclipse plugin useful for testing applications that send emails.  The plugin sets up up a very simple SMTP (support only for EHLO protocol at this time) server for digesting emails sent out by your application.  It will bind to the port specified in the preferences page (default: 25).
+      This plugin is now a beta release.  It is an Eclipse plugin
+useful for testing applications that send emails.  The plugin
+sets up up a very simple SMTP (support only for EHLO protocol
+at this time) server for digesting emails sent out by your application.
+It will bind to the port specified in the preferences page (default:
+25).
    </description>
 
    <copyright>
