@@ -34,29 +34,14 @@ public class MessageParser {
 			}
 
 			// Set From Addresses
-			Address[] from = mimeMessage.getFrom();
-			if(from != null && from.length > 0) {
-				StringBuilder sb = new StringBuilder();
-				for(Address f : from) {
-					if(sb.length() > 0)
-						sb.append("; ");
-					sb.append(f.toString());
-				}
-				m.setFrom(sb.toString());
-			}
+			m.setFrom(parseAddresses(mimeMessage.getFrom()));
 
 			// Set To Addresses
-			Address[] to = mimeMessage.getRecipients(RecipientType.TO);
-			if(to != null && to.length > 0) {
-				StringBuilder sb = new StringBuilder();
-				for(Address t : to) {
-					if(sb.length() > 0)
-						sb.append("; ");
-					sb.append(t.toString());
-				}
-				m.setTo(sb.toString());
-			}
-			
+			m.setTo(parseAddresses(mimeMessage.getRecipients(RecipientType.TO)));
+
+			// Set To Addresses
+			m.setCc(parseAddresses(mimeMessage.getRecipients(RecipientType.CC)));
+
 			// Set the ID
 			m.setId(mimeMessage.getMessageID());
 			
@@ -120,5 +105,17 @@ public class MessageParser {
 			d = new Date(System.currentTimeMillis());
 		
 		m.setReceived(d);
+	}
+	
+	private static String parseAddresses(Address[] addresses) throws MessagingException {
+		StringBuilder sb = new StringBuilder();
+		if(addresses != null && addresses.length > 0) {
+			for(Address a : addresses) {
+				if(sb.length() > 0)
+					sb.append("; ");
+				sb.append(a.toString());
+			}
+		}
+		return sb.toString();
 	}
 }

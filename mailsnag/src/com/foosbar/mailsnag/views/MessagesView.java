@@ -42,8 +42,8 @@ import org.eclipse.ui.part.ViewPart;
 import com.foosbar.mailsnag.Activator;
 import com.foosbar.mailsnag.editors.MessageEditorInput;
 import com.foosbar.mailsnag.model.Message;
-import com.foosbar.mailsnag.preferences.PreferenceConstants;
 import com.foosbar.mailsnag.smtp.Server;
+import com.foosbar.mailsnag.smtp.ServerThreadGroup;
 
 public class MessagesView extends ViewPart {
 
@@ -101,8 +101,10 @@ public class MessagesView extends ViewPart {
 				case 2:
 					return message.getTo();
 				case 3:
-					return message.getSubject();
+					return message.getCc();
 				case 4:
+					return message.getSubject();
+				case 5:
 					return df.format(message.getReceived());
 				default:
 					throw new RuntimeException("Should not happen");
@@ -123,8 +125,8 @@ public class MessagesView extends ViewPart {
 	}
 
 	private void createColumns(TableViewer viewer, Composite parent) {
-		String[] titles = { "", "From", "To/Cc", "Subject", "Received" };
-		int[] bounds = { 26, 200, 200, 350, 200};
+		String[] titles = { "", "From", "To", "Cc", "Subject", "Received" };
+		int[] bounds = { 26, 175, 195, 195, 345, 165};
 		
 		for (int i = 0; i < titles.length; i++) {
 			TableViewerColumn viewerColumn = new TableViewerColumn(viewer, SWT.NONE);
@@ -202,17 +204,36 @@ public class MessagesView extends ViewPart {
 		manager.add(stopServer);
 	}
 
-	private Server server = new Server(
-			Activator.getDefault().getPreferenceStore().getInt(
-					PreferenceConstants.PARAM_PORT), this);
+	public void enableStartServer() {
+		if(runServer != null)
+			runServer.setEnabled(true);
+	}
+
+	public void disableStartServer() {
+		if(runServer != null)
+			runServer.setEnabled(false);
+	}
+	
+	public void enableStopServer() {
+		if(stopServer != null)
+			stopServer.setEnabled(true);
+	}
+
+	public void disableStopServer() {
+		if(stopServer != null)
+			stopServer.setEnabled(false);
+	}
+
+	private Server server = new Server(this);
 	
 	private void makeActions() {
 		
 		runServer = new Action() {
 			public void run() {
-				stopServer.setEnabled(true);
-				runServer.setEnabled(false);
-				new Thread(server).start();
+				ThreadGroup tg = new ServerThreadGroup(server.getView(),"SMTPServer");
+				new Thread(tg,server).start();
+				//stopServer.setEnabled(true);
+				//runServer.setEnabled(false);
 			}
 		};
 		
@@ -223,8 +244,8 @@ public class MessagesView extends ViewPart {
 		stopServer = new Action() {
 			public void run() {
 				server.close();
-				stopServer.setEnabled(false);
-				runServer.setEnabled(true);
+				//stopServer.setEnabled(false);
+				//runServer.setEnabled(true);
 			}
 		};
 		
@@ -269,64 +290,8 @@ public class MessagesView extends ViewPart {
 			}
 		};
 		openMessage.setText("Open");
-
-		//doubleClickAction = new MessageViewAction(PlatformUI.getWorkbench().getActiveWorkbenchWindow(), viewer.getSelection());
-
-		/*
-		action1 = new Action() {
-			public void run() {
-				showMessage("Action 1 executed");
-			}
-		};
-		action1.setText("Action 1");
-		action1.setToolTipText("Action 1 tooltip");
-		action1.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
-			getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
-		
-		action2 = new Action() {
-			public void run() {
-				showMessage("Action 2 executed");
-			}
-		};
-		action2.setText("Action 2");
-		action2.setToolTipText("Action 2 tooltip");
-		action2.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
-				getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
-		doubleClickAction = new Action() {
-			public void run() {
-				ISelection selection = viewer.getSelection();
-				Object obj = ((IStructuredSelection)selection).getFirstElement();
-				showMessage("Double-click detected on "+obj.toString());
-			}
-		};
-		*/
 	}
 
-	/* Original Method
-	private void hookDoubleClickAction() {
-		viewer.addDoubleClickListener(new IDoubleClickListener() {
-			public void doubleClick(DoubleClickEvent event) {
-				Object obj = ((IStructuredSelection) viewer.getSelection()).getFirstElement();
-		        if (obj != null && obj instanceof Message) {
-		        	final Message m = (Message)obj;
-		            Display.getDefault().asyncExec(new Runnable(){
-		                public void run() {
-		        			IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-		        			MessageEditorInput input = new MessageEditorInput(m);
-		        			try {
-		        				page.openEditor(input, MessageEditor.ID);
-		        			} catch(PartInitException e) {
-		        				e.printStackTrace();
-		        			}
-		                }
-		            });
-		            return;
-		        }
-			}
-		});
-	}
-	*/
-	
 	private void openMessage() {
 		Object obj = ((IStructuredSelection) viewer.getSelection()).getFirstElement();
         if (obj != null && obj instanceof Message) {

@@ -3,48 +3,60 @@ package com.foosbar.mailsnag.smtp;
 import java.io.IOException;
 import java.net.ServerSocket;
 
+import org.eclipse.jface.preference.IPreferenceStore;
+
 import com.foosbar.mailsnag.Activator;
 import com.foosbar.mailsnag.preferences.PreferenceConstants;
 import com.foosbar.mailsnag.views.MessagesView;
 
 public class Server implements Runnable {
 
-	private int port;
 	private boolean listening;
 	private MessagesView view;
 	private ServerSocket serverSocket;
 	
-	public Server(int port) {
-		this.port = port;
+	public Server() {
 	}
 
-	public Server(int port, MessagesView view) {
-		this.port = port;
+	public Server(MessagesView view) {
 		this.view = view;
+	}
+	
+	public MessagesView getView() {
+		return view;
 	}
 	
 	public void run() {
 
 		listening = true;
 
+		// Get Preferences
+		IPreferenceStore pStore = 
+			Activator.getDefault().getPreferenceStore();
+		
+		// Display Debug Messages?
 		boolean debug = 
-			Activator.getDefault().getPreferenceStore().getBoolean(PreferenceConstants.PARAM_DEBUG);
-
+			pStore.getBoolean(PreferenceConstants.PARAM_DEBUG);
+		
+		// Port to listen on.
+		int port = 
+			pStore.getInt(PreferenceConstants.PARAM_PORT);
+		
 		try {
 			serverSocket = new ServerSocket(port);
 			if(debug)
 				System.out.println("MailSnag Server listening on port " + port);
 		} catch (IOException e) {
-
-			if(debug)
-				System.err.println("MailSnag could not listen on port " + port);
-			
 			//Print error to System.err
 			e.printStackTrace(System.err);
-
+			
 			//Exit thread execution
-			return;
+			throw new RuntimeException(e);
 		}
+		
+		view.disableStartServer();
+		view.enableStopServer();
+		
 		try {
 			while (listening) {
 				final MailHandler handler = new MailHandler(serverSocket.accept(), view.getViewer());
@@ -65,6 +77,9 @@ public class Server implements Runnable {
 			}
 			
 			serverSocket = null;
+			
+			view.disableStopServer();
+			view.enableStartServer();
 		}
 	}
 	

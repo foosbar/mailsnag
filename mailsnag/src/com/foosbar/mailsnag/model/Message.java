@@ -8,6 +8,8 @@ import java.util.Date;
  * @author Kevin Kelley (dev@foos-bar.com)
  */
 public class Message {
+	
+	private String cc;
 	private String from;
 	private String htmlMessage;
 	private String id;
@@ -21,18 +23,22 @@ public class Message {
 	public Message() {
 	}
 	
+	public String getCc() {
+		return cc;
+	}
+
 	public String getFrom() {
 		return from;
 	}
-	
+
 	public String getHtmlMessage() {
 		return htmlMessage;
 	}
-
+	
 	public String getId() {
 		return id;
 	}
-	
+
 	public String getMessage() {
 		return message;
 	}
@@ -40,7 +46,7 @@ public class Message {
 	public Date getReceived() {
 		return received;
 	}
-
+	
 	public String getSubject() {
 		return subject;
 	}
@@ -56,13 +62,17 @@ public class Message {
 	public boolean hasHtmlMessage() {
 		return htmlMessage != null;
 	}
-	
+
 	public boolean hasTextMessage() {
 		return textMessage != null;
 	}
-
+	
 	public boolean isRead() {
 		return read;
+	}
+
+	public void setCc(String cc) {
+		this.cc = cc;
 	}
 	
 	public void setFrom(String from) {
