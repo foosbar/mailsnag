@@ -6,6 +6,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.regex.Pattern;
 
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.widgets.Display;
 
@@ -13,6 +14,7 @@ import com.foosbar.mailsnag.Activator;
 import com.foosbar.mailsnag.model.Message;
 import com.foosbar.mailsnag.model.MessageParser;
 import com.foosbar.mailsnag.preferences.PreferenceConstants;
+import com.foosbar.mailsnag.util.MessageStore;
 
 public class MailHandler extends Thread {
 	
@@ -29,18 +31,25 @@ public class MailHandler extends Thread {
 	private Message message;
 	private TableViewer viewer;
 	
+	private IPreferenceStore pStore;
+	
 	public MailHandler(Socket socket, TableViewer viewer) {
 		super("Email Handler Thread");
+		
 		this.socket = socket;
+		
 		this.viewer = viewer;
-		//message = new Message();
+		
+		this.pStore = 
+			Activator.getDefault().getPreferenceStore();
 	}
 
 	public void run() {
+		
 		try {
 			
 			boolean debug = 
-				Activator.getDefault().getPreferenceStore().getBoolean(PreferenceConstants.PARAM_DEBUG);
+				pStore.getBoolean(PreferenceConstants.PARAM_DEBUG);
 			
 			StringBuilder msgBody = new StringBuilder();
 			
@@ -109,7 +118,11 @@ public class MailHandler extends Thread {
 				}
 			}
 			
+			// Parse details of the file
 			message = MessageParser.parse(msgBody.toString());
+
+			//Persist file
+			MessageStore.persist(message, msgBody.toString());
 			
 			//Update the Table Viewer
 			Display.getDefault().asyncExec(new Runnable() {
@@ -133,5 +146,4 @@ public class MailHandler extends Thread {
 		writer.print(response);
 		writer.flush();
 	}
-
 }

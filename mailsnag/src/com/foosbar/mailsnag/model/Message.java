@@ -10,6 +10,7 @@ import java.util.Date;
 public class Message {
 	
 	private String cc;
+	private String filename;
 	private String from;
 	private String htmlMessage;
 	private String id;
@@ -25,6 +26,10 @@ public class Message {
 	
 	public String getCc() {
 		return cc;
+	}
+
+	public String getFilename() {
+		return filename;
 	}
 
 	public String getFrom() {
@@ -75,6 +80,10 @@ public class Message {
 		this.cc = cc;
 	}
 	
+	public void setFilename(String filename) {
+		this.filename = filename;
+	}
+
 	public void setFrom(String from) {
 		this.from = from;
 	}

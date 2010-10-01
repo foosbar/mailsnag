@@ -26,7 +26,7 @@ import org.eclipse.ui.internal.browser.WebBrowserEditor;
 import org.eclipse.ui.internal.browser.WebBrowserEditorInput;
 import org.eclipse.ui.part.MultiPageEditorPart;
 
-import com.foosbar.mailsnag.model.Message;
+import com.foosbar.mailsnag.model.MessageData;
 
 /**
  * A multi-tab editor for inspecting emails
@@ -38,8 +38,8 @@ import com.foosbar.mailsnag.model.Message;
  */
 public class MessageEditor extends MultiPageEditorPart implements IResourceChangeListener{
 
-	/* Message */
-	private Message message;
+	/* Message Data */
+	private MessageData messageData;
 	
 	public MessageEditor() {
 		super();
@@ -57,7 +57,7 @@ public class MessageEditor extends MultiPageEditorPart implements IResourceChang
 		
 		StyledText text = new StyledText(composite, SWT.H_SCROLL | SWT.V_SCROLL);
 		text.setEditable(false);
-		text.setText(message.getMessage());
+		text.setText(messageData.getMessage());
 
 		int index = addPage(composite);
 		setPageText(index, "Raw Data");
@@ -68,7 +68,7 @@ public class MessageEditor extends MultiPageEditorPart implements IResourceChang
 	 */
 	void createTextPage() {
 
-		if(message == null || !message.hasTextMessage())
+		if(messageData == null || !messageData.hasTextMessage())
 			return;
 		
 		Composite composite = new Composite(getContainer(), SWT.NONE);
@@ -78,7 +78,7 @@ public class MessageEditor extends MultiPageEditorPart implements IResourceChang
 		
 		StyledText text = new StyledText(composite, SWT.H_SCROLL | SWT.V_SCROLL);
 		text.setEditable(false);
-		text.setText(message.getTextMessage());
+		text.setText(messageData.getTextMessage());
 		
 		int index = addPage(composite);
 		setPageText(index, "Text Format");
@@ -89,14 +89,14 @@ public class MessageEditor extends MultiPageEditorPart implements IResourceChang
 	 */
 	void createHtmlPage() {
 		
-		if(message == null || !message.hasHtmlMessage())
+		if(messageData == null || !messageData.hasHtmlMessage())
 			return;
 		
 		try {
 			File fileToOpen = File.createTempFile("email",".html");
 			fileToOpen.deleteOnExit();
 			Writer writer = new BufferedWriter(new FileWriter(fileToOpen));
-			writer.write(message.getHtmlMessage());
+			writer.write(messageData.getHtmlMessage());
 			writer.close();
 					
 			WebBrowserEditor editor = new WebBrowserEditor();
@@ -162,14 +162,17 @@ public class MessageEditor extends MultiPageEditorPart implements IResourceChang
 	 */
 	public void init(IEditorSite site, IEditorInput editorInput)
 		throws PartInitException {
+		super.init(site, editorInput);
 		if (!(editorInput instanceof MessageEditorInput))
 			throw new PartInitException("Invalid Input: Must be MessageEditorInput");
 		
 		setSite(site); 
 		setInput(editorInput);
-		this.message = ((MessageEditorInput) editorInput).getMessage();
-		setPartName("Email Message");
-		super.init(site, editorInput);
+		
+		this.messageData = 
+			((MessageEditorInput) editorInput).getMessageData();
+		
+		setPartName(((MessageEditorInput) editorInput).getName());
 	}
 	/* (non-Javadoc)
 	 * Method declared on IEditorPart.

@@ -11,8 +11,10 @@ import javax.mail.BodyPart;
 import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimeMessage.RecipientType;
+import javax.mail.internet.MimeMultipart;
+
+import com.foosbar.mailsnag.util.MessageStore;
 
 public class MessageParser {
 
@@ -27,11 +29,13 @@ public class MessageParser {
 			is = new ByteArrayInputStream(message.getBytes());
 			MimeMessage mimeMessage = new MimeMessage(session, is);
 			
+			/*
 			if(mimeMessage.getContent() instanceof MimeMultipart) {
 				parseMultipart(m, mimeMessage);
 			} else {
 				parseSinglepart(m, mimeMessage);
 			}
+			*/
 
 			// Set From Addresses
 			m.setFrom(parseAddresses(mimeMessage.getFrom()));
@@ -51,7 +55,7 @@ public class MessageParser {
 			// Set Received Date (Actually the Sent Date)
 			parseDate(m, mimeMessage);
 			
-		} catch(IOException e) {
+		//} catch(IOException e) {
 		} catch(MessagingException e) {
 		} finally {
 			try {
@@ -63,7 +67,44 @@ public class MessageParser {
 		return m;
 	}
 	
-	private static void parseMultipart(Message m, MimeMessage mimeMessage) throws IOException, MessagingException {
+	public static final MessageData parseData(Message message) {
+		
+		MessageData data = new MessageData();
+		
+		String rawContent = MessageStore.load(message);
+		
+		data.setMessage(rawContent);
+		
+		InputStream is = null;
+		
+		try {
+
+			Session session = Session.getDefaultInstance(new Properties());
+			
+			is = new ByteArrayInputStream(rawContent.getBytes());
+			
+			MimeMessage mimeMessage = new MimeMessage(session, is);			
+			
+			if(mimeMessage.getContent() instanceof MimeMultipart)
+				parseMultipart(mimeMessage, data);
+			else
+				parseSinglepart(mimeMessage, data);
+
+		} catch(Exception e) {
+			
+			e.printStackTrace();
+			
+		} finally {
+			try {
+				if(is != null)
+					is.close();
+			} catch(Exception e) { }
+		}
+		
+		return data;
+	}
+	
+	private static void parseMultipart(MimeMessage mimeMessage, MessageData messageData) throws IOException, MessagingException {
 		MimeMultipart content = (MimeMultipart)mimeMessage.getContent();
 		int count = content.getCount();
 		
@@ -71,27 +112,26 @@ public class MessageParser {
 			BodyPart bp = content.getBodyPart(x);
 			String contentType = bp.getContentType().toLowerCase();
 			if(contentType.startsWith("text/plain;")) {
-				m.setTextMessage(bp.getContent().toString());
+				messageData.setTextMessage(bp.getContent().toString());
 				continue;
 			}
 			if(contentType.startsWith("text/html;")) {
-				m.setHtmlMessage(bp.getContent().toString());
+				messageData.setHtmlMessage(bp.getContent().toString());
 				continue;
 			}
 		}
 	}
 
-	private static void parseSinglepart(Message m, MimeMessage mimeMessage) throws IOException, MessagingException {
+	private static void parseSinglepart(MimeMessage mimeMessage, MessageData messageData) throws IOException, MessagingException {
 		
 		String contentType = mimeMessage.getContentType().toLowerCase();
 		String content = mimeMessage.getContent().toString();
 		
 		if(contentType.startsWith("text/plain;"))
-			m.setTextMessage(content);
+			messageData.setTextMessage(content);
 		
 		if(contentType.startsWith("text/html;"))
-			m.setHtmlMessage(content);
-
+			messageData.setHtmlMessage(content);
 	}
 	
 	private static void parseDate(Message m, MimeMessage mimeMessage) throws MessagingException {

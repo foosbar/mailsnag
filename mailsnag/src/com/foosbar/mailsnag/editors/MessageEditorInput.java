@@ -5,6 +5,8 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IPersistableElement;
 
 import com.foosbar.mailsnag.model.Message;
+import com.foosbar.mailsnag.model.MessageData;
+import com.foosbar.mailsnag.model.MessageParser;
 
 /**
  * @author Kevin Kelley (dev@foos-bar.com)
@@ -24,6 +26,10 @@ public class MessageEditorInput implements IEditorInput {
 		return message;
 	}
 	
+	public MessageData getMessageData() {
+		return MessageParser.parseData(message);
+	}
+	
 	public boolean exists() {
 		return false;
 	}
@@ -33,9 +39,10 @@ public class MessageEditorInput implements IEditorInput {
 	}
 
 	public String getName() {
-		if(message == null)
-			return "";
-		return message.getSubject();
+		if(message.getSubject() == null || "".equals(message.getSubject().trim()))
+			return "Email: <No Subject>";
+		else
+			return "Email: " + message.getSubject();
 	}
 
 	public IPersistableElement getPersistable() {
@@ -48,7 +55,7 @@ public class MessageEditorInput implements IEditorInput {
 		return message.getFrom();
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
 	public Object getAdapter(Class arg0) {
 		return null;
 	}

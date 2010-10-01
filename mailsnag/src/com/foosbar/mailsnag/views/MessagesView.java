@@ -1,10 +1,11 @@
 package com.foosbar.mailsnag.views;
 
+import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
@@ -42,8 +43,11 @@ import org.eclipse.ui.part.ViewPart;
 import com.foosbar.mailsnag.Activator;
 import com.foosbar.mailsnag.editors.MessageEditorInput;
 import com.foosbar.mailsnag.model.Message;
+import com.foosbar.mailsnag.model.MessageParser;
 import com.foosbar.mailsnag.smtp.Server;
 import com.foosbar.mailsnag.smtp.ServerThreadGroup;
+import com.foosbar.mailsnag.util.EmailFilenameFilter;
+import com.foosbar.mailsnag.util.MessageStore;
 
 public class MessagesView extends ViewPart {
 
@@ -70,11 +74,17 @@ public class MessagesView extends ViewPart {
 	 * The constructor.
 	 */
 	public MessagesView() {
+		super();
 	}
 
 	public class ViewContentProvider implements IStructuredContentProvider {
-		List<Message> messages = new ArrayList<Message>();
+		Collection<Message> messages = new ArrayList<Message>();
 
+		public ViewContentProvider(Collection<Message> messages) {
+			if(messages != null) 
+				this.messages = messages;
+		}
+		
 		public void inputChanged(Viewer v, Object oldInput, Object newInput) {
 		}
 	
@@ -152,7 +162,7 @@ public class MessagesView extends ViewPart {
 	public void createPartControl(Composite parent) {
 		viewer = new TableViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION);
 		createColumns(viewer,parent);
-		viewer.setContentProvider(new ViewContentProvider());
+		viewer.setContentProvider(new ViewContentProvider(loadMessages()));
 		viewer.setLabelProvider(new ViewLabelProvider());
 		viewer.setSorter(new NameSorter());
 		viewer.setInput(getViewSite());
@@ -165,6 +175,28 @@ public class MessagesView extends ViewPart {
 		contributeToActionBars();
 	}
 
+	private Collection<Message> loadMessages() {
+		Collection<Message> messages = new ArrayList<Message>();
+		
+		File dir = Activator.getDefault().getStateLocation().toFile();
+		
+		if(dir.isDirectory()) {
+			
+			File[] files = dir.listFiles(new EmailFilenameFilter());
+			
+			//Don't store contents of emails in memory.  Pass file to Editor.
+			
+			for(File file : files) {
+				String data = MessageStore.load(file.getName());
+				Message message = MessageParser.parse(data);
+				message.setFilename(file.getName());
+				messages.add(message);
+			}
+		}
+		
+		return messages;
+	}
+	
 	private void hookContextMenu() {
 		MenuManager menuMgr = new MenuManager("#PopupMenu");
 		menuMgr.setRemoveAllWhenShown(true);
@@ -227,13 +259,11 @@ public class MessagesView extends ViewPart {
 	private Server server = new Server(this);
 	
 	private void makeActions() {
-		
+
 		runServer = new Action() {
 			public void run() {
 				ThreadGroup tg = new ServerThreadGroup(server.getView(),"SMTPServer");
 				new Thread(tg,server).start();
-				//stopServer.setEnabled(true);
-				//runServer.setEnabled(false);
 			}
 		};
 		
@@ -244,8 +274,6 @@ public class MessagesView extends ViewPart {
 		stopServer = new Action() {
 			public void run() {
 				server.close();
-				//stopServer.setEnabled(false);
-				//runServer.setEnabled(true);
 			}
 		};
 		
@@ -274,8 +302,12 @@ public class MessagesView extends ViewPart {
 					Iterator<Object> it = iss.iterator();
 					while(it.hasNext()) {
 						Object obj = it.next();
-						if(obj != null && obj instanceof Message)
+						if(obj != null && obj instanceof Message) {
+							
+							MessageStore.delete((Message)obj);
 							viewer.remove(obj);
+							
+						}
 						
 						//TODO: Close open editors
 					}
@@ -305,6 +337,7 @@ public class MessagesView extends ViewPart {
         			} catch(PartInitException e) {
         				e.printStackTrace();
         			}
+        			
 //        			try {
 //        				File fileToOpen = File.createTempFile("email",".eml");
 //        				fileToOpen.deleteOnExit();
@@ -341,15 +374,6 @@ public class MessagesView extends ViewPart {
 			}
 		});
 	}
-	
-	/*
-	private void showMessage(String message) {
-		MessageDialog.openInformation(
-			viewer.getControl().getShell(),
-			"Incoming Messages",
-			message);
-	}
-	*/
 	
 	public TableViewer getViewer() {
 		return viewer;
