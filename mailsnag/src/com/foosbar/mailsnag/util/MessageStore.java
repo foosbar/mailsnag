@@ -20,37 +20,16 @@ public class MessageStore {
 	//    workspace/.metadata/.plugins/com.foosbar.mailsnag
 	public static final void persist(Message message, String data) {
 		
-		//boolean persist =
-		//	Activator.getDefault().getPreferenceStore().getBoolean(PreferenceConstants.PARAM_PERSIST);
-
 		Writer writer = null;
 		
 		try {
-			
-			File file = null;
+			//Create random filename
+			message.setFilename(getRandomFilename());
+				
+			//Create file
+			File file = new File(Activator.getDefault().getStateLocation().toFile(), message.getFilename());
 
-			// Permanent file
-			//if(persist) {
-				//Create random filename
-				message.setFilename(getRandomFilename());
-				
-				//Create file
-				file = new File(Activator.getDefault().getStateLocation().toFile(), message.getFilename());
-			//} 
-			/*
-			// Just create temporary file
-			else {
-				//Creates Temporary File
-				file = File.createTempFile("email",".eml", Activator.getDefault().getStateLocation().toFile());
-				
-				//Marks file for deletion when JVM exits
-				file.deleteOnExit();
-				
-				//Sets filename to temporary filename
-				message.setFilename(file.getName());
-			}
-			*/
-				
+			//Write file
 			if(file != null) {
 				writer = new BufferedWriter(new FileWriter(file));
 				writer.write(data);
