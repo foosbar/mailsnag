@@ -60,8 +60,10 @@ public class PreferencePage
 		ife.setValidRange(1,65535);
 		addField(ife);
 		
+		addField(new BooleanFieldEditor(PreferenceConstants.PARAM_PERSIST, "Persist emails between sessions", getFieldEditorParent()));
+
 		addField(new BooleanFieldEditor(PreferenceConstants.PARAM_DEBUG, "Print debug messages to STDOUT", getFieldEditorParent()));
-		
+
 	}
 
 	/* (non-Javadoc)
