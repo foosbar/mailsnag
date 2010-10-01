@@ -2,7 +2,7 @@
 <feature
       id="com.foosbar.mailsnag"
       label="MailSnag"
-      version="0.2.1.beta">
+      version="0.2.3.beta">
 
    <description>
       This plugin is now a beta release.  It is an Eclipse plugin

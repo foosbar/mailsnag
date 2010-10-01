@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: MailSnag
 Bundle-SymbolicName: com.foosbar.mailsnag;singleton:=true
-Bundle-Version: 0.2.1.beta
+Bundle-Version: 0.2.3.beta
 Bundle-Activator: com.foosbar.mailsnag.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
