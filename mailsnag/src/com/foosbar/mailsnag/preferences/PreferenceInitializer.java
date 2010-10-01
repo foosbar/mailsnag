@@ -14,7 +14,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 		IPreferenceStore store = Activator.getDefault().getPreferenceStore();
 		store.setDefault(PreferenceConstants.PARAM_PORT, 25);
 		store.setDefault(PreferenceConstants.PARAM_DEBUG, false);
-		store.setDefault(PreferenceConstants.PARAM_PERSIST, false);
+		store.setDefault(PreferenceConstants.PARAM_PERSIST, true);
 	}
 
 }
