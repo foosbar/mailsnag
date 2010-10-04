@@ -37,6 +37,7 @@ import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.ViewPart;
 
@@ -56,6 +57,7 @@ public class MessagesView extends ViewPart {
 	private Action stopServer;
 	private Action openMessage;
 	private Action removeMessage;
+	private Action openPreferences;
 	
 	// View Icon
 	private static final ImageDescriptor IMG_MESSAGE =
@@ -221,6 +223,8 @@ public class MessagesView extends ViewPart {
 	private void fillLocalPullDown(IMenuManager manager) {
 		manager.add(runServer);
 		manager.add(stopServer);
+		manager.add(new Separator());
+		manager.add(openPreferences);
 	}
 
 	private void fillContextMenu(IMenuManager manager) {
@@ -260,6 +264,17 @@ public class MessagesView extends ViewPart {
 	
 	private void makeActions() {
 
+		openPreferences = new Action() {
+			public void run() {
+				PreferencesUtil.createPreferenceDialogOn(
+						viewer.getControl().getShell(), 
+						"com.foosbar.mailsnag.preferences.PreferencePage", new String[]{"com.foosbar.mailsnag.preferences.PreferencePage"}, null).open();
+			}
+		};
+		
+		openPreferences.setText("Preferences");
+		openPreferences.setToolTipText("Preferences");
+		
 		runServer = new Action() {
 			public void run() {
 				ThreadGroup tg = new ServerThreadGroup(server.getView(),"SMTPServer");
@@ -267,7 +282,7 @@ public class MessagesView extends ViewPart {
 			}
 		};
 		
-		runServer.setText("Start");
+		runServer.setText("Start Listening");
 		runServer.setToolTipText("Start Email Listener");
 		runServer.setImageDescriptor(IMG_RUN);
 
@@ -277,7 +292,7 @@ public class MessagesView extends ViewPart {
 			}
 		};
 		
-		stopServer.setText("Stop");
+		stopServer.setText("Stop Listening");
 		stopServer.setToolTipText("Stop Email Listener");
 		stopServer.setImageDescriptor(IMG_STOP);
 		stopServer.setEnabled(false);

@@ -56,14 +56,20 @@ public class PreferencePage
 		//}, getFieldEditorParent()));
 		//addField(
 		//	new StringFieldEditor(PreferenceConstants.P_STRING, "A &text preference:", getFieldEditorParent()));
-		IntegerFieldEditor ife = new IntegerFieldEditor(PreferenceConstants.PARAM_PORT, "Listening Port", getFieldEditorParent());
-		ife.setValidRange(1,65535);
-		addField(ife);
+		IntegerFieldEditor port = 
+			new IntegerFieldEditor(PreferenceConstants.PARAM_PORT, "Listening Port", getFieldEditorParent());
+
+		port.setValidRange(1,65535);
 		
-		addField(new BooleanFieldEditor(PreferenceConstants.PARAM_PERSIST, "Persist emails between sessions", getFieldEditorParent()));
-
-		addField(new BooleanFieldEditor(PreferenceConstants.PARAM_DEBUG, "Print debug messages to STDOUT", getFieldEditorParent()));
-
+		BooleanFieldEditor persist = 
+			new BooleanFieldEditor(PreferenceConstants.PARAM_PERSIST, "Persist emails between sessions", getFieldEditorParent());
+		
+		BooleanFieldEditor debug = 
+			new BooleanFieldEditor(PreferenceConstants.PARAM_DEBUG, "Print debug messages to STDOUT", getFieldEditorParent());
+		
+		addField(port);
+		addField(persist);
+		addField(debug);
 	}
 
 	/* (non-Javadoc)
