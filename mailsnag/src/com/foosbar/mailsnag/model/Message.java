@@ -1,6 +1,8 @@
 package com.foosbar.mailsnag.model;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Models a message received via SMTP.
@@ -9,21 +11,32 @@ import java.util.Date;
  */
 public class Message {
 	
+	private List<Attachment> attachments;
 	private String cc;
 	private String filename;
 	private String from;
-	private String htmlMessage;
 	private String id;
-	private String message;
-	private boolean read;
 	private Date received;
 	private String subject;
-	private String textMessage;
 	private String to;
 
 	public Message() {
+		this.attachments = new ArrayList<Attachment>();
 	}
 	
+	public void addAttachment(String id, String name, String mimeType, long size) {
+		Attachment a = new Attachment();
+		a.setId(id);
+		a.setMimeType(mimeType);
+		a.setName(name);
+		a.setSize(size);
+		attachments.add(a);
+	}
+	
+	public List<Attachment> getAttachments() {
+		return attachments;
+	}
+
 	public String getCc() {
 		return cc;
 	}
@@ -36,18 +49,10 @@ public class Message {
 		return from;
 	}
 
-	public String getHtmlMessage() {
-		return htmlMessage;
-	}
-	
 	public String getId() {
 		return id;
 	}
 
-	public String getMessage() {
-		return message;
-	}
-	
 	public Date getReceived() {
 		return received;
 	}
@@ -56,24 +61,8 @@ public class Message {
 		return subject;
 	}
 
-	public String getTextMessage() {
-		return textMessage;
-	}
-
 	public String getTo() {
 		return to;
-	}
-
-	public boolean hasHtmlMessage() {
-		return htmlMessage != null;
-	}
-
-	public boolean hasTextMessage() {
-		return textMessage != null;
-	}
-	
-	public boolean isRead() {
-		return read;
 	}
 
 	public void setCc(String cc) {
@@ -88,20 +77,8 @@ public class Message {
 		this.from = from;
 	}
 	
-	public void setHtmlMessage(String htmlMessage) {
-		this.htmlMessage = htmlMessage;
-	}
-
 	public void setId(String id) {
 		this.id = id;
-	}
-
-	public void setMessage(String message) {
-		this.message = message;
-	}
-
-	public void setRead(boolean read) {
-		this.read = read;
 	}
 
 	public void setReceived(Date received) {
@@ -112,11 +89,50 @@ public class Message {
 		this.subject = subject;
 	}
 
-	public void setTextMessage(String textMessage) {
-		this.textMessage = textMessage;
-	}
-
 	public void setTo(String to) {
 		this.to = to;
+	}
+	
+	public class Attachment {
+		
+		private String id;
+		private String mimeType;
+		private String name;
+		private long size;
+		
+		private Attachment() {
+		}
+
+		public String getId() {
+			return id;
+		}
+
+		public void setId(String id) {
+			this.id = id;
+		}
+
+		public String getMimeType() {
+			return mimeType;
+		}
+
+		public void setMimeType(String mimeType) {
+			this.mimeType = mimeType;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public void setName(String name) {
+			this.name = name;
+		}
+
+		public long getSize() {
+			return size;
+		}
+
+		public void setSize(long size) {
+			this.size = size;
+		}
 	}
 }

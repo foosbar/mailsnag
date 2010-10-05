@@ -5,6 +5,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.Writer;
+import java.util.List;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -26,7 +27,9 @@ import org.eclipse.ui.internal.browser.WebBrowserEditor;
 import org.eclipse.ui.internal.browser.WebBrowserEditorInput;
 import org.eclipse.ui.part.MultiPageEditorPart;
 
+import com.foosbar.mailsnag.model.Message;
 import com.foosbar.mailsnag.model.MessageData;
+import com.foosbar.mailsnag.model.Message.Attachment;
 
 /**
  * A multi-tab editor for inspecting emails
@@ -36,11 +39,17 @@ import com.foosbar.mailsnag.model.MessageData;
  * <li>page 2 Raw Data for inspecting the entire email stream.
  * </ul>
  */
+@SuppressWarnings("restriction")
 public class MessageEditor extends MultiPageEditorPart implements IResourceChangeListener{
+
+	public static final String ID = "com.foosbar.mailsnag.editors.MessageEditor";
+	
+	/* Message Data */
+	private Message message;
 
 	/* Message Data */
 	private MessageData messageData;
-	
+
 	public MessageEditor() {
 		super();
 		ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
@@ -61,6 +70,28 @@ public class MessageEditor extends MultiPageEditorPart implements IResourceChang
 
 		int index = addPage(composite);
 		setPageText(index, "Raw Data");
+	}
+	
+	/**
+	 * Creates a page/tab to display attachments.
+	 */
+	void createAttachments() {
+		List<Attachment> attachments = message.getAttachments();
+		
+		if(attachments == null || attachments.isEmpty())
+			return;
+		
+		Composite composite = new Composite(getContainer(), SWT.NONE);
+
+		FillLayout layout = new FillLayout();
+		composite.setLayout(layout);
+		
+		StyledText text = new StyledText(composite, SWT.H_SCROLL | SWT.V_SCROLL);
+		text.setEditable(false);
+		text.setText("Attachments will display here if they exist");
+
+		int index = addPage(composite);
+		setPageText(index, "Attachments");
 	}
 	
 	/**
@@ -93,18 +124,31 @@ public class MessageEditor extends MultiPageEditorPart implements IResourceChang
 			return;
 		
 		try {
+
 			File fileToOpen = File.createTempFile("email",".html");
 			fileToOpen.deleteOnExit();
 			Writer writer = new BufferedWriter(new FileWriter(fileToOpen));
 			writer.write(messageData.getHtmlMessage());
 			writer.close();
-					
+			
 			WebBrowserEditor editor = new WebBrowserEditor();
-			WebBrowserEditorInput input = new WebBrowserEditorInput(fileToOpen.toURL());
-	
+			WebBrowserEditorInput input = new WebBrowserEditorInput(fileToOpen.toURI().toURL());
+
 			setPageText(
 					addPage(editor, input), 
 					"HTML Format");
+
+			/*
+			Composite composite = new Composite(getContainer(), SWT.NONE);
+			composite.setLayout(new FillLayout());
+
+			Browser browser = new Browser(composite, SWT.H_SCROLL | SWT.V_SCROLL);
+			browser.setText(messageData.getHtmlMessage());
+			
+			setPageText(
+					addPage(composite), 
+					"HTML Format");
+			*/
 			
 		} catch (Exception e) {
 			ErrorDialog.openError(
@@ -121,6 +165,7 @@ public class MessageEditor extends MultiPageEditorPart implements IResourceChang
 	protected void createPages() {
 		createHtmlPage();
 		createTextPage();
+		createAttachments();
 		createRawPage();
 	}
 	/**
@@ -169,6 +214,9 @@ public class MessageEditor extends MultiPageEditorPart implements IResourceChang
 		setSite(site); 
 		setInput(editorInput);
 		
+		this.message = 
+			((MessageEditorInput) editorInput).getMessage();
+		
 		this.messageData = 
 			((MessageEditorInput) editorInput).getMessageData();
 		
@@ -203,7 +251,7 @@ public class MessageEditor extends MultiPageEditorPart implements IResourceChang
 						}
 					}
 					*/
-				}            
+				}
 			});
 		}
 	}

@@ -24,8 +24,9 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
@@ -42,6 +43,7 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.ViewPart;
 
 import com.foosbar.mailsnag.Activator;
+import com.foosbar.mailsnag.editors.MessageEditor;
 import com.foosbar.mailsnag.editors.MessageEditorInput;
 import com.foosbar.mailsnag.model.Message;
 import com.foosbar.mailsnag.model.MessageParser;
@@ -52,7 +54,15 @@ import com.foosbar.mailsnag.util.MessageStore;
 
 public class MessagesView extends ViewPart {
 
+	public static final String COL_TO = "To";
+	public static final String COL_CC = "Cc";
+	public static final String COL_FROM = "From";
+	public static final String COL_SUBJECT = "Subject";
+	public static final String COL_RECEIVED = "Received";
+	
 	private TableViewer viewer;
+	private MessageSorter sorter;
+	
 	private Action runServer;
 	private Action stopServer;
 	private Action openMessage;
@@ -96,6 +106,11 @@ public class MessagesView extends ViewPart {
 		public Object[] getElements(Object parent) {
 			return messages.toArray();
 		}
+		
+		public void add(Message message) {
+			messages.add(message);
+			getViewer().refresh();
+		}
 	}
 
 	class ViewLabelProvider extends LabelProvider implements ITableLabelProvider {
@@ -133,28 +148,56 @@ public class MessagesView extends ViewPart {
 		}
 	}
 
-	class NameSorter extends ViewerSorter {
-	}
-
-	private void createColumns(TableViewer viewer, Composite parent) {
-		String[] titles = { "", "From", "To", "Cc", "Subject", "Received" };
-		int[] bounds = { 26, 175, 195, 195, 345, 165};
+	private void createColumns(final TableViewer viewer, Composite parent) {
 		
-		for (int i = 0; i < titles.length; i++) {
-			TableViewerColumn viewerColumn = new TableViewerColumn(viewer, SWT.NONE);
-			TableColumn column = viewerColumn.getColumn();
-			column.setText(titles[i]);
-			column.setWidth(bounds[i]);
-			column.setResizable( i > 0 );
-			column.setMoveable( i > 0 );
-			if(i == 0)
-				column.setAlignment(SWT.CENTER);
-			else if(i == titles.length-1)
-				column.setAlignment(SWT.RIGHT);
-		}
 		Table table = viewer.getTable();
 		table.setHeaderVisible(true);
 		table.setLinesVisible(true);
+
+		String[] titles = { "", COL_FROM, COL_TO, COL_CC, COL_SUBJECT, COL_RECEIVED };
+		int[] bounds = { 30, 170, 190, 190, 300, 160};
+		
+		for (int i = 0; i < titles.length; i++) {
+
+			final String title = titles[i];
+			
+			TableViewerColumn vColumn = new TableViewerColumn(viewer, SWT.NONE);
+			TableColumn column = vColumn.getColumn();
+			column.setText(title);
+			column.setWidth(bounds[i]);
+			
+			column.setResizable( i > 0 );
+			column.setMoveable( i > 0 );
+
+			if(i == 0) {
+				column.setAlignment(SWT.CENTER);
+			} else if(i == titles.length-1) {
+				column.setAlignment(SWT.RIGHT);
+			}
+			
+			// Add Sorting
+			if(i != 0) {
+				column.addSelectionListener(new SelectionAdapter() {
+					@Override
+					public void widgetSelected(SelectionEvent e) {
+						sorter.setColumnName(title);
+						int dir = viewer.getTable().getSortDirection();
+						TableColumn tc = (TableColumn)e.getSource();
+						
+						if(viewer.getTable().getSortColumn() == null) {
+							dir = SWT.DOWN;
+						} else if (viewer.getTable().getSortColumn().getText().equals(title)) {
+							dir = (dir == SWT.UP) ? SWT.DOWN : SWT.UP;
+						} else {
+							dir = SWT.DOWN;
+						}
+						viewer.getTable().setSortDirection(dir);
+						viewer.getTable().setSortColumn(tc);
+						viewer.refresh();
+					}
+				});
+			}
+		}
 	}
 
 	/**
@@ -166,9 +209,11 @@ public class MessagesView extends ViewPart {
 		createColumns(viewer,parent);
 		viewer.setContentProvider(new ViewContentProvider(loadMessages()));
 		viewer.setLabelProvider(new ViewLabelProvider());
-		viewer.setSorter(new NameSorter());
 		viewer.setInput(getViewSite());
 
+		sorter = new MessageSorter();
+		viewer.setSorter(sorter);
+		
 		// Create the help context id for the viewer's control
 		PlatformUI.getWorkbench().getHelpSystem().setHelp(viewer.getControl(), "com.foos-bar.mailsnag.viewer");
 		makeActions();
@@ -348,7 +393,7 @@ public class MessagesView extends ViewPart {
         			IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
         			MessageEditorInput input = new MessageEditorInput(m);
         			try {
-        				IDE.openEditor(page, input, "com.foosbar.mailsnag.editors.MessageEditor", true);
+        				IDE.openEditor(page, input, MessageEditor.ID, true);
         			} catch(PartInitException e) {
         				e.printStackTrace();
         			}
@@ -377,7 +422,6 @@ public class MessagesView extends ViewPart {
 //        			}
                 }
             });
-        	m.setRead(true);
             return;
         }
 	}

@@ -15,10 +15,11 @@ import com.foosbar.mailsnag.model.Message;
 import com.foosbar.mailsnag.model.MessageParser;
 import com.foosbar.mailsnag.preferences.PreferenceConstants;
 import com.foosbar.mailsnag.util.MessageStore;
+import com.foosbar.mailsnag.views.MessagesView.ViewContentProvider;
 
 public class MailHandler extends Thread {
 	
-	private static final String PROTOCOL_EHLO = "EHLO";
+	private static final String PROTOCOL_EHLO = "HELO";
 	private static final String SEND_HI  = "220 Welcome to MailSnag by Foos-Bar\r\n";
 	private static final String SEND_OK  = "250 Ok\r\n"; 
 	private static final String SEND_BYE = "221 Bye\r\n";
@@ -31,6 +32,8 @@ public class MailHandler extends Thread {
 	private Message message;
 	private TableViewer viewer;
 	
+	private boolean debug;
+	
 	private IPreferenceStore pStore;
 	
 	public MailHandler(Socket socket, TableViewer viewer) {
@@ -42,14 +45,14 @@ public class MailHandler extends Thread {
 		
 		this.pStore = 
 			Activator.getDefault().getPreferenceStore();
+		
+		this.debug = 
+			pStore.getBoolean(PreferenceConstants.PARAM_DEBUG);
 	}
 
 	public void run() {
 		
 		try {
-			
-			boolean debug = 
-				pStore.getBoolean(PreferenceConstants.PARAM_DEBUG);
 			
 			StringBuilder msgBody = new StringBuilder();
 			
@@ -70,17 +73,20 @@ public class MailHandler extends Thread {
 			while (connected) {
 				String inputLine = in.readLine();
 
+				if(inputLine == null) {
+					respond(SEND_OK, out);
+				}
+				
 				if(debug)
 					System.out.println(inputLine);
 
 				// The End
 				if(inputLine.startsWith(READ_QUIT)) {
-					if(debug)
-						System.out.println("Closing connection");
-
 					respond(SEND_BYE, out);
 					connected = false;
-					break;
+					if(debug)
+						System.out.println("Closing connection");
+					continue;
 				}
 
 				// Greeting - Say Hello and move on.
@@ -124,10 +130,12 @@ public class MailHandler extends Thread {
 			//Persist file
 			MessageStore.persist(message, msgBody.toString());
 			
-			//Update the Table Viewer
+			//Update the Content Provider
 			Display.getDefault().asyncExec(new Runnable() {
 				public void run() {
-					viewer.add(message);
+					ViewContentProvider content = 
+						(ViewContentProvider) viewer.getContentProvider();
+					content.add(message);
 				}
 			});
 
@@ -143,6 +151,10 @@ public class MailHandler extends Thread {
 	}
 
 	private void respond(String response, PrintWriter writer) {
+		
+		if(debug)
+			System.out.println("Server Response: " + response);
+		
 		writer.print(response);
 		writer.flush();
 	}
