@@ -29,7 +29,6 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
@@ -68,7 +67,7 @@ public class MessagesView extends ViewPart {
 	private Action openMessage;
 	private Action removeMessage;
 	private Action openPreferences;
-	
+
 	// View Icon
 	private static final ImageDescriptor IMG_MESSAGE =
 		ImageDescriptor.createFromFile(Activator.class, "/icons/message.gif");
@@ -80,7 +79,6 @@ public class MessagesView extends ViewPart {
 	// Stop Server 
 	private static final ImageDescriptor IMG_STOP =
 		ImageDescriptor.createFromFile(Activator.class, "/icons/stop.gif");
-
 
 	/**
 	 * The constructor.
@@ -119,7 +117,6 @@ public class MessagesView extends ViewPart {
 		
 		public String getColumnText(Object obj, int index) {
 			Message message = (Message) obj;
-			
 			switch (index) {
 				case 0:
 					return null;
@@ -155,7 +152,7 @@ public class MessagesView extends ViewPart {
 		table.setLinesVisible(true);
 
 		String[] titles = { "", COL_FROM, COL_TO, COL_CC, COL_SUBJECT, COL_RECEIVED };
-		int[] bounds = { 30, 170, 190, 190, 300, 160};
+		int[] bounds = { 30, 170, 170, 170, 275, 160};
 		
 		for (int i = 0; i < titles.length; i++) {
 
@@ -363,12 +360,9 @@ public class MessagesView extends ViewPart {
 					while(it.hasNext()) {
 						Object obj = it.next();
 						if(obj != null && obj instanceof Message) {
-							
 							MessageStore.delete((Message)obj);
 							viewer.remove(obj);
-							
 						}
-						
 						//TODO: Close open editors
 					}
 				}
@@ -384,46 +378,24 @@ public class MessagesView extends ViewPart {
 		openMessage.setText("Open");
 	}
 
+	@SuppressWarnings("unchecked")
 	private void openMessage() {
-		Object obj = ((IStructuredSelection) viewer.getSelection()).getFirstElement();
-        if (obj != null && obj instanceof Message) {
-        	final Message m = (Message)obj;
-        	Display.getDefault().asyncExec(new Runnable(){
-                public void run() {
-        			IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-        			MessageEditorInput input = new MessageEditorInput(m);
-        			try {
-        				IDE.openEditor(page, input, MessageEditor.ID, true);
-        			} catch(PartInitException e) {
-        				e.printStackTrace();
-        			}
-        			
-//        			try {
-//        				File fileToOpen = File.createTempFile("email",".eml");
-//        				fileToOpen.deleteOnExit();
-//        				Writer writer = new BufferedWriter(new FileWriter(fileToOpen));
-//        				writer.write(m.getMessage());
-//        				writer.close();
-//        				if (fileToOpen.exists() && fileToOpen.isFile()) {
-//        					IFileStore fileStore = EFS.getLocalFileSystem().getStore(new Path(fileToOpen.getAbsolutePath()));
-//        					if (!fileStore.fetchInfo().isDirectory() && fileStore.fetchInfo().exists()) {
-//        					    try {
-//        					    	//IDE.openEditor(page, fileToOpen.toURI(), IEditorRegistry.SYSTEM_EXTERNAL_EDITOR_ID, true);
-//        					    	IDE.openEditor(page, fileToOpen.toURI(), "com.foosbar.mailsnag.editors.MessageEditor", true);
-//        					    } catch (PartInitException e) {
-//        					        /* some code */
-//        					    }
-//        					}
-//        				} else {
-//        				    //Do something if the file does not exist
-//        				}
-//        			} catch(Exception e) {
-//        				e.printStackTrace();
-//        			}
-                }
-            });
-            return;
+		IStructuredSelection iss = (IStructuredSelection) viewer.getSelection();
+		Iterator<Object> it = iss.iterator();
+		while(it.hasNext()) {
+			Object obj = it.next();
+			if(obj instanceof Message) {
+				Message m = (Message)obj;
+       			IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+       			MessageEditorInput input = new MessageEditorInput(m);
+       			try {
+       				IDE.openEditor(page, input, MessageEditor.ID, true);
+       			} catch(PartInitException e) {
+       				e.printStackTrace();
+       			}
+	        }
         }
+        return;
 	}
 	
 	private void hookDoubleClickAction() {
