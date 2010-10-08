@@ -15,9 +15,6 @@ public class Server implements Runnable {
 	private MessagesView view;
 	private ServerSocket serverSocket;
 	
-	public Server() {
-	}
-
 	public Server(MessagesView view) {
 		this.view = view;
 	}
@@ -59,8 +56,8 @@ public class Server implements Runnable {
 		
 		try {
 			while (listening) {
-				final MailHandler handler = new MailHandler(serverSocket.accept(), view.getViewer());
-				handler.start();
+				new MailHandler(serverSocket.accept(), view.getViewer())
+					.start();
 			}
 		} catch(IOException e) {
 			if(debug)
