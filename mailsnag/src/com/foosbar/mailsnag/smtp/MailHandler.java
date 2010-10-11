@@ -65,7 +65,7 @@ public class MailHandler extends Thread {
 			BufferedReader in = 
 				new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-			boolean dataBlock = false;
+			boolean readingData = false;
 			
 			String inputLine = null;
 			while ( (inputLine = in.readLine()) != null ) {
@@ -73,54 +73,60 @@ public class MailHandler extends Thread {
 				if(debug)
 					System.out.println(inputLine);
 
-				//No operation
-				if(inputLine.startsWith("NOOP")) {
-					respond(SEND_OK, out);
-					continue;
-				}
-
-				//Verify
-				if(inputLine.startsWith("VRFY")) {
-					respond(SEND_OK, out);
-					continue;
-				}
-
-				// The End
-				if(inputLine.startsWith(READ_QUIT)) {
-					respond(SEND_BYE, out);
-					if(debug)
-						System.out.println("Closing connection");
-					break;
-				}
-
-				// Greeting - Say Hello and move on.
-				if(inputLine.startsWith(PROTOCOL_EHLO)) {
-					String server = inputLine.substring(PROTOCOL_EHLO.length());
-					respond("250 Hello " + server.trim() + "\r\n", out);
-					continue;
-				}
+				if(!readingData) {
 				
-				// Start of Data - Confirm end of data string
-				if(inputLine.startsWith(READ_DATA)) {
+					//No operation
+					if(!inputLine.startsWith("NOOP")) {
+						respond(SEND_OK, out);
+						continue;
+					}
+	
+					//Verify
+					if(inputLine.startsWith("VRFY")) {
+						respond(SEND_OK, out);
+						continue;
+					}
+	
+					// The End
+					if(inputLine.startsWith(READ_QUIT)) {
+						respond(SEND_BYE, out);
+						if(debug)
+							System.out.println("Closing connection");
+						break;
+					}
+	
+					// Greeting - Say Hello and move on.
+					if(inputLine.startsWith(PROTOCOL_EHLO)) {
+						String server = inputLine.substring(PROTOCOL_EHLO.length());
+						respond("250 Hello " + server.trim() + "\r\n", out);
+						continue;
+					}
+					
+					// Start of Data - Confirm end of data string
+					if(inputLine.startsWith(READ_DATA)) {
+						// Write line to message body
+						msgBody.append(inputLine.trim())
+							.append(NEWLINE);
+						readingData = true;
+						respond(SEND_END_DATA, out);
+						continue;
+					}
+				} 
+				//Reading the data block
+				else {
+					
+					if(inputLine.equals(".")) {
+						respond(SEND_BYE, out);
+						if(debug)
+							System.out.println("End of data");
+						break;
+					}
+					
 					// Write line to message body
 					msgBody.append(inputLine.trim())
 						.append(NEWLINE);
-					dataBlock = true;
-					respond(SEND_END_DATA, out);
-					continue;
-				}
-
-				if(dataBlock && inputLine.equals(".")) {
-					respond(SEND_BYE, out);
-					if(debug)
-						System.out.println("End of data");
-					break;
-				}
 				
-				// Write line to message body
-				msgBody.append(inputLine.trim())
-					.append(NEWLINE);
-			
+				}
 				respond(SEND_OK, out);
 				continue;
 			}
