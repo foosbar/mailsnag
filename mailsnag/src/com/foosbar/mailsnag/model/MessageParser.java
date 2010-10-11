@@ -120,12 +120,7 @@ public class MessageParser {
 				
 				if(BodyPart.ATTACHMENT.equals(bp.getDisposition())) {
 					String filename = bp.getFileName();
-					System.out.println("Filename: " + bp.getFileName());
-					for(Enumeration<Header> e = bp.getAllHeaders(); e.hasMoreElements();) {
-						Header h = (Header)e.nextElement();
-						System.out.println(h);
-					}
-					message.addAttachment("", bp.getFileName(), bp.getDisposition(), 0);
+					message.addAttachment(Integer.toString(x), filename, bp.getContentType(), bp.getSize());
 				}
 			}
 		} catch(MessagingException e) {

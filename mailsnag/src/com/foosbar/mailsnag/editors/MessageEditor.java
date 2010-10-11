@@ -165,7 +165,7 @@ public class MessageEditor extends MultiPageEditorPart implements IResourceChang
 	protected void createPages() {
 		createHtmlPage();
 		createTextPage();
-		//createAttachments();
+		createAttachments();
 		createRawPage();
 	}
 	/**

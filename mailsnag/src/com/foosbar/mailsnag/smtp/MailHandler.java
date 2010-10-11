@@ -18,13 +18,18 @@ import com.foosbar.mailsnag.views.MessagesView.ViewContentProvider;
 
 public class MailHandler extends Thread {
 	
-	private static final String PROTOCOL_EHLO = "EHLO";
-	private static final String SEND_HI  = "220 Welcome to MailSnag by Foos-Bar\r\n";
-	private static final String SEND_OK  = "250 Ok\r\n"; 
-	private static final String SEND_BYE = "221 Bye\r\n";
-	private static final String SEND_END_DATA = "354 End data with <CRLF>.<CRLF>\r\n";
-	private static final String READ_DATA = "DATA";
-	private static final String READ_QUIT = "QUIT";
+	private static final String CMD_DATA = "DATA";
+	private static final String CMD_EHLO = "EHLO";
+	private static final String CMD_NOOP = "NOOP";
+	private static final String CMD_QUIT = "QUIT";
+	private static final String CMD_RSET = "RSET";
+	private static final String CMD_VRFY = "VRFY";
+	
+	private static final String RSPN_HI  = "220 Welcome to MailSnag by Foos-Bar\r\n";
+	private static final String RSPN_OK  = "250 Ok\r\n"; 
+	private static final String RSPN_BYE = "221 Bye\r\n";
+	private static final String RSPN_END_DATA = "354 End data with <CRLF>.<CRLF>\r\n";
+	
 	private static final String NEWLINE = System.getProperty("line.separator");
 	
 	private Socket socket;
@@ -60,7 +65,7 @@ public class MailHandler extends Thread {
 			
 			PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
 
-			respond(SEND_HI, out);
+			respond(RSPN_HI, out);
 
 			BufferedReader in = 
 				new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -70,65 +75,74 @@ public class MailHandler extends Thread {
 			String inputLine = null;
 			while ( (inputLine = in.readLine()) != null ) {
 
-				if(debug)
-					System.out.println(inputLine);
-
 				if(!readingData) {
 				
-					//No operation
-					if(!inputLine.startsWith("NOOP")) {
-						respond(SEND_OK, out);
+					if(debug)
+						System.out.println("Client Command: " + inputLine);
+					
+					// Greeting - Say Hello and move on.
+					if(inputLine.startsWith(CMD_EHLO)) {
+						String server = inputLine.substring(CMD_EHLO.length());
+						respond("250 Hello " + server.trim() + "\r\n", out);
 						continue;
 					}
-	
+					
+					//No operation
+					else if(inputLine.startsWith(CMD_NOOP)) {
+						respond(RSPN_OK, out);
+						continue;
+					}
+
+					//No operation
+					else if(inputLine.startsWith(CMD_RSET)) {
+						readingData = false;
+						respond(RSPN_OK, out);
+						continue;
+					}
+
 					//Verify
-					if(inputLine.startsWith("VRFY")) {
-						respond(SEND_OK, out);
+					else if(inputLine.startsWith(CMD_VRFY)) {
+						respond(RSPN_OK, out);
 						continue;
 					}
 	
 					// The End
-					if(inputLine.startsWith(READ_QUIT)) {
-						respond(SEND_BYE, out);
+					else if(inputLine.startsWith(CMD_QUIT)) {
+						respond(RSPN_BYE, out);
 						if(debug)
 							System.out.println("Closing connection");
 						break;
 					}
 	
-					// Greeting - Say Hello and move on.
-					if(inputLine.startsWith(PROTOCOL_EHLO)) {
-						String server = inputLine.substring(PROTOCOL_EHLO.length());
-						respond("250 Hello " + server.trim() + "\r\n", out);
+					// Start of Data - Confirm end of data string
+					else if(inputLine.startsWith(CMD_DATA)) {
+						readingData = true;
+						respond(RSPN_END_DATA, out);
 						continue;
 					}
 					
-					// Start of Data - Confirm end of data string
-					if(inputLine.startsWith(READ_DATA)) {
-						// Write line to message body
-						msgBody.append(inputLine.trim())
-							.append(NEWLINE);
-						readingData = true;
-						respond(SEND_END_DATA, out);
+					else {
+						respond(RSPN_OK, out);
 						continue;
 					}
-				} 
+				}
 				//Reading the data block
 				else {
 					
+					if(debug)
+						System.out.println(inputLine);
+
 					if(inputLine.equals(".")) {
-						respond(SEND_BYE, out);
-						if(debug)
-							System.out.println("End of data");
-						break;
+						readingData = false;
+						respond(RSPN_OK, out);
+						continue;
+					} else {
+						// Write line to message body
+						msgBody.append(inputLine.trim())
+							.append(NEWLINE);
+						continue;
 					}
-					
-					// Write line to message body
-					msgBody.append(inputLine.trim())
-						.append(NEWLINE);
-				
 				}
-				respond(SEND_OK, out);
-				continue;
 			}
 			
 			// Parse details of the file
@@ -160,7 +174,7 @@ public class MailHandler extends Thread {
 	private void respond(String response, PrintWriter writer) {
 		
 		if(debug)
-			System.out.println("Server Response: " + response);
+			System.out.print("Server Response: " + response);
 		
 		writer.print(response);
 		writer.flush();
