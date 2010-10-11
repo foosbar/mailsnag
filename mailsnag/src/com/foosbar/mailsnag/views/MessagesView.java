@@ -370,6 +370,7 @@ public class MessagesView extends ViewPart {
 						}
 						//TODO: Close open editors
 					}
+					getViewer().refresh();
 				}
 			}
 		};
