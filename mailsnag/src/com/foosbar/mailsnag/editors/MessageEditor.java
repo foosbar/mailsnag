@@ -22,6 +22,8 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.forms.widgets.FormToolkit;
+import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.internal.browser.WebBrowserEditor;
 import org.eclipse.ui.internal.browser.WebBrowserEditorInput;
@@ -78,18 +80,17 @@ public class MessageEditor extends MultiPageEditorPart implements IResourceChang
 	void createAttachments() {
 		List<Attachment> attachments = message.getAttachments();
 		
-		if(attachments == null || attachments.isEmpty())
-			return;
+		//if(attachments == null || attachments.isEmpty())
+		//	return;
 		
 		Composite composite = new Composite(getContainer(), SWT.NONE);
-
 		FillLayout layout = new FillLayout();
 		composite.setLayout(layout);
 		
-		StyledText text = new StyledText(composite, SWT.H_SCROLL | SWT.V_SCROLL);
-		text.setEditable(false);
-		text.setText("Attachments will display here if they exist");
-
+		FormToolkit toolkit = new FormToolkit(composite.getDisplay());
+		ScrolledForm form = toolkit.createScrolledForm(composite);
+		form.setText("Email Attachments");
+		
 		int index = addPage(composite);
 		setPageText(index, "Attachments");
 	}
