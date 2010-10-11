@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.regex.Pattern;
 
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.TableViewer;
@@ -19,7 +18,7 @@ import com.foosbar.mailsnag.views.MessagesView.ViewContentProvider;
 
 public class MailHandler extends Thread {
 	
-	private static final String PROTOCOL_EHLO = "HELO";
+	private static final String PROTOCOL_EHLO = "EHLO";
 	private static final String SEND_HI  = "220 Welcome to MailSnag by Foos-Bar\r\n";
 	private static final String SEND_OK  = "250 Ok\r\n"; 
 	private static final String SEND_BYE = "221 Bye\r\n";
@@ -65,28 +64,33 @@ public class MailHandler extends Thread {
 
 			BufferedReader in = 
 				new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			
-			boolean connected = true;
 
-			Pattern p = Pattern.compile("\\r\\n\\.\\r\\n", Pattern.MULTILINE);
+			boolean dataBlock = false;
 			
-			while (connected) {
-				String inputLine = in.readLine();
+			String inputLine = null;
+			while ( (inputLine = in.readLine()) != null ) {
 
-				if(inputLine == null) {
-					respond(SEND_OK, out);
-				}
-				
 				if(debug)
 					System.out.println(inputLine);
+
+				//No operation
+				if(inputLine.startsWith("NOOP")) {
+					respond(SEND_OK, out);
+					continue;
+				}
+
+				//Verify
+				if(inputLine.startsWith("VRFY")) {
+					respond(SEND_OK, out);
+					continue;
+				}
 
 				// The End
 				if(inputLine.startsWith(READ_QUIT)) {
 					respond(SEND_BYE, out);
-					connected = false;
 					if(debug)
 						System.out.println("Closing connection");
-					continue;
+					break;
 				}
 
 				// Greeting - Say Hello and move on.
@@ -98,30 +102,27 @@ public class MailHandler extends Thread {
 				
 				// Start of Data - Confirm end of data string
 				if(inputLine.startsWith(READ_DATA)) {
-					respond(SEND_END_DATA, out);
-
 					// Write line to message body
 					msgBody.append(inputLine.trim())
 						.append(NEWLINE);
-					
+					dataBlock = true;
+					respond(SEND_END_DATA, out);
 					continue;
 				}
 
+				if(dataBlock && inputLine.equals(".")) {
+					respond(SEND_BYE, out);
+					if(debug)
+						System.out.println("End of data");
+					break;
+				}
+				
 				// Write line to message body
 				msgBody.append(inputLine.trim())
 					.append(NEWLINE);
 			
-				// If end of data has been reached.
-				if(p.matcher(msgBody).find()) {
-					respond(SEND_BYE, out);
-					connected = false;
-					break;
-				} 
-				// else, continue getting data.
-				else {
-					respond(SEND_OK, out);
-					continue;
-				}
+				respond(SEND_OK, out);
+				continue;
 			}
 			
 			// Parse details of the file

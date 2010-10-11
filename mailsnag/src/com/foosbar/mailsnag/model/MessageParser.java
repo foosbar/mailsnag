@@ -4,10 +4,12 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.Properties;
 
 import javax.mail.Address;
 import javax.mail.BodyPart;
+import javax.mail.Header;
 import javax.mail.MessagingException;
 import javax.mail.Multipart;
 import javax.mail.Session;
@@ -53,7 +55,6 @@ public class MessageParser {
 			// Parse the attachments
 			parseAttachments(m, mimeMessage);
 			
-			
 		//} catch(IOException e) {
 		} catch(MessagingException e) {
 		} finally {
@@ -83,6 +84,8 @@ public class MessageParser {
 			is = new ByteArrayInputStream(rawContent.getBytes());
 			
 			MimeMessage mimeMessage = new MimeMessage(session, is);			
+		
+			parseAttachments(message, mimeMessage);
 			
 			if(mimeMessage.getContent() instanceof Multipart)
 				parseMultipart(mimeMessage, data);
@@ -114,7 +117,16 @@ public class MessageParser {
 			
 			for(int x = 0; x < count; x++) {
 				BodyPart bp = content.getBodyPart(x);
-				System.out.println("Attachment MIME-TYPE: " + bp.getContentType());
+				
+				if(BodyPart.ATTACHMENT.equals(bp.getDisposition())) {
+					String filename = bp.getFileName();
+					System.out.println("Filename: " + bp.getFileName());
+					for(Enumeration<Header> e = bp.getAllHeaders(); e.hasMoreElements();) {
+						Header h = (Header)e.nextElement();
+						System.out.println(h);
+					}
+					message.addAttachment("", bp.getFileName(), bp.getDisposition(), 0);
+				}
 			}
 		} catch(MessagingException e) {
 			e.printStackTrace();

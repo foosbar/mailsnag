@@ -109,6 +109,10 @@ public class MessagesView extends ViewPart {
 			messages.add(message);
 			getViewer().refresh();
 		}
+		
+		public void remove(Message message) {
+			messages.remove(message);
+		}
 	}
 
 	class ViewLabelProvider extends LabelProvider implements ITableLabelProvider {
@@ -360,8 +364,9 @@ public class MessagesView extends ViewPart {
 					while(it.hasNext()) {
 						Object obj = it.next();
 						if(obj != null && obj instanceof Message) {
+							Message m = (Message)obj;
 							MessageStore.delete((Message)obj);
-							viewer.remove(obj);
+							((ViewContentProvider) viewer.getContentProvider()).remove(m);
 						}
 						//TODO: Close open editors
 					}
