@@ -1,5 +1,6 @@
 package com.foosbar.mailsnag.model;
 
+
 /**
  * Models a message received via SMTP.
  * 
@@ -13,7 +14,7 @@ public class MessageData {
 
 	public MessageData() {
 	}
-	
+
 	public String getHtmlMessage() {
 		return htmlMessage;
 	}
@@ -21,11 +22,11 @@ public class MessageData {
 	public String getMessage() {
 		return message;
 	}
-	
+
 	public String getTextMessage() {
 		return textMessage;
 	}
-
+	
 	public boolean hasHtmlMessage() {
 		return htmlMessage != null;
 	}
@@ -33,7 +34,7 @@ public class MessageData {
 	public boolean hasTextMessage() {
 		return textMessage != null;
 	}
-	
+
 	public void setHtmlMessage(String htmlMessage) {
 		this.htmlMessage = htmlMessage;
 	}

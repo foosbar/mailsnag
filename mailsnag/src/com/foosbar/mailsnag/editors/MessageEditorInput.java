@@ -6,7 +6,7 @@ import org.eclipse.ui.IPersistableElement;
 
 import com.foosbar.mailsnag.model.Message;
 import com.foosbar.mailsnag.model.MessageData;
-import com.foosbar.mailsnag.model.MessageParser;
+import com.foosbar.mailsnag.util.MessageStore;
 
 /**
  * @author Kevin Kelley (dev@foos-bar.com)
@@ -27,7 +27,7 @@ public class MessageEditorInput implements IEditorInput {
 	}
 	
 	public MessageData getMessageData() {
-		return MessageParser.parseData(message);
+		return MessageStore.loadData(message);
 	}
 	
 	public boolean exists() {

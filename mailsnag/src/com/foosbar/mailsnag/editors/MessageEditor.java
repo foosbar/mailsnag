@@ -5,6 +5,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.Writer;
+import java.text.NumberFormat;
 import java.util.List;
 
 import org.eclipse.core.resources.IMarker;
@@ -22,16 +23,21 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.forms.events.HyperlinkAdapter;
+import org.eclipse.ui.forms.events.HyperlinkEvent;
 import org.eclipse.ui.forms.widgets.FormToolkit;
+import org.eclipse.ui.forms.widgets.Hyperlink;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
+import org.eclipse.ui.forms.widgets.TableWrapData;
+import org.eclipse.ui.forms.widgets.TableWrapLayout;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.internal.browser.WebBrowserEditor;
 import org.eclipse.ui.internal.browser.WebBrowserEditorInput;
 import org.eclipse.ui.part.MultiPageEditorPart;
 
 import com.foosbar.mailsnag.model.Message;
-import com.foosbar.mailsnag.model.MessageData;
 import com.foosbar.mailsnag.model.Message.Attachment;
+import com.foosbar.mailsnag.model.MessageData;
 
 /**
  * A multi-tab editor for inspecting emails
@@ -78,10 +84,11 @@ public class MessageEditor extends MultiPageEditorPart implements IResourceChang
 	 * Creates a page/tab to display attachments.
 	 */
 	void createAttachments() {
-		List<Attachment> attachments = message.getAttachments();
 		
-		//if(attachments == null || attachments.isEmpty())
-		//	return;
+		if(!message.hasAttachments())
+			return;
+
+		List<Attachment> attachments = message.getAttachments();
 		
 		Composite composite = new Composite(getContainer(), SWT.NONE);
 		FillLayout layout = new FillLayout();
@@ -90,6 +97,51 @@ public class MessageEditor extends MultiPageEditorPart implements IResourceChang
 		FormToolkit toolkit = new FormToolkit(composite.getDisplay());
 		ScrolledForm form = toolkit.createScrolledForm(composite);
 		form.setText("Email Attachments");
+		
+		TableWrapLayout twlayout = new TableWrapLayout();
+		twlayout.numColumns = 4;
+		form.getBody().setLayout(twlayout);
+		int count = 0;
+		for(Attachment attachment : attachments) {
+			StyledText text = new StyledText(form.getBody(), SWT.WRAP);
+			text.setEditable(false);
+			text.setText(Integer.toString(++count));
+			text.setLayoutData(new TableWrapData());
+
+			Hyperlink link = toolkit.createHyperlink(form.getBody(), "Click Here", SWT.WRAP);
+			link.addHyperlinkListener(new HyperlinkAdapter() {
+				public void linkActivated(HyperlinkEvent e) {
+					/*
+					try {
+						IDE.openEditor(
+								PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage(), 
+								null,//fileToOpen.toURI(), 
+								IEditorRegistry.SYSTEM_EXTERNAL_EDITOR_ID, 
+								true);
+						
+					} catch (PartInitException ex) {
+						
+					}
+					*/
+					System.out.println("Link activated");
+				}
+			});
+			link.setText(attachment.getName());
+			link.setLayoutData(new TableWrapData());
+
+			text = new StyledText(form.getBody(), SWT.WRAP);
+			text.setEditable(false);
+			text.setText(attachment.getMimeType());
+			text.setLayoutData(new TableWrapData());
+
+			NumberFormat format = NumberFormat.getInstance();
+			
+			text = new StyledText(form.getBody(), SWT.WRAP);
+			text.setEditable(false);
+			text.setText(format.format(attachment.getSize()) + " bytes");
+			text.setLayoutData(new TableWrapData());
+			
+		}
 		
 		int index = addPage(composite);
 		setPageText(index, "Attachments");

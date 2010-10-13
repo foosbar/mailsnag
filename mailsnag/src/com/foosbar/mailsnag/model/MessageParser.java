@@ -6,6 +6,8 @@ import java.io.InputStream;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.mail.Address;
 import javax.mail.BodyPart;
@@ -17,12 +19,11 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMessage.RecipientType;
 import javax.mail.internet.MimeMultipart;
 
-import com.foosbar.mailsnag.util.MessageStore;
-
 public class MessageParser {
 
+	private static final String MIME_ALT = "multipart/alternative";
+	private static final String MIME_HTML = "text/html";
 	private static final String MIME_PLAIN = "text/plain";
-	private static final String MIME_HTML  = "text/html";
 	
 	public static final Message parse(String message) {
 		Message m = new Message();
@@ -68,12 +69,14 @@ public class MessageParser {
 	}
 	
 	public static final MessageData parseData(Message message) {
+		return parseData(message.getFilename());
+	}
+	
+	public static final MessageData parseData(String rawData) {
 		
 		MessageData data = new MessageData();
 		
-		String rawContent = MessageStore.load(message);
-		
-		data.setMessage(rawContent);
+		data.setMessage(rawData);
 		
 		InputStream is = null;
 		
@@ -81,12 +84,10 @@ public class MessageParser {
 
 			Session session = Session.getDefaultInstance(new Properties());
 			
-			is = new ByteArrayInputStream(rawContent.getBytes());
+			is = new ByteArrayInputStream(rawData.getBytes());
 			
 			MimeMessage mimeMessage = new MimeMessage(session, is);			
 		
-			parseAttachments(message, mimeMessage);
-			
 			if(mimeMessage.getContent() instanceof Multipart)
 				parseMultipart(mimeMessage, data);
 			else
@@ -116,11 +117,11 @@ public class MessageParser {
 			int count = content.getCount();
 			
 			for(int x = 0; x < count; x++) {
-				BodyPart bp = content.getBodyPart(x);
+				BodyPart part = content.getBodyPart(x);
 				
-				if(BodyPart.ATTACHMENT.equals(bp.getDisposition())) {
-					String filename = bp.getFileName();
-					message.addAttachment(Integer.toString(x), filename, bp.getContentType(), bp.getSize());
+				if(BodyPart.ATTACHMENT.equals(part.getDisposition())) {
+					String filename = getAttachmentFilename(part);
+					message.addAttachment(Integer.toString(x), filename, part.getContentType(), part.getSize());
 				}
 			}
 		} catch(MessagingException e) {
@@ -129,24 +130,36 @@ public class MessageParser {
 			e.printStackTrace();
 		}
 	}
-
+	
 	private static void parseMultipart(MimeMessage mimeMessage, MessageData messageData) throws IOException, MessagingException {
 		Multipart content = (Multipart)mimeMessage.getContent();
+		parseMultipart(content, messageData);
+	}
+
+	private static void parseMultipart(Multipart content, MessageData messageData) throws IOException, MessagingException {
 		int count = content.getCount();
 		
 		for(int x = 0; x < count; x++) {
 			BodyPart bp = content.getBodyPart(x);
-			if(bp.isMimeType(MIME_PLAIN)) {
-				messageData.setTextMessage(bp.getContent().toString());
-				continue;
-			}
-			if(bp.isMimeType(MIME_HTML)) {
-				messageData.setHtmlMessage(bp.getContent().toString());
-				continue;
+			System.out.println("Disposition: " + bp.getDisposition());
+			System.out.println("ContentType: " + bp.getContentType());
+			
+			if(BodyPart.ATTACHMENT.equalsIgnoreCase(bp.getDisposition())) {
+				;// Currently, do nothing
+			} else {
+				if(bp.isMimeType(MIME_ALT)) {
+					parseMultipart((Multipart)bp.getContent(), messageData);
+				}
+				else if(bp.isMimeType(MIME_HTML)) {
+					messageData.setHtmlMessage(bp.getContent().toString());
+				}
+				else if(bp.isMimeType(MIME_PLAIN)) {
+					messageData.setTextMessage(bp.getContent().toString());
+				}
 			}
 		}
 	}
-
+	
 	private static void parseSinglepart(MimeMessage mimeMessage, MessageData messageData) throws IOException, MessagingException {
 		
 		String content = mimeMessage.getContent().toString();
@@ -181,5 +194,28 @@ public class MessageParser {
 			}
 		}
 		return sb.toString();
+	}
+
+	private static String getAttachmentFilename(BodyPart part) throws MessagingException {
+		
+		if(part.getFileName() != null)
+			return part.getFileName();
+		
+		@SuppressWarnings("unchecked")
+		Enumeration<Header> e = part.getAllHeaders();
+		while(e.hasMoreElements()) {
+			Header header = e.nextElement();
+			String name = header.getName();
+			if(name != null) {
+				if(name.startsWith("filename")) {
+					Pattern p = Pattern.compile("filename=\"(.*?)\"");
+					Matcher m = p.matcher(name);
+					if(m.find())
+						return m.group(1);
+				}
+			}
+		}
+		
+		return "<missing filename>";
 	}
 }

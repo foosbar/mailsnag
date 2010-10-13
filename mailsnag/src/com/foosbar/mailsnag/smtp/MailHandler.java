@@ -11,7 +11,6 @@ import org.eclipse.swt.widgets.Display;
 
 import com.foosbar.mailsnag.Activator;
 import com.foosbar.mailsnag.model.Message;
-import com.foosbar.mailsnag.model.MessageParser;
 import com.foosbar.mailsnag.preferences.PreferenceConstants;
 import com.foosbar.mailsnag.util.MessageStore;
 import com.foosbar.mailsnag.views.MessagesView.ViewContentProvider;
@@ -33,7 +32,7 @@ public class MailHandler extends Thread {
 	private static final String NEWLINE = System.getProperty("line.separator");
 	
 	private Socket socket;
-	private Message message;
+	//private Message message;
 	private TableViewer viewer;
 	
 	private boolean debug;
@@ -145,11 +144,8 @@ public class MailHandler extends Thread {
 				}
 			}
 			
-			// Parse details of the file
-			message = MessageParser.parse(msgBody.toString());
-
-			//Persist file
-			MessageStore.persist(message, msgBody.toString());
+			//Persist message
+			final Message message = MessageStore.persist(msgBody.toString());
 			
 			//Update the Content Provider
 			Display.getDefault().asyncExec(new Runnable() {

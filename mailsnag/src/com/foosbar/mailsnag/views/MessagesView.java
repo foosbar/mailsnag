@@ -45,7 +45,6 @@ import com.foosbar.mailsnag.Activator;
 import com.foosbar.mailsnag.editors.MessageEditor;
 import com.foosbar.mailsnag.editors.MessageEditorInput;
 import com.foosbar.mailsnag.model.Message;
-import com.foosbar.mailsnag.model.MessageParser;
 import com.foosbar.mailsnag.smtp.Server;
 import com.foosbar.mailsnag.smtp.ServerThreadGroup;
 import com.foosbar.mailsnag.util.EmailFilenameFilter;
@@ -68,9 +67,13 @@ public class MessagesView extends ViewPart {
 	private Action removeMessage;
 	private Action openPreferences;
 
+	// Attachments Icon
+	private static final ImageDescriptor IMG_ATTACHMENT =
+		ImageDescriptor.createFromFile(Activator.class, "/icons/attachment.png");
+
 	// View Icon
-	private static final ImageDescriptor IMG_MESSAGE =
-		ImageDescriptor.createFromFile(Activator.class, "/icons/message.gif");
+	//private static final ImageDescriptor IMG_MESSAGE =
+	//	ImageDescriptor.createFromFile(Activator.class, "/icons/message.gif");
 	
 	// Start Server Icon
 	private static final ImageDescriptor IMG_RUN =
@@ -142,10 +145,17 @@ public class MessagesView extends ViewPart {
 		public Image getColumnImage(Object obj, int index) {
 			if(index > 0)
 				return null;
-			return getImage(obj);
+			
+			Message message = (Message) obj;
+			
+			if(message.hasAttachments())
+				return getImage(obj);
+
+			return null;
 		}
+		
 		public Image getImage(Object obj) {
-			return IMG_MESSAGE.createImage();
+			return IMG_ATTACHMENT.createImage();
 		}
 	}
 
@@ -156,7 +166,7 @@ public class MessagesView extends ViewPart {
 		table.setLinesVisible(true);
 
 		String[] titles = { "", COL_FROM, COL_TO, COL_CC, COL_SUBJECT, COL_RECEIVED };
-		int[] bounds = { 30, 170, 170, 170, 275, 160};
+		int[] bounds = { 20, 170, 170, 170, 275, 160};
 		
 		for (int i = 0; i < titles.length; i++) {
 
@@ -166,18 +176,19 @@ public class MessagesView extends ViewPart {
 			TableColumn column = vColumn.getColumn();
 			column.setText(title);
 			column.setWidth(bounds[i]);
-			
-			column.setResizable( i > 0 );
-			column.setMoveable( i > 0 );
 
 			if(i == 0) {
 				column.setAlignment(SWT.CENTER);
-			} else if(i == titles.length-1) {
-				column.setAlignment(SWT.RIGHT);
-			}
-			
-			// Add Sorting
-			if(i != 0) {
+				column.setImage(IMG_ATTACHMENT.createImage());
+				column.setResizable(false);
+				column.setMoveable(false);
+			} else {
+				column.setResizable(true);
+				column.setMoveable(true);
+				
+				if(i == titles.length-1)
+					column.setAlignment(SWT.RIGHT);
+				// Add Sorting
 				column.addSelectionListener(new SelectionAdapter() {
 					@Override
 					public void widgetSelected(SelectionEvent e) {
@@ -192,6 +203,7 @@ public class MessagesView extends ViewPart {
 						} else {
 							dir = SWT.DOWN;
 						}
+						
 						viewer.getTable().setSortDirection(dir);
 						viewer.getTable().setSortColumn(tc);
 						viewer.refresh();
@@ -235,9 +247,7 @@ public class MessagesView extends ViewPart {
 			//Don't store contents of emails in memory.  Pass file to Editor.
 			
 			for(File file : files) {
-				String data = MessageStore.load(file.getName());
-				Message message = MessageParser.parse(data);
-				message.setFilename(file.getName());
+				Message message = MessageStore.load(file.getName());
 				messages.add(message);
 			}
 		}
