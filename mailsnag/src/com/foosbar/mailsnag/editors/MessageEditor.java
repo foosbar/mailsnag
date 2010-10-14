@@ -21,8 +21,10 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorRegistry;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.events.HyperlinkAdapter;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
 import org.eclipse.ui.forms.widgets.FormToolkit;
@@ -38,6 +40,7 @@ import org.eclipse.ui.part.MultiPageEditorPart;
 import com.foosbar.mailsnag.model.Message;
 import com.foosbar.mailsnag.model.Message.Attachment;
 import com.foosbar.mailsnag.model.MessageData;
+import com.foosbar.mailsnag.util.MessageStore;
 
 /**
  * A multi-tab editor for inspecting emails
@@ -102,7 +105,7 @@ public class MessageEditor extends MultiPageEditorPart implements IResourceChang
 		twlayout.numColumns = 4;
 		form.getBody().setLayout(twlayout);
 		int count = 0;
-		for(Attachment attachment : attachments) {
+		for(final Attachment attachment : attachments) {
 			StyledText text = new StyledText(form.getBody(), SWT.WRAP);
 			text.setEditable(false);
 			text.setText(Integer.toString(++count));
@@ -111,18 +114,20 @@ public class MessageEditor extends MultiPageEditorPart implements IResourceChang
 			Hyperlink link = toolkit.createHyperlink(form.getBody(), "Click Here", SWT.WRAP);
 			link.addHyperlinkListener(new HyperlinkAdapter() {
 				public void linkActivated(HyperlinkEvent e) {
-					/*
+					
+					MessageStore.persistAttachment(attachment,  messageData.getMessage());
+					
 					try {
 						IDE.openEditor(
-								PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage(), 
-								null,//fileToOpen.toURI(), 
-								IEditorRegistry.SYSTEM_EXTERNAL_EDITOR_ID, 
-								true);
+							PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage(), 
+							new AttachmentEditorInput(attachment), 
+							IEditorRegistry.SYSTEM_EXTERNAL_EDITOR_ID, 
+							true);
 						
 					} catch (PartInitException ex) {
 						
 					}
-					*/
+
 					System.out.println("Link activated");
 				}
 			});

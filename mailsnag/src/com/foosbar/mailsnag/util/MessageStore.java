@@ -4,6 +4,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
@@ -12,9 +13,14 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.Properties;
 import java.util.UUID;
 
 import javax.mail.BodyPart;
+import javax.mail.Multipart;
+import javax.mail.Session;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
 
 import com.foosbar.mailsnag.Activator;
 import com.foosbar.mailsnag.model.Message;
@@ -61,51 +67,74 @@ public class MessageStore {
 	
 	// Save message to directory
 	//    workspace/.metadata/.plugins/com.foosbar.mailsnag
-	public static final Attachment persistAttachment(Attachment attachment, BodyPart part) {
+	public static final void persistAttachment(Attachment attachment, String data) {
 		
 		Message message = attachment.getMessage();
 		
-		InputStream in = null;
-		OutputStream out = null;
+		InputStream is = null;
 		
 		try {
-			/*
-			String filename = getAttachmentFilename(part);
 
-			Attachment ma = new Attachment();
-			ma.setName(filename);
-			ma.setMimeType(part.getContentType());
-			ma.setSize(part.getSize());
-			*/
+			Session session = Session.getDefaultInstance(new Properties());
 			
-			//Get Attachment Directory
+			is = new ByteArrayInputStream(data.getBytes());
+			
+			MimeMessage mimeMessage = new MimeMessage(session, is);			
+		
+			if(!(mimeMessage.getContent() instanceof Multipart))
+				return;
+			
+			MimeMultipart content = (MimeMultipart)mimeMessage.getContent();
+			int count = content.getCount();
+			
 			File dir = new File(Activator.getDefault().getStateLocation().toFile(), message.getAttachmentDir());
-			if(!dir.exists())
-				dir.mkdir();
 
-			File file = new File(dir, attachment.getName());
-			
-			if(file.exists())
-				return attachment;
+			int counter = 0;
+			for(int x = 0; x < count; x++) {
+				BodyPart part = content.getBodyPart(x);
+				
+				if(BodyPart.ATTACHMENT.equals(part.getDisposition())) {
 
-			//Write file
-			if(file != null) {
-				in  = new BufferedInputStream(part.getInputStream());
-				out = new BufferedOutputStream(new FileOutputStream(file));
-				byte[] buffer = new byte[4096];
-				while(in.read(buffer) != -1)
-					out.write(buffer);
+					if(attachment.getIndex() != counter++)
+						continue;
+					
+					if(!dir.exists())
+						dir.mkdir();
+					
+					//String filename = getAttachmentFilename(part);
+
+					File file = new File(dir, attachment.getName());
+					//while(file.exists())
+					//	filename = getNextFilename(filename, filenameCounter++);
+
+					InputStream in = null;
+					OutputStream out = null;
+
+					try {
+						in  = new BufferedInputStream(part.getInputStream());
+						out = new BufferedOutputStream(new FileOutputStream(file));
+						byte[] buffer = new byte[4096];
+						while(in.read(buffer) != -1)
+							out.write(buffer);
+						
+					} catch(Exception e) {
+						e.printStackTrace();
+					} finally {
+						try {
+							if(out != null)
+								out.close();
+						} catch(Exception e) {}
+					}
+				}
 			}
 		} catch(Exception e) {
 			e.printStackTrace();
 		} finally {
 			try {
-				if(out != null)
-					out.close();
-			} catch(Exception e) {}
+				if(is != null)
+					is.close();
+			} catch(Exception e) { }
 		}
-		
-		return attachment;
 	}
 	
 	public static final void delete(Message message) {
@@ -154,6 +183,10 @@ public class MessageStore {
 	}
 	
 	public static final MessageData loadData(Message message) {
+		return MessageParser.parseData(getData(message));
+	}
+
+	public static final String getData(Message message) {
 		
 		Reader reader = null;
 		
@@ -168,7 +201,7 @@ public class MessageStore {
 	        while (reader.read(buffer) > 0)
 	            builder.append(buffer);
 			
-	        return MessageParser.parseData(builder.toString());
+	        return builder.toString();
 	        
 		} catch(Exception e) {
 			e.printStackTrace();
@@ -186,22 +219,58 @@ public class MessageStore {
 		File dir = Activator.getDefault().getStateLocation().toFile();
 		if(dir.isDirectory()) {
 			File[] files = dir.listFiles(new EmailFilenameFilter());
-			for(File file : files)
+			for(File file : files) {
+				String attachmentDir = file.getName().substring(0, file.getName().length()-4);
+				File aDir = new File(dir, attachmentDir);
+				if(aDir.exists()) {
+					File[] attachments = dir.listFiles();
+					for(File attachment : attachments)
+						attachment.delete();
+					aDir.delete();
+				}
 				file.delete();
+			}
 		}
-	}
-	
-	public static final File getAttachment(Attachment attachment) {
-		
-		//Get MimeMessage
-		
-		//
-		
-		return null;
 	}
 	
 	private static final String getRandomFilename() {
 		return UUID.randomUUID().toString() + Message.EXTENSION;
 	}
 	
+	/*
+	private static String getNextFilename(String filename, int counter) {
+		if(filename == null)
+			return null;
+		
+		int extIndex = filename.indexOf('.');
+		
+		String rootFilename = filename.substring(0, extIndex);
+		String extension = filename.substring(extIndex+1);
+		
+		return rootFilename + counter + extension;
+	}
+	
+	private static String getAttachmentFilename(BodyPart part) throws MessagingException {
+		
+		if(part.getFileName() != null)
+			return part.getFileName();
+		
+		@SuppressWarnings("unchecked")
+		Enumeration<Header> e = part.getAllHeaders();
+		while(e.hasMoreElements()) {
+			Header header = e.nextElement();
+			String name = header.getName();
+			if(name != null) {
+				if(name.startsWith("filename")) {
+					Pattern p = Pattern.compile("filename=\"(.*?)\"");
+					Matcher m = p.matcher(name);
+					if(m.find())
+						return m.group(1);
+				}
+			}
+		}
+		
+		return "<missing filename>";
+	}
+	*/
 }

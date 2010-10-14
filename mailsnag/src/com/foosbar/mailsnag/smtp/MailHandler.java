@@ -144,8 +144,10 @@ public class MailHandler extends Thread {
 				}
 			}
 			
+			String content = msgBody.toString();
+			
 			//Persist message
-			final Message message = MessageStore.persist(msgBody.toString());
+			final Message message = MessageStore.persist(content);
 			
 			//Update the Content Provider
 			Display.getDefault().asyncExec(new Runnable() {

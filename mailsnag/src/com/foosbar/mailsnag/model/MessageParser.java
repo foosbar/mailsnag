@@ -68,13 +68,12 @@ public class MessageParser {
 		return m;
 	}
 	
-	public static final MessageData parseData(Message message) {
-		return parseData(message.getFilename());
-	}
-	
 	public static final MessageData parseData(String rawData) {
 		
 		MessageData data = new MessageData();
+		
+		if(rawData == null)
+			return data;
 		
 		data.setMessage(rawData);
 		

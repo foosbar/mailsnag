@@ -33,6 +33,7 @@ public class Message {
 		a.setName(name);
 		a.setSize(size);
 		a.setMessage(this);
+		a.setIndex(attachments.size());
 		attachments.add(a);
 		
 		return a;
@@ -112,6 +113,8 @@ public class Message {
 	
 	public class Attachment {
 		
+		private String filename;
+		private int index;
 		private String id;
 		private String mimeType;
 		private String name;
@@ -121,12 +124,28 @@ public class Message {
 		private Attachment() {
 		}
 
+		public String getFilename() {
+			return filename;
+		}
+
+		public void setFilename(String filename) {
+			this.filename = filename;
+		}
+
 		public String getId() {
 			return id;
 		}
 
 		private void setId(String id) {
 			this.id = id;
+		}
+
+		public int getIndex() {
+			return index;
+		}
+
+		private void setIndex(int index) {
+			this.index = index;
 		}
 
 		public Message getMessage() {
