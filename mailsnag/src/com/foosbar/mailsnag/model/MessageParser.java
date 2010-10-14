@@ -140,9 +140,6 @@ public class MessageParser {
 		
 		for(int x = 0; x < count; x++) {
 			BodyPart bp = content.getBodyPart(x);
-			System.out.println("Disposition: " + bp.getDisposition());
-			System.out.println("ContentType: " + bp.getContentType());
-			
 			if(BodyPart.ATTACHMENT.equalsIgnoreCase(bp.getDisposition())) {
 				;// Currently, do nothing
 			} else {
@@ -172,6 +169,7 @@ public class MessageParser {
 	
 	private static void parseDate(Message m, MimeMessage mimeMessage) throws MessagingException {
 		
+
 		Date d = mimeMessage.getSentDate();
 		
 		if(d == null)
@@ -200,6 +198,8 @@ public class MessageParser {
 		if(part.getFileName() != null)
 			return part.getFileName();
 		
+		Pattern p = Pattern.compile("filename=\"(.*?)\"");
+		
 		@SuppressWarnings("unchecked")
 		Enumeration<Header> e = part.getAllHeaders();
 		while(e.hasMoreElements()) {
@@ -207,7 +207,6 @@ public class MessageParser {
 			String name = header.getName();
 			if(name != null) {
 				if(name.startsWith("filename")) {
-					Pattern p = Pattern.compile("filename=\"(.*?)\"");
 					Matcher m = p.matcher(name);
 					if(m.find())
 						return m.group(1);

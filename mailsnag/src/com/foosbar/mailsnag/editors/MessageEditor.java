@@ -125,10 +125,8 @@ public class MessageEditor extends MultiPageEditorPart implements IResourceChang
 							true);
 						
 					} catch (PartInitException ex) {
-						
+						ex.printStackTrace();
 					}
-
-					System.out.println("Link activated");
 				}
 			});
 			link.setText(attachment.getName());

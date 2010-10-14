@@ -166,7 +166,7 @@ public class MessagesView extends ViewPart {
 		table.setLinesVisible(true);
 
 		String[] titles = { "", COL_FROM, COL_TO, COL_CC, COL_SUBJECT, COL_RECEIVED };
-		int[] bounds = { 20, 170, 170, 170, 275, 160};
+		int[] bounds = { 28, 170, 170, 170, 275, 160};
 		
 		for (int i = 0; i < titles.length; i++) {
 
