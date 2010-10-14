@@ -139,11 +139,22 @@ public class MessageStore {
 	
 	public static final void delete(Message message) {
 		try {
+			File dir = Activator.getDefault().getStateLocation().toFile();
 			
-			File file = new File(Activator.getDefault().getStateLocation().toFile(), message.getFilename());
+			File file = new File(dir, message.getFilename());
 
-			if(file.exists())
+			if(file.exists()) {
+				String attachmentDir = file.getName().substring(0, file.getName().length()-4);
+				File aDir = new File(dir, attachmentDir);
+				if(aDir.exists()) {
+					File[] attachments = aDir.listFiles();
+					for(File attachment : attachments)
+						attachment.delete();
+					aDir.delete();
+				}
+
 				file.delete();
+			}
 			
 		} catch(Exception e) {
 			e.printStackTrace();
@@ -223,7 +234,7 @@ public class MessageStore {
 				String attachmentDir = file.getName().substring(0, file.getName().length()-4);
 				File aDir = new File(dir, attachmentDir);
 				if(aDir.exists()) {
-					File[] attachments = dir.listFiles();
+					File[] attachments = aDir.listFiles();
 					for(File attachment : attachments)
 						attachment.delete();
 					aDir.delete();
