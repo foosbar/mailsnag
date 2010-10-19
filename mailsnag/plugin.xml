@@ -9,7 +9,7 @@
             id="com.foos-bar.mailsnag">
       </category>
       <view
-            name="Incoming Messages"
+            name="Email Messages"
             icon="icons/logo.gif"
             category="com.foos-bar.mailsnag"
             class="com.foosbar.mailsnag.views.MessagesView"
@@ -21,11 +21,14 @@
       <perspectiveExtension
             targetID="org.eclipse.jdt.ui.JavaPerspective">
          <view
-               ratio="0.5"
-               relative="org.eclipse.ui.views.TaskList"
-               relationship="right"
+			   visible="true"
+               relative="org.eclipse.ui.views.ProblemView"
+               relationship="stack"
                id="com.foosbar.mailsnag.views.MessagesView">
          </view>
+         <viewShortcut
+               id="com.foosbar.mailsnag.views.MessagesView">
+         </viewShortcut>
       </perspectiveExtension>
    </extension>
    <extension
