@@ -56,7 +56,7 @@
       <editor
             name="Email Message"
             extensions="eml"
-            icon="icons/logo.gif"
+            icon="icons/message.gif"
             contributorClass="com.foosbar.mailsnag.editors.MessageEditorContributor"
             class="com.foosbar.mailsnag.editors.MessageEditor"
             id="com.foosbar.mailsnag.editors.MessageEditor">
