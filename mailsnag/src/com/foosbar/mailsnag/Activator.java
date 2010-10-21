@@ -1,5 +1,7 @@
 package com.foosbar.mailsnag;
 
+import java.util.ResourceBundle;
+
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
@@ -14,6 +16,10 @@ public class Activator extends AbstractUIPlugin {
 
 	// The plug-in ID
 	public static final String PLUGIN_ID = "com.foos-bar.mailsnag";
+
+	//Locale Specific Resource Bundle
+	private static final ResourceBundle BUNDLE = 
+		ResourceBundle.getBundle("i18n.Resources");
 
 	// The shared instance
 	private static Activator plugin;
@@ -59,6 +65,10 @@ public class Activator extends AbstractUIPlugin {
 		return plugin;
 	}
 
+	public static ResourceBundle getResourceBundle() {
+		return BUNDLE;
+	}
+	
 	/**
 	 * Returns an image descriptor for the image file at the given
 	 * plug-in relative path

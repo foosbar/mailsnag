@@ -7,6 +7,7 @@ import java.io.FileWriter;
 import java.io.Writer;
 import java.text.NumberFormat;
 import java.util.List;
+import java.util.ResourceBundle;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -37,6 +38,7 @@ import org.eclipse.ui.internal.browser.WebBrowserEditor;
 import org.eclipse.ui.internal.browser.WebBrowserEditorInput;
 import org.eclipse.ui.part.MultiPageEditorPart;
 
+import com.foosbar.mailsnag.Activator;
 import com.foosbar.mailsnag.model.Message;
 import com.foosbar.mailsnag.model.Message.Attachment;
 import com.foosbar.mailsnag.model.MessageData;
@@ -55,6 +57,9 @@ public class MessageEditor extends MultiPageEditorPart implements IResourceChang
 
 	public static final String ID = "com.foosbar.mailsnag.editors.MessageEditor";
 	
+	/* Locale Specific Resource Bundle */
+	private static final ResourceBundle BUNDLE = Activator.getResourceBundle();
+
 	/* Message Data */
 	private Message message;
 
@@ -80,7 +85,7 @@ public class MessageEditor extends MultiPageEditorPart implements IResourceChang
 		text.setText(messageData.getMessage());
 
 		int index = addPage(composite);
-		setPageText(index, "Raw Data");
+		setPageText(index, BUNDLE.getString("editor.rawData"));
 	}
 	
 	/**
@@ -99,7 +104,7 @@ public class MessageEditor extends MultiPageEditorPart implements IResourceChang
 		
 		FormToolkit toolkit = new FormToolkit(composite.getDisplay());
 		ScrolledForm form = toolkit.createScrolledForm(composite);
-		form.setText("Email Attachments");
+		form.setText(BUNDLE.getString("editor.attachments.title"));
 		
 		TableWrapLayout twlayout = new TableWrapLayout();
 		twlayout.numColumns = 4;
@@ -147,7 +152,7 @@ public class MessageEditor extends MultiPageEditorPart implements IResourceChang
 		}
 		
 		int index = addPage(composite);
-		setPageText(index, "Attachments");
+		setPageText(index, BUNDLE.getString("editor.attachments"));
 	}
 	
 	/**
@@ -168,7 +173,7 @@ public class MessageEditor extends MultiPageEditorPart implements IResourceChang
 		text.setText(messageData.getTextMessage());
 		
 		int index = addPage(composite);
-		setPageText(index, "Text Format");
+		setPageText(index, BUNDLE.getString("editor.textFormat"));
 	}
 	
 	/**
@@ -192,7 +197,7 @@ public class MessageEditor extends MultiPageEditorPart implements IResourceChang
 
 			setPageText(
 					addPage(editor, input), 
-					"HTML Format");
+					BUNDLE.getString("editor.htmlFormat"));
 
 			/*
 			Composite composite = new Composite(getContainer(), SWT.NONE);

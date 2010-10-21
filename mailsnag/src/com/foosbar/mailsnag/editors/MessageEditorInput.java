@@ -40,9 +40,9 @@ public class MessageEditorInput implements IEditorInput {
 
 	public String getName() {
 		if(message.getSubject() == null || "".equals(message.getSubject().trim()))
-			return "Email: <No Subject>";
+			return "<No Subject>";
 		else
-			return "Email: " + message.getSubject();
+			return message.getSubject();
 	}
 
 	public IPersistableElement getPersistable() {

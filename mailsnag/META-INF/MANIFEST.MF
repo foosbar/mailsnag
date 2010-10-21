@@ -4,6 +4,7 @@ Bundle-Name: MailSnag
 Bundle-SymbolicName: com.foosbar.mailsnag;singleton:=true
 Bundle-Version: 0.2.7.beta
 Bundle-Activator: com.foosbar.mailsnag.Activator
+Bundle-Localization: i18n/Resources
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.ui.ide;bundle-version="3.4.2",

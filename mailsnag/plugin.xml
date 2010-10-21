@@ -5,11 +5,11 @@
    <extension
          point="org.eclipse.ui.views">
       <category
-            name="MailSnag"
+            name="%category.name"
             id="com.foos-bar.mailsnag">
       </category>
       <view
-            name="Email Messages"
+            name="%view.name"
             icon="icons/logo.gif"
             category="com.foos-bar.mailsnag"
             class="com.foosbar.mailsnag.views.MessagesView"
@@ -42,7 +42,7 @@
       <page
             class="com.foosbar.mailsnag.preferences.PreferencePage"
             id="com.foosbar.mailsnag.preferences.PreferencePage"
-            name="MailSnag">
+            name="%page.name">
       </page>
    </extension>
    <extension
@@ -54,7 +54,7 @@
    <extension
          point="org.eclipse.ui.editors">
       <editor
-            name="Email Message"
+            name="%editor.name"
             extensions="eml"
             icon="icons/message.gif"
             contributorClass="com.foosbar.mailsnag.editors.MessageEditorContributor"

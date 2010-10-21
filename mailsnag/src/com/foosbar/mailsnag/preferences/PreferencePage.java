@@ -57,7 +57,7 @@ public class PreferencePage
 		//addField(
 		//	new StringFieldEditor(PreferenceConstants.P_STRING, "A &text preference:", getFieldEditorParent()));
 		IntegerFieldEditor port = 
-			new IntegerFieldEditor(PreferenceConstants.PARAM_PORT, "Listening Port", getFieldEditorParent());
+			new IntegerFieldEditor(PreferenceConstants.PARAM_PORT, "Listener Port", getFieldEditorParent());
 
 		port.setValidRange(1,65535);
 		

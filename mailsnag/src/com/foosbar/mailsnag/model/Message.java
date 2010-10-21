@@ -21,6 +21,7 @@ public class Message {
 	private String subject;
 	private String to;
 	private List<Attachment> attachments;
+	private boolean unread;
 	
 	public Message() {
 		attachments = new ArrayList<Attachment>();
@@ -111,6 +112,14 @@ public class Message {
 		this.to = to;
 	}
 	
+	public boolean isUnread() {
+		return unread;
+	}
+
+	public void setUnread(boolean unread) {
+		this.unread = unread;
+	}
+
 	public class Attachment {
 		
 		private String filename;

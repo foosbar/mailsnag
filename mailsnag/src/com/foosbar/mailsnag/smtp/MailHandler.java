@@ -149,6 +149,8 @@ public class MailHandler extends Thread {
 			//Persist message
 			final Message message = MessageStore.persist(content);
 			
+			message.setUnread(true);
+			
 			//Update the Content Provider
 			Display.getDefault().asyncExec(new Runnable() {
 				public void run() {

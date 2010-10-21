@@ -2,10 +2,11 @@ package com.foosbar.mailsnag.views;
 
 import java.io.File;
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
@@ -15,8 +16,11 @@ import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.viewers.DecoratingLabelProvider;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
+import org.eclipse.jface.viewers.ILabelDecorator;
+import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITableLabelProvider;
@@ -52,29 +56,10 @@ import com.foosbar.mailsnag.util.MessageStore;
 
 public class MessagesView extends ViewPart {
 
-	public static final String COL_TO = "To";
-	public static final String COL_CC = "Cc";
-	public static final String COL_FROM = "From";
-	public static final String COL_SUBJECT = "Subject";
-	public static final String COL_RECEIVED = "Received";
-	
-	private TableViewer viewer;
-	private MessageSorter sorter;
-	
-	private Action runServer;
-	private Action stopServer;
-	private Action openMessage;
-	private Action removeMessage;
-	private Action openPreferences;
-
 	// Attachments Icon
 	private static final ImageDescriptor IMG_ATTACHMENT =
 		ImageDescriptor.createFromFile(Activator.class, "/icons/attachment.png");
 
-	// View Icon
-	//private static final ImageDescriptor IMG_MESSAGE =
-	//	ImageDescriptor.createFromFile(Activator.class, "/icons/message.gif");
-	
 	// Start Server Icon
 	private static final ImageDescriptor IMG_RUN =
 		ImageDescriptor.createFromFile(Activator.class, "/icons/run.gif");
@@ -82,6 +67,27 @@ public class MessagesView extends ViewPart {
 	// Stop Server 
 	private static final ImageDescriptor IMG_STOP =
 		ImageDescriptor.createFromFile(Activator.class, "/icons/stop.gif");
+
+	//Locale Specific Date Formatter
+	private static final DateFormat DATE_FORMATTER = 
+		DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.SHORT, Locale.getDefault());
+	
+	//Locale Specific Resource Bundle
+	private static final ResourceBundle BUNDLE = Activator.getResourceBundle();
+
+	public static final String COL_TO = BUNDLE.getString("header.to");
+	public static final String COL_CC = BUNDLE.getString("header.cc");
+	public static final String COL_FROM = BUNDLE.getString("header.from");
+	public static final String COL_SUBJECT = BUNDLE.getString("header.subject");
+	public static final String COL_RECEIVED = BUNDLE.getString("header.received");
+	
+	private TableViewer viewer;
+	
+	private Action runServer;
+	private Action stopServer;
+	private Action openMessage;
+	private Action removeMessage;
+	private Action openPreferences;
 
 	/**
 	 * The constructor.
@@ -120,7 +126,7 @@ public class MessagesView extends ViewPart {
 
 	class ViewLabelProvider extends LabelProvider implements ITableLabelProvider {
 		
-		final DateFormat df = new SimpleDateFormat("EEE M/d/yyyy h:mm aaa"); 
+		//final DateFormat df = new SimpleDateFormat("EEE M/d/yyyy h:mm aaa"); 
 		
 		public String getColumnText(Object obj, int index) {
 			Message message = (Message) obj;
@@ -136,7 +142,7 @@ public class MessagesView extends ViewPart {
 				case 4:
 					return message.getSubject();
 				case 5:
-					return df.format(message.getReceived());
+					return DATE_FORMATTER.format(message.getReceived());
 				default:
 					throw new RuntimeException("Should not happen");
 			}
@@ -156,6 +162,27 @@ public class MessagesView extends ViewPart {
 		
 		public Image getImage(Object obj) {
 			return IMG_ATTACHMENT.createImage();
+		}
+	}
+
+	class DecoratingViewLabelProvider extends DecoratingLabelProvider implements ITableLabelProvider {
+		
+		ITableLabelProvider provider;
+		ILabelDecorator decorator;
+		
+		public DecoratingViewLabelProvider(ILabelProvider provider,
+				ILabelDecorator decorator) {
+			super(provider, decorator);
+			this.provider = (ITableLabelProvider) provider;
+			this.decorator = decorator;
+		}
+
+		public String getColumnText(Object obj, int index) {
+			return provider.getColumnText(obj, index);
+		}
+		
+		public Image getColumnImage(Object obj, int index) {
+			return provider.getColumnImage(obj, index);
 		}
 	}
 
@@ -192,6 +219,8 @@ public class MessagesView extends ViewPart {
 				column.addSelectionListener(new SelectionAdapter() {
 					@Override
 					public void widgetSelected(SelectionEvent e) {
+						
+						MessageSorter sorter = (MessageSorter)viewer.getSorter();
 						sorter.setColumnName(title);
 						int dir = viewer.getTable().getSortDirection();
 						TableColumn tc = (TableColumn)e.getSource();
@@ -222,10 +251,9 @@ public class MessagesView extends ViewPart {
 		createColumns(viewer,parent);
 		viewer.setContentProvider(new ViewContentProvider(loadMessages()));
 		viewer.setLabelProvider(new ViewLabelProvider());
+		//viewer.setLabelProvider(new DecoratingLabelProvider(new ViewLabelProvider(), PlatformUI.getWorkbench().getDecoratorManager().getLabelDecorator()));
 		viewer.setInput(getViewSite());
-
-		sorter = new MessageSorter();
-		viewer.setSorter(sorter);
+		viewer.setSorter(new MessageSorter());
 		
 		// Create the help context id for the viewer's control
 		PlatformUI.getWorkbench().getHelpSystem().setHelp(viewer.getControl(), "com.foos-bar.mailsnag.viewer");
@@ -328,8 +356,8 @@ public class MessagesView extends ViewPart {
 			}
 		};
 		
-		openPreferences.setText("Preferences");
-		openPreferences.setToolTipText("Preferences");
+		openPreferences.setText(BUNDLE.getString("action.preferences"));
+		openPreferences.setToolTipText(BUNDLE.getString("action.preferences.tooltip"));
 		
 		runServer = new Action() {
 			public void run() {
@@ -338,8 +366,8 @@ public class MessagesView extends ViewPart {
 			}
 		};
 		
-		runServer.setText("Start Listening");
-		runServer.setToolTipText("Start Email Listener");
+		runServer.setText(BUNDLE.getString("action.start"));
+		runServer.setToolTipText(BUNDLE.getString("action.start.tooltip"));
 		runServer.setImageDescriptor(IMG_RUN);
 
 		stopServer = new Action() {
@@ -348,8 +376,8 @@ public class MessagesView extends ViewPart {
 			}
 		};
 		
-		stopServer.setText("Stop Listening");
-		stopServer.setToolTipText("Stop Email Listener");
+		stopServer.setText(BUNDLE.getString("action.stop"));
+		stopServer.setToolTipText(BUNDLE.getString("action.stop.tooltip"));
 		stopServer.setImageDescriptor(IMG_STOP);
 		stopServer.setEnabled(false);
 	
@@ -360,13 +388,13 @@ public class MessagesView extends ViewPart {
 				int size = iss.size();
 				
 				String message = (size == 1) ? 
-						"Are you sure you want to delete this message?" : 
-							"Are you sure you want to delete " + size + " messages?" ;
+						BUNDLE.getString("action.delete.confirm.single") : 
+							String.format(BUNDLE.getString("action.delete.confirm.single"),size) ;
 				
 				boolean confirm =
 					MessageDialog.openConfirm(
 						viewer.getControl().getShell(),
-						"Confirm Delete",
+						BUNDLE.getString("action.delete.confirm"),
 						message);
 				
 				if(confirm) {
@@ -384,14 +412,14 @@ public class MessagesView extends ViewPart {
 				}
 			}
 		};
-		removeMessage.setText("Delete");
+		removeMessage.setText(BUNDLE.getString("action.delete"));
 
 		openMessage = new Action() {
 			public void run() {
 				openMessage();
 			}
 		};
-		openMessage.setText("Open");
+		openMessage.setText(BUNDLE.getString("action.open"));
 	}
 
 	@SuppressWarnings("unchecked")
