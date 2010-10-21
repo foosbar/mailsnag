@@ -389,7 +389,7 @@ public class MessagesView extends ViewPart {
 				
 				String message = (size == 1) ? 
 						BUNDLE.getString("action.delete.confirm.single") : 
-							String.format(BUNDLE.getString("action.delete.confirm.single"),size) ;
+							String.format(BUNDLE.getString("action.delete.confirm.plural"),size) ;
 				
 				boolean confirm =
 					MessageDialog.openConfirm(
