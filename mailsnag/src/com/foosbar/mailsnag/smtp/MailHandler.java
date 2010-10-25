@@ -144,21 +144,19 @@ public class MailHandler extends Thread {
 				}
 			}
 			
-			String content = msgBody.toString();
+			if(msgBody.length() > 0) {
+				//Persist message
+				final Message message = MessageStore.persist(msgBody.toString());
 			
-			//Persist message
-			final Message message = MessageStore.persist(content);
-			
-			message.setUnread(true);
-			
-			//Update the Content Provider
-			Display.getDefault().asyncExec(new Runnable() {
-				public void run() {
-					ViewContentProvider content = 
-						(ViewContentProvider) viewer.getContentProvider();
-					content.add(message);
-				}
-			});
+				//Update the Content Provider
+				Display.getDefault().asyncExec(new Runnable() {
+					public void run() {
+						ViewContentProvider provider = 
+							(ViewContentProvider) viewer.getContentProvider();
+						provider.add(message);
+					}
+				});
+			}
 
 		} catch (Exception e) {
 			e.printStackTrace();

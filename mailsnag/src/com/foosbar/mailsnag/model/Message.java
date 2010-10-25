@@ -49,6 +49,8 @@ public class Message {
 	}
 
 	public String getCc() {
+		if(cc == null)
+			return "";
 		return cc;
 	}
 
@@ -57,6 +59,8 @@ public class Message {
 	}
 
 	public String getFrom() {
+		if(from == null)
+			return "";
 		return from;
 	}
 
@@ -69,10 +73,14 @@ public class Message {
 	}
 	
 	public String getSubject() {
+		if(subject == null)
+			return "";
 		return subject;
 	}
 
 	public String getTo() {
+		if(to == null)
+			return "";
 		return to;
 	}
 
@@ -118,6 +126,27 @@ public class Message {
 
 	public void setUnread(boolean unread) {
 		this.unread = unread;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj)
+			return true;
+		
+		if(obj == null)
+			return false;
+		
+		if(getId() == null)
+			return false;
+		
+		return this.getId().equals( ((Message)obj).getId());
+	}
+
+	@Override
+	public int hashCode() {
+		return id != null ?
+				id.hashCode(): 
+					super.hashCode();
 	}
 
 	public class Attachment {
