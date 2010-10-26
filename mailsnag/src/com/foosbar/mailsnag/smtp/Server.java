@@ -73,8 +73,6 @@ public class Server implements Runnable {
 				} catch(IOException e) {}
 			}
 			
-			serverSocket = null;
-			
 			view.disableStopServer();
 			view.enableStartServer();
 		}

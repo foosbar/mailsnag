@@ -1,10 +1,7 @@
 package com.foosbar.mailsnag.editors;
 
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
-import java.io.Writer;
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -40,8 +37,8 @@ import org.eclipse.ui.part.MultiPageEditorPart;
 
 import com.foosbar.mailsnag.Activator;
 import com.foosbar.mailsnag.model.Message;
-import com.foosbar.mailsnag.model.Message.Attachment;
 import com.foosbar.mailsnag.model.MessageData;
+import com.foosbar.mailsnag.model.Message.Attachment;
 import com.foosbar.mailsnag.util.MessageStore;
 
 /**
@@ -108,15 +105,18 @@ public class MessageEditor extends MultiPageEditorPart implements IResourceChang
 		
 		TableWrapLayout twlayout = new TableWrapLayout();
 		twlayout.numColumns = 4;
-		form.getBody().setLayout(twlayout);
+		
+		Composite body = form.getBody();
+		body.setLayout(twlayout);
+		
 		int count = 0;
 		for(final Attachment attachment : attachments) {
-			StyledText text = new StyledText(form.getBody(), SWT.WRAP);
+			StyledText text = new StyledText(body, SWT.WRAP);
 			text.setEditable(false);
 			text.setText(Integer.toString(++count));
 			text.setLayoutData(new TableWrapData());
 
-			Hyperlink link = toolkit.createHyperlink(form.getBody(), "Click Here", SWT.WRAP);
+			Hyperlink link = toolkit.createHyperlink(body, "Click Here", SWT.WRAP);
 			link.addHyperlinkListener(new HyperlinkAdapter() {
 				public void linkActivated(HyperlinkEvent e) {
 					
@@ -137,7 +137,7 @@ public class MessageEditor extends MultiPageEditorPart implements IResourceChang
 			link.setText(attachment.getName());
 			link.setLayoutData(new TableWrapData());
 
-			text = new StyledText(form.getBody(), SWT.WRAP);
+			text = new StyledText(body, SWT.WRAP);
 			text.setEditable(false);
 			text.setText(attachment.getMimeType());
 			text.setLayoutData(new TableWrapData());
@@ -183,17 +183,14 @@ public class MessageEditor extends MultiPageEditorPart implements IResourceChang
 		
 		if(messageData == null || !messageData.hasHtmlMessage())
 			return;
+
 		
 		try {
 
-			File fileToOpen = File.createTempFile("email",".html");
-			fileToOpen.deleteOnExit();
-			Writer writer = new BufferedWriter(new FileWriter(fileToOpen));
-			writer.write(messageData.getHtmlMessage());
-			writer.close();
+			File file = MessageStore.createTempHtmlFile(messageData.getHtmlMessage());
 			
 			WebBrowserEditor editor = new WebBrowserEditor();
-			WebBrowserEditorInput input = new WebBrowserEditorInput(fileToOpen.toURI().toURL());
+			WebBrowserEditorInput input = new WebBrowserEditorInput(file.toURI().toURL());
 
 			setPageText(
 					addPage(editor, input), 

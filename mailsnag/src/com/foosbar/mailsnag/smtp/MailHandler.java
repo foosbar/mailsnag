@@ -19,15 +19,16 @@ public class MailHandler extends Thread {
 	
 	private static final String CMD_DATA = "DATA";
 	private static final String CMD_EHLO = "EHLO";
+	private static final String CMD_HELO = "HELO";
 	private static final String CMD_NOOP = "NOOP";
 	private static final String CMD_QUIT = "QUIT";
 	private static final String CMD_RSET = "RSET";
 	private static final String CMD_VRFY = "VRFY";
 	
-	private static final String RSPN_HI  = "220 Welcome to MailSnag by Foos-Bar\r\n";
-	private static final String RSPN_OK  = "250 Ok\r\n"; 
-	private static final String RSPN_BYE = "221 Bye\r\n";
-	private static final String RSPN_END_DATA = "354 End data with <CRLF>.<CRLF>\r\n";
+	private static final String RSPN_HI  = "220 Welcome to MailSnag by Foos-Bar";
+	private static final String RSPN_OK  = "250 Ok"; 
+	private static final String RSPN_BYE = "221 Bye";
+	private static final String RSPN_END_DATA = "354 End data with <CRLF>.<CRLF>";
 	
 	private static final String NEWLINE = System.getProperty("line.separator");
 	
@@ -82,6 +83,14 @@ public class MailHandler extends Thread {
 					// Greeting - Say Hello and move on.
 					if(inputLine.startsWith(CMD_EHLO)) {
 						String server = inputLine.substring(CMD_EHLO.length());
+						respond("250 Hello " + server.trim() + "\r\n", out);
+//						respond("250-AUTH PLAIN LOGIN DIGEST-MD5 CRAM-MD5 GSSAPI", out);
+//						respond("250-AUTH=PLAIN LOGIN DIGEST-MD5 CRAM-MD5 GSSAPI", out);
+						continue;
+					}
+
+					if(inputLine.startsWith(CMD_HELO)) {
+						String server = inputLine.substring(CMD_HELO.length());
 						respond("250 Hello " + server.trim() + "\r\n", out);
 						continue;
 					}
@@ -174,7 +183,7 @@ public class MailHandler extends Thread {
 		if(debug)
 			System.out.print("Server Response: " + response);
 		
-		writer.print(response);
+		writer.println(response);
 		writer.flush();
 	}
 }

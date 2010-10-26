@@ -3,16 +3,14 @@ package com.foosbar.mailsnag.util;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
-import java.io.Writer;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -24,9 +22,9 @@ import javax.mail.internet.MimeMultipart;
 
 import com.foosbar.mailsnag.Activator;
 import com.foosbar.mailsnag.model.Message;
-import com.foosbar.mailsnag.model.Message.Attachment;
 import com.foosbar.mailsnag.model.MessageData;
 import com.foosbar.mailsnag.model.MessageParser;
+import com.foosbar.mailsnag.model.Message.Attachment;
 
 public class MessageStore {
 
@@ -40,8 +38,8 @@ public class MessageStore {
 		//Create random filename
 		message.setFilename(getRandomFilename());
 
-		Writer writer = null;
-		
+		//Writer writer = null;
+		BufferedOutputStream out = null;
 		try {
 				
 			//Create file
@@ -49,16 +47,17 @@ public class MessageStore {
 
 			//Write file
 			if(file != null) {
-				writer = new BufferedWriter(new FileWriter(file));
-				writer.write(data);
+				out = new BufferedOutputStream(new FileOutputStream(file));
+				out.write(data.getBytes());
 			}
-			
 		} catch(Exception e) {
 			e.printStackTrace();
 		} finally {
 			try {
-				if(writer != null)
-					writer.close();
+				//if(writer != null)
+				//	writer.close();
+				if(out != null)
+					out.close();
 			} catch(Exception e) {}
 		}
 		
@@ -101,8 +100,6 @@ public class MessageStore {
 					if(!dir.exists())
 						dir.mkdir();
 					
-					//String filename = getAttachmentFilename(part);
-
 					File file = new File(dir, attachment.getName());
 					//while(file.exists())
 					//	filename = getNextFilename(filename, filenameCounter++);
@@ -135,6 +132,29 @@ public class MessageStore {
 					is.close();
 			} catch(Exception e) { }
 		}
+	}
+	
+	public static File createTempHtmlFile(String html) {
+		
+		BufferedOutputStream out = null;
+		try {
+			File file = File.createTempFile("email",".html");
+			file.deleteOnExit();
+
+			out = new BufferedOutputStream(new FileOutputStream(file));
+			out.write(html.getBytes());
+
+			return file;
+
+		} catch(Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(out != null)
+					out.close();
+			} catch(Exception e) {}
+		}
+		return null;
 	}
 	
 	public static final void delete(Message message) {
@@ -170,10 +190,12 @@ public class MessageStore {
 
 			StringBuilder builder = new StringBuilder();
 			
-			reader = new BufferedReader(new FileReader(new File(Activator.getDefault().getStateLocation().toFile(), filename)));
-	        
+			reader = new BufferedReader(new InputStreamReader(
+					new FileInputStream(new File(Activator.getDefault()
+							.getStateLocation().toFile(), filename))));
+			
 			char[] buffer = new char[8192];
-	        while (reader.read(buffer) > 0)
+			while (reader.read(buffer) > 0)
 	            builder.append(buffer);
 			
 	        Message message = MessageParser.parse(builder.toString());
@@ -206,8 +228,7 @@ public class MessageStore {
 			StringBuilder builder = new StringBuilder();
 			
 			String filename = message.getFilename();
-			reader = new BufferedReader(new FileReader(new File(Activator.getDefault().getStateLocation().toFile(), filename)));
-	        
+	        reader = new BufferedReader(new InputStreamReader(new FileInputStream(new File(Activator.getDefault().getStateLocation().toFile(), filename))));
 			char[] buffer = new char[8192];
 	        while (reader.read(buffer) > 0)
 	            builder.append(buffer);
@@ -247,41 +268,4 @@ public class MessageStore {
 	private static final String getRandomFilename() {
 		return UUID.randomUUID().toString() + Message.EXTENSION;
 	}
-	
-	/*
-	private static String getNextFilename(String filename, int counter) {
-		if(filename == null)
-			return null;
-		
-		int extIndex = filename.indexOf('.');
-		
-		String rootFilename = filename.substring(0, extIndex);
-		String extension = filename.substring(extIndex+1);
-		
-		return rootFilename + counter + extension;
-	}
-	
-	private static String getAttachmentFilename(BodyPart part) throws MessagingException {
-		
-		if(part.getFileName() != null)
-			return part.getFileName();
-		
-		@SuppressWarnings("unchecked")
-		Enumeration<Header> e = part.getAllHeaders();
-		while(e.hasMoreElements()) {
-			Header header = e.nextElement();
-			String name = header.getName();
-			if(name != null) {
-				if(name.startsWith("filename")) {
-					Pattern p = Pattern.compile("filename=\"(.*?)\"");
-					Matcher m = p.matcher(name);
-					if(m.find())
-						return m.group(1);
-				}
-			}
-		}
-		
-		return "<missing filename>";
-	}
-	*/
 }

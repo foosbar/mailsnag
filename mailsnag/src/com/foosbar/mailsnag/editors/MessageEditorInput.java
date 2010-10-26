@@ -55,7 +55,7 @@ public class MessageEditorInput implements IEditorInput {
 		return message.getFrom();
 	}
 
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings("unchecked")
 	public Object getAdapter(Class arg0) {
 		return null;
 	}
