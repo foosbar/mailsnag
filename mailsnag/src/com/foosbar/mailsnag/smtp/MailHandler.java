@@ -25,10 +25,10 @@ public class MailHandler extends Thread {
 	private static final String CMD_RSET = "RSET";
 	private static final String CMD_VRFY = "VRFY";
 	
-	private static final String RSPN_HI  = "220 Welcome to MailSnag by Foos-Bar";
-	private static final String RSPN_OK  = "250 Ok"; 
-	private static final String RSPN_BYE = "221 Bye";
-	private static final String RSPN_END_DATA = "354 End data with <CRLF>.<CRLF>";
+	private static final String RSPN_HI  = "220 Welcome to MailSnag by Foos-Bar\r\n";
+	private static final String RSPN_OK  = "250 Ok\r\n"; 
+	private static final String RSPN_BYE = "221 Bye\r\n";
+	private static final String RSPN_END_DATA = "354 End data with <CRLF>.<CRLF>\r\n";
 	
 	private static final String NEWLINE = System.getProperty("line.separator");
 	
@@ -183,7 +183,7 @@ public class MailHandler extends Thread {
 		if(debug)
 			System.out.print("Server Response: " + response);
 		
-		writer.println(response);
+		writer.print(response);
 		writer.flush();
 	}
 }
