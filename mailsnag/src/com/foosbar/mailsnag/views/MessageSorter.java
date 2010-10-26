@@ -3,6 +3,8 @@
  */
 package com.foosbar.mailsnag.views;
 
+import java.text.Collator;
+
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerSorter;
 
@@ -44,19 +46,19 @@ public class MessageSorter extends ViewerSorter {
 
 		int result = 0;
 		
-		if(columnName.equals(MessagesView.COL_SUBJECT))
-			result = m1.getSubject().compareTo(m2.getSubject());
+		if(MessagesView.COL_SUBJECT.equals(columnName))
+			result = Collator.getInstance().compare( m1.getSubject(), m2.getSubject() );
 		
-		else if(columnName.equals(MessagesView.COL_FROM))
-			result = m1.getFrom().compareTo(m2.getFrom());
+		else if(MessagesView.COL_FROM.equals(columnName))
+			result = Collator.getInstance().compare( m1.getFrom(), m2.getFrom() );
 		
-		else if(columnName.equals(MessagesView.COL_TO))
-			result = m1.getTo().compareTo(m2.getTo());
+		else if(MessagesView.COL_TO.equals(columnName))
+			result = Collator.getInstance().compare( m1.getTo(), m2.getTo() );
 		
-		else if(columnName.equals(MessagesView.COL_CC))
-			result = m1.getTo().compareTo(m2.getTo());
+		else if(MessagesView.COL_CC.equals(columnName))
+			result = Collator.getInstance().compare( m1.getTo(), m2.getTo() );
 
-		else if(columnName.equals(MessagesView.COL_RECEIVED))
+		else if(MessagesView.COL_RECEIVED.equals(columnName))
 			result = m1.getReceived().compareTo(m2.getReceived());
 		
 		// If descending order, flip the direction

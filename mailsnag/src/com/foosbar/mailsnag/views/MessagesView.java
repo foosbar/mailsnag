@@ -222,19 +222,20 @@ public class MessagesView extends ViewPart {
 						
 						MessageSorter sorter = (MessageSorter)viewer.getSorter();
 						sorter.setColumnName(title);
-						int dir = viewer.getTable().getSortDirection();
+						Table table = viewer.getTable();
+						int dir = table.getSortDirection();
 						TableColumn tc = (TableColumn)e.getSource();
 						
-						if(viewer.getTable().getSortColumn() == null) {
+						if(table.getSortColumn() == null) {
 							dir = SWT.DOWN;
-						} else if (viewer.getTable().getSortColumn().getText().equals(title)) {
+						} else if (table.getSortColumn().getText().equals(title)) {
 							dir = (dir == SWT.UP) ? SWT.DOWN : SWT.UP;
 						} else {
 							dir = SWT.DOWN;
 						}
 						
-						viewer.getTable().setSortDirection(dir);
-						viewer.getTable().setSortColumn(tc);
+						table.setSortDirection(dir);
+						table.setSortColumn(tc);
 						viewer.refresh();
 					}
 				});
