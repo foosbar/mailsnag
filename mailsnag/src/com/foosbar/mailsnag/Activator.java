@@ -52,7 +52,6 @@ public class Activator extends AbstractUIPlugin {
 		if(!persist)
 			MessageStore.removeAll();
 
-		plugin = null;
 		super.stop(context);
 	}
 

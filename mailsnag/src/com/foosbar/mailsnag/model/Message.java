@@ -136,10 +136,10 @@ public class Message {
 		if(obj == null)
 			return false;
 		
-		if(getId() == null)
+		if(id == null)
 			return false;
 		
-		return this.getId().equals( ((Message)obj).getId());
+		return id.equals( ((Message)obj).getId());
 	}
 
 	@Override
