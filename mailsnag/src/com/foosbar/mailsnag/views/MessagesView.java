@@ -3,8 +3,8 @@ package com.foosbar.mailsnag.views;
 import java.io.File;
 import java.text.DateFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -16,11 +16,8 @@ import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.viewers.DecoratingLabelProvider;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
-import org.eclipse.jface.viewers.ILabelDecorator;
-import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITableLabelProvider;
@@ -89,17 +86,20 @@ public class MessagesView extends ViewPart {
 	private Action removeMessage;
 	private Action openPreferences;
 
+	private MessagesView messagesView;
+	
 	/**
 	 * The constructor.
 	 */
 	public MessagesView() {
 		super();
+		messagesView = this;
 	}
 
 	public class ViewContentProvider implements IStructuredContentProvider {
-		Collection<Message> messages = new ArrayList<Message>();
+		List<Message> messages = new ArrayList<Message>();
 
-		public ViewContentProvider(Collection<Message> messages) {
+		public ViewContentProvider(List<Message> messages) {
 			if(messages != null) 
 				this.messages = messages;
 		}
@@ -117,17 +117,49 @@ public class MessagesView extends ViewPart {
 		public void add(Message message) {
 			messages.add(message);
 			getViewer().refresh();
+			messagesView.setFocus();
 		}
 		
 		public void remove(Message message) {
 			messages.remove(message);
 		}
+		
+		public void setRead(Message message) {
+			int idx = messages.indexOf(message);
+			if(idx >= 0)
+				messages.get(idx).setUnread(false);
+			getViewer().refresh();
+		}
 	}
-
+	
 	class ViewLabelProvider extends LabelProvider implements ITableLabelProvider {
+
+	/*
+	class ViewLabelProvider extends StyledCellLabelProvider {
 		
-		//final DateFormat df = new SimpleDateFormat("EEE M/d/yyyy h:mm aaa"); 
-		
+		@Override
+		public void update(ViewerCell cell) {
+			
+			Message message = (Message)cell.getElement();
+			int index = cell.getColumnIndex();
+			String columnText = getColumnText(message, index);
+			cell.setText(columnText);
+			cell.setImage(getColumnImage(message, index));
+
+			if(message.isUnread()) {
+				FontData fdata = cell.getFont().getFontData()[0];
+				fdata.setStyle(SWT.BOLD);
+				Font f = new Font(Display.getDefault(), fdata);
+				
+				StyleRange style = new StyleRange();
+				style.font = f;
+				style.length = cell.getText().length();
+				cell.setStyleRanges(new StyleRange[] { style });
+			}
+			
+			super.update(cell);
+		}
+	*/
 		public String getColumnText(Object obj, int index) {
 			Message message = (Message) obj;
 			switch (index) {
@@ -162,27 +194,6 @@ public class MessagesView extends ViewPart {
 		
 		public Image getImage(Object obj) {
 			return IMG_ATTACHMENT.createImage();
-		}
-	}
-
-	class DecoratingViewLabelProvider extends DecoratingLabelProvider implements ITableLabelProvider {
-		
-		ITableLabelProvider provider;
-		ILabelDecorator decorator;
-		
-		public DecoratingViewLabelProvider(ILabelProvider provider,
-				ILabelDecorator decorator) {
-			super(provider, decorator);
-			this.provider = (ITableLabelProvider) provider;
-			this.decorator = decorator;
-		}
-
-		public String getColumnText(Object obj, int index) {
-			return provider.getColumnText(obj, index);
-		}
-		
-		public Image getColumnImage(Object obj, int index) {
-			return provider.getColumnImage(obj, index);
 		}
 	}
 
@@ -250,22 +261,32 @@ public class MessagesView extends ViewPart {
 	public void createPartControl(Composite parent) {
 		viewer = new TableViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION);
 		createColumns(viewer,parent);
+
 		viewer.setContentProvider(new ViewContentProvider(loadMessages()));
 		viewer.setLabelProvider(new ViewLabelProvider());
-		//viewer.setLabelProvider(new DecoratingLabelProvider(new ViewLabelProvider(), PlatformUI.getWorkbench().getDecoratorManager().getLabelDecorator()));
 		viewer.setInput(getViewSite());
-		viewer.setSorter(new MessageSorter());
 		
+		MessageSorter sorter = new MessageSorter();
+		viewer.setSorter(sorter);
+
+		//Initial sort
+		sorter.setColumnName(COL_RECEIVED);
+		viewer.getTable().setSortDirection(SWT.UP);
+		viewer.getTable().setSortColumn(viewer.getTable().getColumn(viewer.getTable().getColumnCount()-1));
+		viewer.refresh();
+
 		// Create the help context id for the viewer's control
 		PlatformUI.getWorkbench().getHelpSystem().setHelp(viewer.getControl(), "com.foos-bar.mailsnag.viewer");
 		makeActions();
 		hookContextMenu();
 		hookDoubleClickAction();
 		contributeToActionBars();
+		//this.setTitleImage(IMG_RUN.createImage());
+		
 	}
 
-	private Collection<Message> loadMessages() {
-		Collection<Message> messages = new ArrayList<Message>();
+	private List<Message> loadMessages() {
+		List<Message> messages = new ArrayList<Message>();
 		
 		File dir = Activator.getDefault().getStateLocation().toFile();
 		
@@ -425,6 +446,7 @@ public class MessagesView extends ViewPart {
 
 	@SuppressWarnings("unchecked")
 	private void openMessage() {
+		ViewContentProvider provider = (ViewContentProvider) viewer.getContentProvider();
 		IStructuredSelection iss = (IStructuredSelection) viewer.getSelection();
 		Iterator<Object> it = iss.iterator();
 		while(it.hasNext()) {
@@ -435,6 +457,7 @@ public class MessagesView extends ViewPart {
        			MessageEditorInput input = new MessageEditorInput(m);
        			try {
        				IDE.openEditor(page, input, MessageEditor.ID, true);
+       				provider.setRead(m);
        			} catch(PartInitException e) {
        				e.printStackTrace();
        			}

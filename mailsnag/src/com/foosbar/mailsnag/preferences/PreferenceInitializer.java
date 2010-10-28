@@ -15,6 +15,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 		store.setDefault(PreferenceConstants.PARAM_PORT, 25);
 		store.setDefault(PreferenceConstants.PARAM_DEBUG, false);
 		store.setDefault(PreferenceConstants.PARAM_PERSIST, true);
+		//store.setDefault(PreferenceConstants.PARAM_JAVASCRIPT, false);
 	}
 
 }

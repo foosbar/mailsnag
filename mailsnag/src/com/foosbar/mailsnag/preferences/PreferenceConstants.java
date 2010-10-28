@@ -11,6 +11,9 @@ public class PreferenceConstants {
 	public static final String PARAM_DEBUG = 
 		"com.foos-bar.mailsnag.debug";
 	
+	//public static final String PARAM_JAVASCRIPT = 
+	//	"com.foos-bar.mailsnag.javascript";
+	
 	public static final String PARAM_PERSIST = 
 		"com.foos-bar.mailsnag.persist";
 	

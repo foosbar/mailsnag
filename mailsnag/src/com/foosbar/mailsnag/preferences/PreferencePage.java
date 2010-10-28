@@ -1,5 +1,7 @@
 package com.foosbar.mailsnag.preferences;
 
+import java.util.ResourceBundle;
+
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IntegerFieldEditor;
@@ -56,20 +58,27 @@ public class PreferencePage
 		//}, getFieldEditorParent()));
 		//addField(
 		//	new StringFieldEditor(PreferenceConstants.P_STRING, "A &text preference:", getFieldEditorParent()));
+		
+		ResourceBundle bundle = Activator.getResourceBundle();
+		
 		IntegerFieldEditor port = 
-			new IntegerFieldEditor(PreferenceConstants.PARAM_PORT, "Listener Port", getFieldEditorParent());
+			new IntegerFieldEditor(PreferenceConstants.PARAM_PORT, bundle.getString("preference.port"), getFieldEditorParent());
 
 		port.setValidRange(1,65535);
 		
 		BooleanFieldEditor persist = 
-			new BooleanFieldEditor(PreferenceConstants.PARAM_PERSIST, "Persist emails between sessions", getFieldEditorParent());
+			new BooleanFieldEditor(PreferenceConstants.PARAM_PERSIST, bundle.getString("preference.persist"), getFieldEditorParent());
 		
 		BooleanFieldEditor debug = 
-			new BooleanFieldEditor(PreferenceConstants.PARAM_DEBUG, "Print debug messages to STDOUT", getFieldEditorParent());
-		
+			new BooleanFieldEditor(PreferenceConstants.PARAM_DEBUG, bundle.getString("preference.debug"), getFieldEditorParent());
+
+		//BooleanFieldEditor javascript = 
+		//	new BooleanFieldEditor(PreferenceConstants.PARAM_JAVASCRIPT, bundle.getString("preference.javascript"), getFieldEditorParent());
+
 		addField(port);
 		addField(persist);
 		addField(debug);
+		//addField(javascript);
 	}
 
 	/* (non-Javadoc)
