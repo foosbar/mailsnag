@@ -1,7 +1,6 @@
 package com.foosbar.mailsnag.editors;
 
 
-import java.io.File;
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -13,6 +12,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -31,14 +31,12 @@ import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.forms.widgets.TableWrapData;
 import org.eclipse.ui.forms.widgets.TableWrapLayout;
 import org.eclipse.ui.ide.IDE;
-import org.eclipse.ui.internal.browser.WebBrowserEditor;
-import org.eclipse.ui.internal.browser.WebBrowserEditorInput;
 import org.eclipse.ui.part.MultiPageEditorPart;
 
 import com.foosbar.mailsnag.Activator;
 import com.foosbar.mailsnag.model.Message;
-import com.foosbar.mailsnag.model.MessageData;
 import com.foosbar.mailsnag.model.Message.Attachment;
+import com.foosbar.mailsnag.model.MessageData;
 import com.foosbar.mailsnag.util.MessageStore;
 
 /**
@@ -49,7 +47,6 @@ import com.foosbar.mailsnag.util.MessageStore;
  * <li>page 2 Raw Data for inspecting the entire email stream.
  * </ul>
  */
-@SuppressWarnings("restriction")
 public class MessageEditor extends MultiPageEditorPart implements IResourceChangeListener{
 
 	public static final String ID = "com.foosbar.mailsnag.editors.MessageEditor";
@@ -187,27 +184,35 @@ public class MessageEditor extends MultiPageEditorPart implements IResourceChang
 		
 		try {
 
+			/*
 			File file = MessageStore.createTempHtmlFile(messageData.getHtmlMessage());
 			
 			WebBrowserEditor editor = new WebBrowserEditor();
 			WebBrowserEditorInput input = new WebBrowserEditorInput(file.toURI().toURL());
-
+			
 			setPageText(
 					addPage(editor, input), 
 					BUNDLE.getString("editor.htmlFormat"));
-
-			/*
+			*/
 			Composite composite = new Composite(getContainer(), SWT.NONE);
 			composite.setLayout(new FillLayout());
 
 			Browser browser = new Browser(composite, SWT.H_SCROLL | SWT.V_SCROLL);
 			browser.setText(messageData.getHtmlMessage());
+			browser.setCapture(true);
+
+			// Get Preferences
+			//IPreferenceStore pStore = 
+			//	Activator.getDefault().getPreferenceStore();
 			
+			// Execute Javascript?
+			//browser.setJavascriptEnabled(pStore
+			//		.getBoolean(PreferenceConstants.PARAM_JAVASCRIPT));
+
 			setPageText(
 					addPage(composite), 
 					"HTML Format");
-			*/
-			
+
 		} catch (Exception e) {
 			ErrorDialog.openError(
 				getSite().getShell(),
@@ -216,7 +221,6 @@ public class MessageEditor extends MultiPageEditorPart implements IResourceChang
 				null);
 		}
 	}
-	
 	/**
 	 * Creates the pages of the multi-page editor.
 	 */
