@@ -34,7 +34,10 @@ public class MessageStore {
 
 		//Parse Message
 		Message message = MessageParser.parse(data);
-
+		
+		//Set message as unread
+		message.setUnread(true);
+		
 		//Create random filename
 		message.setFilename(getRandomFilename());
 
