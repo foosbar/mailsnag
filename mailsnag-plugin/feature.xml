@@ -2,13 +2,11 @@
 <feature
       id="com.foosbar.mailsnag"
       label="MailSnag"
-      version="0.3.1">
+      version="0.3.3">
 
    <description>
-      This plugin is now a beta release.  It is an Eclipse plugin
-useful for testing applications that send emails.  The plugin
-sets up up a very simple SMTP (support only for EHLO protocol
-at this time) server for digesting emails sent out by your application.
+      An Eclipse plugin useful for testing applications that send emails.  The plugin
+sets up up a very simple SMTP server for digesting emails sent out by your application.
 It will bind to the port specified in the preferences page (default:
 25).
    </description>
@@ -95,10 +93,7 @@ This Agreement is governed by the laws of the State of New York and the intellec
       <import plugin="org.eclipse.core.runtime"/>
       <import plugin="org.eclipse.ui.ide" version="3.4.2" match="greaterOrEqual"/>
       <import plugin="org.eclipse.core.resources" version="3.4.2" match="greaterOrEqual"/>
-      <import plugin="org.eclipse.core.filesystem" version="1.2.0" match="greaterOrEqual"/>
-      <import plugin="org.eclipse.ui.editors" version="3.4.0" match="greaterOrEqual"/>
-      <import plugin="org.eclipse.jface.text" version="3.4.2" match="greaterOrEqual"/>
-      <import plugin="org.eclipse.ui.browser" version="3.2.201" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.ui.forms" version="3.3.104" match="greaterOrEqual"/>
    </requires>
 
    <plugin

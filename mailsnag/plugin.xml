@@ -9,11 +9,12 @@
             id="com.foos-bar.mailsnag">
       </category>
       <view
-            name="%view.name"
-            icon="icons/logo.gif"
+            allowMultiple="false"
             category="com.foos-bar.mailsnag"
             class="com.foosbar.mailsnag.views.MessagesView"
-            id="com.foosbar.mailsnag.views.MessagesView">
+            icon="icons/logo.gif"
+            id="com.foosbar.mailsnag.views.MessagesView"
+            name="%view.name">
       </view>
    </extension>
    <extension
@@ -57,7 +58,6 @@
             name="%editor.name"
             extensions="eml"
             icon="icons/message.gif"
-            contributorClass="com.foosbar.mailsnag.editors.MessageEditorContributor"
             class="com.foosbar.mailsnag.editors.MessageEditor"
             id="com.foosbar.mailsnag.editors.MessageEditor">
       </editor>
