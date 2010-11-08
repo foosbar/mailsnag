@@ -31,7 +31,10 @@ public class PreferencePage
 	public PreferencePage() {
 		super(GRID);
 		setPreferenceStore(Activator.getDefault().getPreferenceStore());
-		setDescription("SMTP Capture will listen on the specified port and capture incoming emails.  Useful for development purposes where a full fledged SMTP server is unnecessary.");
+		
+		ResourceBundle bundle = Activator.getResourceBundle();
+		
+		setDescription(bundle.getString("preference.description"));
 	}
 	
 	/**
