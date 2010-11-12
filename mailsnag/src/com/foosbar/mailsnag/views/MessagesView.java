@@ -41,6 +41,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.ViewPart;
+import org.eclipse.ui.progress.IWorkbenchSiteProgressService;
 
 import com.foosbar.mailsnag.Activator;
 import com.foosbar.mailsnag.editors.MessageEditor;
@@ -86,14 +87,14 @@ public class MessagesView extends ViewPart {
 	private Action removeMessage;
 	private Action openPreferences;
 
-	private MessagesView messagesView;
+	//private MessagesView messagesView;
 	
 	/**
 	 * The constructor.
 	 */
 	public MessagesView() {
 		super();
-		messagesView = this;
+		//messagesView = this;
 	}
 
 	public class ViewContentProvider implements IStructuredContentProvider {
@@ -117,7 +118,12 @@ public class MessagesView extends ViewPart {
 		public void add(Message message) {
 			messages.add(message);
 			getViewer().refresh();
-			messagesView.setFocus();
+
+			//Sets label bold if the view is unfocused.
+			IWorkbenchSiteProgressService service = 
+				(IWorkbenchSiteProgressService) getSite().getService(IWorkbenchSiteProgressService.class);
+			
+			service.warnOfContentChange();
 		}
 		
 		public void remove(Message message) {
