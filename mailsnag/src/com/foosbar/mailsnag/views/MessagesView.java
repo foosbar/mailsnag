@@ -15,6 +15,7 @@ import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
@@ -47,6 +48,7 @@ import com.foosbar.mailsnag.Activator;
 import com.foosbar.mailsnag.editors.MessageEditor;
 import com.foosbar.mailsnag.editors.MessageEditorInput;
 import com.foosbar.mailsnag.model.Message;
+import com.foosbar.mailsnag.preferences.PreferenceConstants;
 import com.foosbar.mailsnag.smtp.Server;
 import com.foosbar.mailsnag.smtp.ServerThreadGroup;
 import com.foosbar.mailsnag.util.EmailFilenameFilter;
@@ -287,6 +289,14 @@ public class MessagesView extends ViewPart {
 		hookContextMenu();
 		hookDoubleClickAction();
 		contributeToActionBars();
+		
+		IPreferenceStore store = 
+			Activator.getDefault().getPreferenceStore();
+		
+		//Start server if the preferences indicate such.
+		if(store.getBoolean(PreferenceConstants.PARAM_STARTUP))
+			startServer();
+
 		//this.setTitleImage(IMG_RUN.createImage());
 		
 	}
@@ -374,6 +384,11 @@ public class MessagesView extends ViewPart {
 
 	private Server server = new Server(this);
 	
+	private void startServer() {
+		ThreadGroup tg = new ServerThreadGroup(server.getView(),"SMTPServer");
+		new Thread(tg,server).start();
+	}
+	
 	private void makeActions() {
 
 		openPreferences = new Action() {
@@ -389,8 +404,7 @@ public class MessagesView extends ViewPart {
 		
 		runServer = new Action() {
 			public void run() {
-				ThreadGroup tg = new ServerThreadGroup(server.getView(),"SMTPServer");
-				new Thread(tg,server).start();
+				startServer();
 			}
 		};
 		

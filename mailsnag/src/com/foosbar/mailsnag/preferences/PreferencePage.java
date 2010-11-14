@@ -75,12 +75,16 @@ public class PreferencePage
 		BooleanFieldEditor debug = 
 			new BooleanFieldEditor(PreferenceConstants.PARAM_DEBUG, bundle.getString("preference.debug"), getFieldEditorParent());
 
+		BooleanFieldEditor startup = 
+			new BooleanFieldEditor(PreferenceConstants.PARAM_STARTUP, bundle.getString("preference.startup"), getFieldEditorParent());
+
 		//BooleanFieldEditor javascript = 
 		//	new BooleanFieldEditor(PreferenceConstants.PARAM_JAVASCRIPT, bundle.getString("preference.javascript"), getFieldEditorParent());
 
 		addField(port);
 		addField(persist);
 		addField(debug);
+		addField(startup);
 		//addField(javascript);
 	}
 

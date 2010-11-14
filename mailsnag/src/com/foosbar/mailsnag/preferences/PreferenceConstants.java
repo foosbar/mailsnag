@@ -16,5 +16,8 @@ public class PreferenceConstants {
 	
 	public static final String PARAM_PERSIST = 
 		"com.foos-bar.mailsnag.persist";
-	
+
+	public static final String PARAM_STARTUP = 
+		"com.foos-bar.mailsnag.startup";
+
 }
