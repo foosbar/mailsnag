@@ -12,7 +12,7 @@
             allowMultiple="false"
             category="com.foos-bar.mailsnag"
             class="com.foosbar.mailsnag.views.MessagesView"
-            icon="icons/logo.gif"
+            icon="icons/mail.gif"
             id="com.foosbar.mailsnag.views.MessagesView"
             name="%view.name">
       </view>

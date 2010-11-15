@@ -68,6 +68,14 @@ public class MessagesView extends ViewPart {
 	private static final ImageDescriptor IMG_STOP =
 		ImageDescriptor.createFromFile(Activator.class, "/icons/stop.gif");
 
+	// New Messages 
+	private static final ImageDescriptor IMG_NEW_MESSAGES =
+		ImageDescriptor.createFromFile(Activator.class, "/icons/mail_new.gif");
+
+	// New Messages 
+	private static final ImageDescriptor IMG_LOGO =
+		ImageDescriptor.createFromFile(Activator.class, "/icons/mail.gif");
+
 	//Locale Specific Date Formatter
 	private static final DateFormat DATE_FORMATTER = 
 		DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.SHORT, Locale.getDefault());
@@ -126,6 +134,11 @@ public class MessagesView extends ViewPart {
 				(IWorkbenchSiteProgressService) getSite().getService(IWorkbenchSiteProgressService.class);
 			
 			service.warnOfContentChange();
+			
+			//getSite().getPart().setFocus();
+			getSite().getPage().activate(getSite().getPart());
+			
+			showNewMessages();
 		}
 		
 		public void remove(Message message) {
@@ -297,8 +310,14 @@ public class MessagesView extends ViewPart {
 		if(store.getBoolean(PreferenceConstants.PARAM_STARTUP))
 			startServer();
 
-		//this.setTitleImage(IMG_RUN.createImage());
-		
+	}
+
+	public void showNewMessages() {
+		this.setTitleImage(IMG_NEW_MESSAGES.createImage());
+	}
+
+	public void showLogo() {
+		this.setTitleImage(IMG_LOGO.createImage());
 	}
 
 	private List<Message> loadMessages() {
@@ -469,15 +488,17 @@ public class MessagesView extends ViewPart {
 		ViewContentProvider provider = (ViewContentProvider) viewer.getContentProvider();
 		IStructuredSelection iss = (IStructuredSelection) viewer.getSelection();
 		Iterator<Object> it = iss.iterator();
+		IWorkbenchPage page = getSite().getPage();
 		while(it.hasNext()) {
 			Object obj = it.next();
 			if(obj instanceof Message) {
 				Message m = (Message)obj;
-       			IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+       			//IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
        			MessageEditorInput input = new MessageEditorInput(m);
        			try {
        				IDE.openEditor(page, input, MessageEditor.ID, true);
        				provider.setRead(m);
+       				showLogo();
        			} catch(PartInitException e) {
        				e.printStackTrace();
        			}
