@@ -38,6 +38,7 @@ import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.ViewPart;
@@ -297,6 +298,11 @@ public class MessagesView extends ViewPart {
 		hookContextMenu();
 		hookDoubleClickAction();
 		contributeToActionBars();
+		
+		IContextService contextService = (IContextService) getSite()
+		  .getService(IContextService.class);
+		//IContextActivation contextActivation = 
+		contextService.activateContext("com.foos-bar.mailsnag.contexts");
 		
 		// often in createPartControl(Composite)
 		//IHandlerService hs = (IHandlerService) getSite().getService(IHandlerService.class);

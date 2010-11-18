@@ -93,11 +93,11 @@
       <handler
             class="com.foosbar.mailsnag.commands.DeleteMessage"
             commandId="org.eclipse.ui.edit.delete">
-         <activeWhen>
+         <enabledWhen>
             <reference
                   definitionId="oneElementSelected">
             </reference>
-         </activeWhen>
+         </enabledWhen>
       </handler>
       <handler
             class="com.foosbar.mailsnag.commands.OpenMessage"
@@ -138,18 +138,29 @@
          </separator>
          <command
                commandId="org.eclipse.ui.edit.delete"
-               icon="icons/delete.gif"
                label="%action.delete"
                style="push">
          </command>
       </menuContribution>
    </extension>
    <extension
+         point="org.eclipse.ui.contexts">
+      <context
+            id="com.foos-bar.mailsnag.contexts"
+            name="MailSnag"
+            parentId="org.eclipse.ui.contexts.window">
+      </context>
+   </extension>
+   <extension
          point="org.eclipse.ui.bindings">
+      <scheme
+            id="com.foosbar.mailsnag.scheme"
+            name="MailSnag Scheme">
+      </scheme>
       <key
             commandId="com.foosbar.mailsnag.commands.delete"
-            contextId="com.foosbar.mailsnag.contexts.delete"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="com.foos-bar.mailsnag.contexts"
+            schemeId="com.foosbar.mailsnag.scheme"
             sequence="DEL">
       </key>
    </extension>
