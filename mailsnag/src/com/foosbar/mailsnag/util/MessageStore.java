@@ -268,7 +268,7 @@ public class MessageStore {
 		}
 	}
 	
-	private static final String getRandomFilename() {
+	public static final String getRandomFilename() {
 		return UUID.randomUUID().toString() + Message.EXTENSION;
 	}
 }

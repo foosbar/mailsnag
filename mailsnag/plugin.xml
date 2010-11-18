@@ -1,21 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
-
    <extension
-         point="org.eclipse.ui.views">
-      <category
-            name="%category.name"
-            id="com.foos-bar.mailsnag">
-      </category>
-      <view
-            allowMultiple="false"
-            category="com.foos-bar.mailsnag"
-            class="com.foosbar.mailsnag.views.MessagesView"
-            icon="icons/mail.gif"
-            id="com.foosbar.mailsnag.views.MessagesView"
-            name="%view.name">
-      </view>
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="com.foosbar.mailsnag.preferences.PreferenceInitializer">
+      </initializer>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            name="%editor.name"
+            extensions="eml"
+            icon="icons/message.gif"
+            class="com.foosbar.mailsnag.editors.MessageEditor"
+            id="com.foosbar.mailsnag.editors.MessageEditor">
+      </editor>
+   </extension>
+   <extension
+         point="org.eclipse.help.contexts">
+      <contexts
+            file="contexts.xml">
+      </contexts>
    </extension>
    <extension
          point="org.eclipse.ui.perspectiveExtensions">
@@ -33,12 +39,6 @@
       </perspectiveExtension>
    </extension>
    <extension
-         point="org.eclipse.help.contexts">
-      <contexts
-            file="contexts.xml">
-      </contexts>
-   </extension>
-   <extension
          point="org.eclipse.ui.preferencePages">
       <page
             class="com.foosbar.mailsnag.preferences.PreferencePage"
@@ -46,20 +46,111 @@
             name="%page.name">
       </page>
    </extension>
+
    <extension
-         point="org.eclipse.core.runtime.preferences">
-      <initializer
-            class="com.foosbar.mailsnag.preferences.PreferenceInitializer">
-      </initializer>
+         point="org.eclipse.ui.views">
+      <category
+            name="%category.name"
+            id="com.foos-bar.mailsnag">
+      </category>
+      <view
+            allowMultiple="false"
+            category="com.foos-bar.mailsnag"
+            class="com.foosbar.mailsnag.views.MessagesView"
+            icon="icons/mail.gif"
+            id="com.foosbar.mailsnag.views.MessagesView"
+            name="%view.name">
+      </view>
    </extension>
    <extension
-         point="org.eclipse.ui.editors">
-      <editor
-            name="%editor.name"
-            extensions="eml"
-            icon="icons/message.gif"
-            class="com.foosbar.mailsnag.editors.MessageEditor"
-            id="com.foosbar.mailsnag.editors.MessageEditor">
-      </editor>
+         point="org.eclipse.core.expressions.definitions">
+      <definition
+            id="oneElementSelected">
+         <with
+               variable="selection">
+            <not>
+               <count
+                     value="0">
+               </count>
+            </not>
+         </with>
+      </definition>
+   </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+      <command
+            categoryId="org.eclipse.ui.category.edit"
+            id="com.foosbar.mailsnag.commands.delete"
+            name="DeleteMessage">
+      </command>
+      <command
+            id="com.foosbar.mailsnag.commands.open"
+            name="OpenMessage">
+      </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            class="com.foosbar.mailsnag.commands.DeleteMessage"
+            commandId="org.eclipse.ui.edit.delete">
+         <activeWhen>
+            <reference
+                  definitionId="oneElementSelected">
+            </reference>
+         </activeWhen>
+      </handler>
+      <handler
+            class="com.foosbar.mailsnag.commands.OpenMessage"
+            commandId="com.foosbar.mailsnag.commands.open">
+         <enabledWhen>
+            <reference
+                  definitionId="oneElementSelected">
+            </reference>
+         </enabledWhen>
+      </handler>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="false"
+            locationURI="popup:com.foosbar.mailsnag.views.MessagesView">
+         <command
+               commandId="com.foosbar.mailsnag.commands.open"
+               label="%action.open"
+               style="push">
+         </command>
+         <separator
+               name="mailsnag.separator1"
+               visible="true">
+         </separator>
+         <command
+               commandId="org.eclipse.ui.edit.delete"
+               label="%action.delete"
+               style="push">
+         </command>
+      </menuContribution>
+      <menuContribution
+            allPopups="false"
+            locationURI="toolbar:com.foosbar.mailsnag.views.MessagesView">
+         <separator
+               name="mailsnag.separator2"
+               visible="true">
+         </separator>
+         <command
+               commandId="org.eclipse.ui.edit.delete"
+               icon="icons/delete.gif"
+               label="%action.delete"
+               style="push">
+         </command>
+      </menuContribution>
+   </extension>
+   <extension
+         point="org.eclipse.ui.bindings">
+      <key
+            commandId="com.foosbar.mailsnag.commands.delete"
+            contextId="com.foosbar.mailsnag.contexts.delete"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="DEL">
+      </key>
    </extension>
 </plugin>

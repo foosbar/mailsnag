@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.net.ServerSocket;
 
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.PlatformUI;
 
 import com.foosbar.mailsnag.Activator;
 import com.foosbar.mailsnag.preferences.PreferenceConstants;
@@ -12,19 +14,13 @@ import com.foosbar.mailsnag.views.MessagesView;
 public class Server implements Runnable {
 
 	private boolean listening;
-	private MessagesView view;
 	private ServerSocket serverSocket;
 	
-	public Server(MessagesView view) {
-		this.view = view;
-	}
-	
-	public MessagesView getView() {
-		return view;
+	public Server() {
 	}
 	
 	public void run() {
-
+		
 		listening = true;
 
 		// Get Preferences
@@ -50,13 +46,18 @@ public class Server implements Runnable {
 			//Exit thread execution
 			throw new RuntimeException(e);
 		}
-		
-		view.disableStartServer();
-		view.enableStopServer();
-		
+
+		Display.getDefault().syncExec(new Runnable(){
+			public void run(){
+				MessagesView view = (MessagesView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(MessagesView.ID);
+				view.disableStartServer();
+				view.enableStopServer();
+			}
+		});
+
 		try {
 			while (listening) {
-				new MailHandler(serverSocket.accept(), view.getViewer())
+				new MailHandler(serverSocket.accept())
 					.start();
 			}
 		} catch(IOException e) {
@@ -72,9 +73,14 @@ public class Server implements Runnable {
 					serverSocket.close();
 				} catch(IOException e) {}
 			}
-			
-			view.disableStopServer();
-			view.enableStartServer();
+
+			Display.getDefault().syncExec(new Runnable(){
+				public void run(){
+					MessagesView view = (MessagesView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(MessagesView.ID);
+					view.disableStopServer();
+					view.enableStartServer();
+				}
+			});
 		}
 	}
 	

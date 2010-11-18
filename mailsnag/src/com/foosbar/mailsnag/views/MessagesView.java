@@ -14,7 +14,6 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.DoubleClickEvent;
@@ -49,13 +48,13 @@ import com.foosbar.mailsnag.editors.MessageEditor;
 import com.foosbar.mailsnag.editors.MessageEditorInput;
 import com.foosbar.mailsnag.model.Message;
 import com.foosbar.mailsnag.preferences.PreferenceConstants;
-import com.foosbar.mailsnag.smtp.Server;
-import com.foosbar.mailsnag.smtp.ServerThreadGroup;
 import com.foosbar.mailsnag.util.EmailFilenameFilter;
 import com.foosbar.mailsnag.util.MessageStore;
 
 public class MessagesView extends ViewPart {
 
+	public static final String ID = "com.foosbar.mailsnag.views.MessagesView";
+	
 	// Attachments Icon
 	private static final ImageDescriptor IMG_ATTACHMENT =
 		ImageDescriptor.createFromFile(Activator.class, "/icons/attachment.png");
@@ -93,18 +92,13 @@ public class MessagesView extends ViewPart {
 	
 	private Action runServer;
 	private Action stopServer;
-	private Action openMessage;
-	private Action removeMessage;
 	private Action openPreferences;
 
-	//private MessagesView messagesView;
-	
 	/**
 	 * The constructor.
 	 */
 	public MessagesView() {
 		super();
-		//messagesView = this;
 	}
 
 	public class ViewContentProvider implements IStructuredContentProvider {
@@ -286,6 +280,7 @@ public class MessagesView extends ViewPart {
 		viewer.setContentProvider(new ViewContentProvider(loadMessages()));
 		viewer.setLabelProvider(new ViewLabelProvider());
 		viewer.setInput(getViewSite());
+		getSite().setSelectionProvider(viewer);
 		
 		MessageSorter sorter = new MessageSorter();
 		viewer.setSorter(sorter);
@@ -303,12 +298,16 @@ public class MessagesView extends ViewPart {
 		hookDoubleClickAction();
 		contributeToActionBars();
 		
+		// often in createPartControl(Composite)
+		//IHandlerService hs = (IHandlerService) getSite().getService(IHandlerService.class);
+		//hs.activateHandler(ActionFactory.DELETE.getCommandId(), new DeleteMessage());
+
 		IPreferenceStore store = 
 			Activator.getDefault().getPreferenceStore();
 		
 		//Start server if the preferences indicate such.
 		if(store.getBoolean(PreferenceConstants.PARAM_STARTUP))
-			startServer();
+			Activator.getDefault().startServer();
 
 	}
 
@@ -350,7 +349,7 @@ public class MessagesView extends ViewPart {
 					MessagesView.this.fillContextMenu(manager);
 			}
 		});
-		Menu menu = menuMgr.createContextMenu(viewer.getControl());
+		Menu menu = menuMgr.createContextMenu(viewer.getTable());
 		viewer.getControl().setMenu(menu);
 		getSite().registerContextMenu(menuMgr, viewer);
 	}
@@ -369,9 +368,6 @@ public class MessagesView extends ViewPart {
 	}
 
 	private void fillContextMenu(IMenuManager manager) {
-		manager.add(openMessage);
-		manager.add(new Separator());
-		manager.add(removeMessage);
 		// Other plug-ins can contribute there actions here
 		manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
 	}
@@ -401,13 +397,6 @@ public class MessagesView extends ViewPart {
 			stopServer.setEnabled(false);
 	}
 
-	private Server server = new Server(this);
-	
-	private void startServer() {
-		ThreadGroup tg = new ServerThreadGroup(server.getView(),"SMTPServer");
-		new Thread(tg,server).start();
-	}
-	
 	private void makeActions() {
 
 		openPreferences = new Action() {
@@ -423,7 +412,7 @@ public class MessagesView extends ViewPart {
 		
 		runServer = new Action() {
 			public void run() {
-				startServer();
+				Activator.getDefault().startServer();
 			}
 		};
 		
@@ -433,7 +422,7 @@ public class MessagesView extends ViewPart {
 
 		stopServer = new Action() {
 			public void run() {
-				server.close();
+				Activator.getDefault().stopServer();
 			}
 		};
 		
@@ -441,50 +430,13 @@ public class MessagesView extends ViewPart {
 		stopServer.setToolTipText(BUNDLE.getString("action.stop.tooltip"));
 		stopServer.setImageDescriptor(IMG_STOP);
 		stopServer.setEnabled(false);
-	
-		removeMessage = new Action() {
-			@SuppressWarnings("unchecked")
-			public void run() {
-				IStructuredSelection iss = (IStructuredSelection) viewer.getSelection();
-				int size = iss.size();
-				
-				String message = (size == 1) ? 
-						BUNDLE.getString("action.delete.confirm.single") : 
-							String.format(BUNDLE.getString("action.delete.confirm.plural"),size) ;
-				
-				boolean confirm =
-					MessageDialog.openConfirm(
-						viewer.getControl().getShell(),
-						BUNDLE.getString("action.delete.confirm"),
-						message);
-				
-				if(confirm) {
-					Iterator<Object> it = iss.iterator();
-					while(it.hasNext()) {
-						Object obj = it.next();
-						if(obj != null && obj instanceof Message) {
-							Message m = (Message)obj;
-							MessageStore.delete((Message)obj);
-							((ViewContentProvider) viewer.getContentProvider()).remove(m);
-						}
-						//TODO: Close open editors
-					}
-					getViewer().refresh();
-				}
-			}
-		};
-		removeMessage.setText(BUNDLE.getString("action.delete"));
-
-		openMessage = new Action() {
-			public void run() {
-				openMessage();
-			}
-		};
-		openMessage.setText(BUNDLE.getString("action.open"));
 	}
 
 	@SuppressWarnings("unchecked")
 	private void openMessage() {
+		
+		TableViewer viewer = getViewer();
+		
 		ViewContentProvider provider = (ViewContentProvider) viewer.getContentProvider();
 		IStructuredSelection iss = (IStructuredSelection) viewer.getSelection();
 		Iterator<Object> it = iss.iterator();
@@ -493,7 +445,6 @@ public class MessagesView extends ViewPart {
 			Object obj = it.next();
 			if(obj instanceof Message) {
 				Message m = (Message)obj;
-       			//IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
        			MessageEditorInput input = new MessageEditorInput(m);
        			try {
        				IDE.openEditor(page, input, MessageEditor.ID, true);

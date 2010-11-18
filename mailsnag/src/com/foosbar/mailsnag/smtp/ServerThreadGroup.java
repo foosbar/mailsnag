@@ -6,6 +6,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.PlatformUI;
 
 import com.foosbar.mailsnag.Activator;
 import com.foosbar.mailsnag.preferences.PreferenceConstants;
@@ -14,17 +15,21 @@ import com.foosbar.mailsnag.views.MessagesView;
 
 public class ServerThreadGroup extends ThreadGroup {
 	
-	private MessagesView view;
-	
-	public ServerThreadGroup(MessagesView view, String name) {
+	public ServerThreadGroup(String name) {
 		super(name);
-		this.view = view;
 	}
 
 	@Override
 	public void uncaughtException(Thread t, final Throwable e) {
 		Display.getDefault().asyncExec(new Runnable(){
             public void run() {
+
+            	MessagesView view = (MessagesView) PlatformUI
+    			.getWorkbench()
+    				.getActiveWorkbenchWindow()
+    					.getActivePage()
+    						.findView(MessagesView.ID);
+
         		view.disableStopServer();
         		view.enableStartServer();
         		

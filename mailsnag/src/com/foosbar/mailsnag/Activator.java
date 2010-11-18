@@ -7,6 +7,8 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
 import com.foosbar.mailsnag.preferences.PreferenceConstants;
+import com.foosbar.mailsnag.smtp.Server;
+import com.foosbar.mailsnag.smtp.ServerThreadGroup;
 import com.foosbar.mailsnag.util.MessageStore;
 
 /**
@@ -23,7 +25,10 @@ public class Activator extends AbstractUIPlugin {
 
 	// The shared instance
 	private static Activator plugin;
-	
+
+	// SMTP Server
+	private Server server = new Server();
+
 	/**
 	 * The constructor
 	 */
@@ -39,6 +44,11 @@ public class Activator extends AbstractUIPlugin {
 		plugin = this;
 	}
 
+	public void startServer() {
+		ThreadGroup tg = new ServerThreadGroup("SMTPServer");
+		new Thread(tg,server).start();
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
@@ -55,6 +65,10 @@ public class Activator extends AbstractUIPlugin {
 		super.stop(context);
 	}
 
+	public void stopServer() {
+		server.close();
+	}
+	
 	/**
 	 * Returns the shared instance
 	 *

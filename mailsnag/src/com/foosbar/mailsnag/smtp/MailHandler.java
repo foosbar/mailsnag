@@ -6,13 +6,14 @@ import java.io.PrintWriter;
 import java.net.Socket;
 
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.PlatformUI;
 
 import com.foosbar.mailsnag.Activator;
 import com.foosbar.mailsnag.model.Message;
 import com.foosbar.mailsnag.preferences.PreferenceConstants;
 import com.foosbar.mailsnag.util.MessageStore;
+import com.foosbar.mailsnag.views.MessagesView;
 import com.foosbar.mailsnag.views.MessagesView.ViewContentProvider;
 
 public class MailHandler extends Thread {
@@ -33,19 +34,15 @@ public class MailHandler extends Thread {
 	private static final String NEWLINE = System.getProperty("line.separator");
 	
 	private Socket socket;
-	//private Message message;
-	private TableViewer viewer;
 	
 	private boolean debug;
 	
 	private IPreferenceStore pStore;
 	
-	public MailHandler(Socket socket, TableViewer viewer) {
+	public MailHandler(Socket socket) {
 		super("Email Handler Thread");
 		
 		this.socket = socket;
-		
-		this.viewer = viewer;
 		
 		this.pStore = 
 			Activator.getDefault().getPreferenceStore();
@@ -160,8 +157,9 @@ public class MailHandler extends Thread {
 				//Update the Content Provider
 				Display.getDefault().asyncExec(new Runnable() {
 					public void run() {
+						MessagesView view = (MessagesView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(MessagesView.ID);
 						ViewContentProvider provider = 
-							(ViewContentProvider) viewer.getContentProvider();
+							(ViewContentProvider) view.getViewer().getContentProvider();
 						provider.add(message);
 					}
 				});
