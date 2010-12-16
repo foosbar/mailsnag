@@ -37,6 +37,15 @@
                id="com.foosbar.mailsnag.views.MessagesView">
          </viewShortcut>
       </perspectiveExtension>
+      <perspectiveExtension
+            targetID="org.eclipse.jst.j2ee.J2EEPerspective">
+      </perspectiveExtension>
+      <perspectiveExtension
+            targetID="org.eclipse.wst.web.ui.webDevPerspective">
+      </perspectiveExtension>
+      <perspectiveExtension
+            targetID="org.eclipse.ui.resourcePerspective">
+      </perspectiveExtension>
    </extension>
    <extension
          point="org.eclipse.ui.preferencePages">
