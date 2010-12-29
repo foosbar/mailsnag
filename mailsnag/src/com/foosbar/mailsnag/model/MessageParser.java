@@ -56,7 +56,6 @@ public class MessageParser {
 			// Parse the attachments
 			parseAttachments(m, mimeMessage);
 			
-		//} catch(IOException e) {
 		} catch(MessagingException e) {
 		} finally {
 			try {
@@ -85,13 +84,22 @@ public class MessageParser {
 			
 			is = new ByteArrayInputStream(rawData.getBytes());
 			
-			MimeMessage mimeMessage = new MimeMessage(session, is);			
-		
+			MimeMessage mimeMessage = new MimeMessage(session, is);
+			
+			//String contentType = mimeMessage.getContentType();
+			Object c = mimeMessage.getContent();
+			if(mimeMessage.isMimeType("text/*"))
+				parseSinglepart(mimeMessage, data);
+			else if(mimeMessage.isMimeType("multipart/*"))
+				parseMultipart(mimeMessage, data);
+			
+			/*
+			mimeMessage.isMimeType(mimeType)
 			if(mimeMessage.getContent() instanceof Multipart)
 				parseMultipart(mimeMessage, data);
 			else
 				parseSinglepart(mimeMessage, data);
-
+			*/
 		} catch(Exception e) {
 			
 			e.printStackTrace();
@@ -117,8 +125,11 @@ public class MessageParser {
 			
 			for(int x = 0; x < count; x++) {
 				BodyPart part = content.getBodyPart(x);
-				
-				if(BodyPart.ATTACHMENT.equals(part.getDisposition())) {
+				if(BodyPart.INLINE.equals(part.getDisposition())) {
+					String filename = getAttachmentFilename(part);
+					message.addInlineResource("1", filename, part.getContentType(), part.getSize());
+				} 
+				else if(BodyPart.ATTACHMENT.equals(part.getDisposition())) {
 					String filename = getAttachmentFilename(part);
 					message.addAttachment(Integer.toString(x), filename, part.getContentType(), part.getSize());
 				}
@@ -129,7 +140,7 @@ public class MessageParser {
 			e.printStackTrace();
 		}
 	}
-	
+
 	private static void parseMultipart(MimeMessage mimeMessage, MessageData messageData) throws IOException, MessagingException {
 		Multipart content = (Multipart)mimeMessage.getContent();
 		parseMultipart(content, messageData);
@@ -140,8 +151,10 @@ public class MessageParser {
 		
 		for(int x = 0; x < count; x++) {
 			BodyPart bp = content.getBodyPart(x);
+			String contentType = bp.getContentType();
+			Object c = bp.getContent();
 			if(BodyPart.ATTACHMENT.equalsIgnoreCase(bp.getDisposition())) {
-				;// Currently, do nothing
+				continue;// Currently, do nothing
 			} else {
 				if(bp.isMimeType(MIME_ALT)) {
 					parseMultipart((Multipart)bp.getContent(), messageData);

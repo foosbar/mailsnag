@@ -1,6 +1,7 @@
 package com.foosbar.mailsnag.editors;
 
 
+import java.io.File;
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -21,6 +22,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorRegistry;
 import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.events.HyperlinkAdapter;
@@ -31,12 +33,14 @@ import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.forms.widgets.TableWrapData;
 import org.eclipse.ui.forms.widgets.TableWrapLayout;
 import org.eclipse.ui.ide.IDE;
+import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.MultiPageEditorPart;
 
 import com.foosbar.mailsnag.Activator;
 import com.foosbar.mailsnag.model.Message;
 import com.foosbar.mailsnag.model.Message.Attachment;
 import com.foosbar.mailsnag.model.MessageData;
+import com.foosbar.mailsnag.util.InlineFilter;
 import com.foosbar.mailsnag.util.MessageStore;
 
 /**
@@ -198,7 +202,7 @@ public class MessageEditor extends MultiPageEditorPart implements IResourceChang
 			composite.setLayout(new FillLayout());
 
 			Browser browser = new Browser(composite, SWT.H_SCROLL | SWT.V_SCROLL);
-			browser.setText(messageData.getHtmlMessage());
+			browser.setText(InlineFilter.filter(messageData.getHtmlMessage(), Activator.getDefault().getStateLocation().toString() + File.separator + message.getAttachmentDir()));
 			browser.setCapture(true);
 
 			// Get Preferences
@@ -301,20 +305,18 @@ public class MessageEditor extends MultiPageEditorPart implements IResourceChang
 	 * Closes all project files on project close.
 	 */
 	public void resourceChanged(final IResourceChangeEvent event){
-		if(event.getType() == IResourceChangeEvent.PRE_CLOSE){
-			Display.getDefault().asyncExec(new Runnable(){
-				public void run(){
-					//IWorkbenchPage[] pages = getSite().getWorkbenchWindow().getPages();
-					/*
-					for (int i = 0; i<pages.length; i++){
-						if(((FileEditorInput)editor.getEditorInput()).getFile().getProject().equals(event.getResource())){
-							IEditorPart editorPart = pages[i].findEditor(editor.getEditorInput());
-							pages[i].closeEditor(editorPart,true);
+		if (event.getType() == IResourceChangeEvent.POST_CHANGE) {
+			Display.getDefault().asyncExec(new Runnable() {
+				public void run() {
+					IWorkbenchPage[] pages = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getPages();
+					for (int i = 0; i < pages.length; i++) {
+						if (((FileEditorInput) getEditorInput()).getFile().getProject().equals(event.getResource())) {
+							IEditorPart editorPart = pages[i].findEditor(getEditorInput());
+							pages[i].closeEditor(editorPart, true);
 						}
 					}
-					*/
 				}
-			});
+			});		
 		}
 	}
 }

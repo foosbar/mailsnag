@@ -2,7 +2,9 @@ package com.foosbar.mailsnag.model;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Models a message received via SMTP.
@@ -21,10 +23,12 @@ public class Message {
 	private String subject;
 	private String to;
 	private List<Attachment> attachments;
+	private Map<String, InlineResource> inlineResources;
 	private boolean unread;
 	
 	public Message() {
 		attachments = new ArrayList<Attachment>();
+		inlineResources = new HashMap<String, InlineResource>();
 	}
 	
 	public Attachment addAttachment(String id, String name, String mimeType, long size) {
@@ -38,6 +42,19 @@ public class Message {
 		attachments.add(a);
 		
 		return a;
+	}
+	
+	public InlineResource addInlineResource(String id, String name, String mimeType, long size) {
+		InlineResource ir = new InlineResource();
+		ir.setId(id);
+		ir.setMimeType(mimeType);
+		ir.setName(name);
+		ir.setSize(size);
+		ir.setMessage(this);
+		ir.setIndex(attachments.size());
+		inlineResources.put(id,ir);
+		
+		return ir;
 	}
 	
 	public String getAttachmentDir() {
@@ -174,7 +191,7 @@ public class Message {
 			return id;
 		}
 
-		private void setId(String id) {
+		protected void setId(String id) {
 			this.id = id;
 		}
 
@@ -182,7 +199,7 @@ public class Message {
 			return index;
 		}
 
-		private void setIndex(int index) {
+		protected void setIndex(int index) {
 			this.index = index;
 		}
 
@@ -190,7 +207,7 @@ public class Message {
 			return message;
 		}
 
-		private void setMessage(Message message) {
+		protected void setMessage(Message message) {
 			this.message = message;
 		}
 
@@ -198,7 +215,7 @@ public class Message {
 			return mimeType;
 		}
 
-		private void setMimeType(String mimeType) {
+		protected void setMimeType(String mimeType) {
 			this.mimeType = mimeType;
 		}
 
@@ -206,7 +223,7 @@ public class Message {
 			return name;
 		}
 
-		private void setName(String name) {
+		protected void setName(String name) {
 			this.name = name;
 		}
 
@@ -214,8 +231,39 @@ public class Message {
 			return size;
 		}
 
-		private void setSize(long size) {
+		protected void setSize(long size) {
 			this.size = size;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if( !(obj instanceof Attachment) )
+				return false;
+			
+			Attachment ir = (Attachment)obj;
+			
+			return id.equals(ir.getId());
+		}
+
+		@Override
+		public int hashCode() {
+			return id.hashCode();
+		}
+	}
+	
+	public class InlineResource extends Attachment {
+		
+		private InlineResource() {
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if( !(obj instanceof InlineResource) )
+				return false;
+			
+			InlineResource ir = (InlineResource)obj;
+			
+			return id.equals(ir.getId());
 		}
 	}
 }

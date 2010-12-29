@@ -56,7 +56,6 @@ public class DeleteMessage extends AbstractHandler {
 						MessageStore.delete((Message)obj);
 						((ViewContentProvider) viewer.getViewer().getContentProvider()).remove(m);
 					}
-					//TODO: Close open editors
 				}
 				viewer.getViewer().refresh();
 			}
