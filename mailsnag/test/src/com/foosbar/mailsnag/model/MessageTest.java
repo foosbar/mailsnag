@@ -12,7 +12,6 @@ import com.foosbar.mailsnag.util.MessageStore;
 public class MessageTest {
 
 	private Message message1;
-	private Message message2;
 	
 	@Before
 	public void setUp() throws Exception {
@@ -26,7 +25,6 @@ public class MessageTest {
 	@After
 	public void tearDown() throws Exception {
 		message1 = null;
-		message2 = null;
 	}
 
 	@Test
