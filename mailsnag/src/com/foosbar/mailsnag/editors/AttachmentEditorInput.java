@@ -27,6 +27,7 @@ public class AttachmentEditorInput implements IPathEditorInput {
 		path = 
 			Activator.getDefault().getStateLocation()
 				.append(m.getAttachmentDir())
+				.append(attachment.getId())
 				.append(attachment.getName()); 
 	}
 	

@@ -1,9 +1,7 @@
 package com.foosbar.mailsnag.model;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -22,13 +20,11 @@ public class Message {
 	private Date received;
 	private String subject;
 	private String to;
-	private List<Attachment> attachments;
-	private Map<String, InlineResource> inlineResources;
+	private Map<String, Attachment> attachments;
 	private boolean unread;
 	
 	public Message() {
-		attachments = new ArrayList<Attachment>();
-		inlineResources = new HashMap<String, InlineResource>();
+		attachments = new HashMap<String, Attachment>();
 	}
 	
 	public Attachment addAttachment(String id, String name, String mimeType, long size) {
@@ -39,29 +35,16 @@ public class Message {
 		a.setSize(size);
 		a.setMessage(this);
 		a.setIndex(attachments.size());
-		attachments.add(a);
+		attachments.put(id, a);
 		
 		return a;
-	}
-	
-	public InlineResource addInlineResource(String id, String name, String mimeType, long size) {
-		InlineResource ir = new InlineResource();
-		ir.setId(id);
-		ir.setMimeType(mimeType);
-		ir.setName(name);
-		ir.setSize(size);
-		ir.setMessage(this);
-		ir.setIndex(attachments.size());
-		inlineResources.put(id,ir);
-		
-		return ir;
 	}
 	
 	public String getAttachmentDir() {
 		return filename.substring(0, filename.length() - 4);
 	}
 
-	public List<Attachment> getAttachments() {
+	public Map<String, Attachment> getAttachments() {
 		return attachments;
 	}
 
@@ -105,7 +88,7 @@ public class Message {
 		return !attachments.isEmpty();
 	}
 
-	public void setAttachments(List<Attachment> attachments) {
+	public void setAttachments(Map<String, Attachment> attachments) {
 		this.attachments = attachments;
 	}
 	
@@ -248,22 +231,6 @@ public class Message {
 		@Override
 		public int hashCode() {
 			return id.hashCode();
-		}
-	}
-	
-	public class InlineResource extends Attachment {
-		
-		private InlineResource() {
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if( !(obj instanceof InlineResource) )
-				return false;
-			
-			InlineResource ir = (InlineResource)obj;
-			
-			return id.equals(ir.getId());
 		}
 	}
 }

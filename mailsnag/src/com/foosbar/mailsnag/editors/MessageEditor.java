@@ -3,7 +3,7 @@ package com.foosbar.mailsnag.editors;
 
 import java.io.File;
 import java.text.NumberFormat;
-import java.util.List;
+import java.util.Collection;
 import java.util.ResourceBundle;
 
 import org.eclipse.core.resources.IMarker;
@@ -94,7 +94,7 @@ public class MessageEditor extends MultiPageEditorPart implements IResourceChang
 		if(!message.hasAttachments())
 			return;
 
-		List<Attachment> attachments = message.getAttachments();
+		Collection<Attachment> attachments = message.getAttachments().values();
 		
 		Composite composite = new Composite(getContainer(), SWT.NONE);
 		FillLayout layout = new FillLayout();
@@ -121,7 +121,8 @@ public class MessageEditor extends MultiPageEditorPart implements IResourceChang
 			link.addHyperlinkListener(new HyperlinkAdapter() {
 				public void linkActivated(HyperlinkEvent e) {
 					
-					MessageStore.persistAttachment(attachment,  messageData.getMessage());
+					//Not necessary - done when editor is created. see #createPages();
+					//MessageStore.persistAttachment(attachment,  messageData.getMessage());
 					
 					try {
 						IDE.openEditor(
@@ -202,7 +203,7 @@ public class MessageEditor extends MultiPageEditorPart implements IResourceChang
 			composite.setLayout(new FillLayout());
 
 			Browser browser = new Browser(composite, SWT.H_SCROLL | SWT.V_SCROLL);
-			browser.setText(InlineFilter.filter(messageData.getHtmlMessage(), Activator.getDefault().getStateLocation().toString() + File.separator + message.getAttachmentDir()));
+			browser.setText(InlineFilter.filter(message, messageData.getHtmlMessage(), Activator.getDefault().getStateLocation().toString() + File.separator + message.getAttachmentDir()));
 			browser.setCapture(true);
 
 			// Get Preferences
@@ -229,9 +230,19 @@ public class MessageEditor extends MultiPageEditorPart implements IResourceChang
 	 * Creates the pages of the multi-page editor.
 	 */
 	protected void createPages() {
+		//Make sure attachments are persisted
+		MessageStore.persistAttachments(message, messageData.getMessage());
+		
+		//Create HTML View of Email if necessary
 		createHtmlPage();
+		
+		//Create Text-only View of Email if necessary
 		createTextPage();
+		
+		//List any attachments included with Email
 		createAttachments();
+		
+		//Create Raw Data View.
 		createRawPage();
 	}
 	/**

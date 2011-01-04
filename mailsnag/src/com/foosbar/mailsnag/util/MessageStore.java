@@ -63,9 +63,19 @@ public class MessageStore {
 					out.close();
 			} catch(Exception e) {}
 		}
+
+		for(Attachment attachment : message.getAttachments().values()) {
+			persistAttachment(attachment, data);
+		}
 		
 		return message;
 	}
+
+	public static final void persistAttachments(Message message, String data) {
+		for(Attachment a : message.getAttachments().values())
+			persistAttachment(a, data);
+	}
+
 	
 	// Save message to directory
 	//    workspace/.metadata/.plugins/com.foosbar.mailsnag
@@ -89,8 +99,13 @@ public class MessageStore {
 			MimeMultipart content = (MimeMultipart)mimeMessage.getContent();
 			int count = content.getCount();
 			
-			File dir = new File(Activator.getDefault().getStateLocation().toFile(), message.getAttachmentDir());
-
+			File root_dir = new File(Activator.getDefault().getStateLocation().toFile(), message.getAttachmentDir());
+			
+			if(!root_dir.exists())
+				root_dir.mkdir();
+			
+			File dir = new File(root_dir, attachment.getId());
+			
 			int counter = 0;
 			for(int x = 0; x < count; x++) {
 				BodyPart part = content.getBodyPart(x);
@@ -104,26 +119,25 @@ public class MessageStore {
 						dir.mkdir();
 					
 					File file = new File(dir, attachment.getName());
-					//while(file.exists())
-					//	filename = getNextFilename(filename, filenameCounter++);
-
-					InputStream in = null;
-					OutputStream out = null;
-
-					try {
-						in  = new BufferedInputStream(part.getInputStream());
-						out = new BufferedOutputStream(new FileOutputStream(file));
-						byte[] buffer = new byte[4096];
-						while(in.read(buffer) != -1)
-							out.write(buffer);
-						
-					} catch(Exception e) {
-						e.printStackTrace();
-					} finally {
+					if(!file.exists()) {
+						InputStream in = null;
+						OutputStream out = null;
+	
 						try {
-							if(out != null)
-								out.close();
-						} catch(Exception e) {}
+							in  = new BufferedInputStream(part.getInputStream());
+							out = new BufferedOutputStream(new FileOutputStream(file));
+							byte[] buffer = new byte[4096];
+							while(in.read(buffer) != -1)
+								out.write(buffer);
+							
+						} catch(Exception e) {
+							e.printStackTrace();
+						} finally {
+							try {
+								if(out != null)
+									out.close();
+							} catch(Exception e) {}
+						}
 					}
 				}
 			}

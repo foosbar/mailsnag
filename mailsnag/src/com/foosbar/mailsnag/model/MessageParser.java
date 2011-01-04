@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Properties;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -19,11 +20,17 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMessage.RecipientType;
 import javax.mail.internet.MimeMultipart;
 
+import com.foosbar.mailsnag.model.Message.Attachment;
+
 public class MessageParser {
 
 	private static final String MIME_ALT = "multipart/alternative";
+	private static final String MIME_RELATED = "multipart/related";
 	private static final String MIME_HTML = "text/html";
 	private static final String MIME_PLAIN = "text/plain";
+	
+	private static final Pattern CONTENT_ID_REGEX = Pattern.compile("<(.*?)>");
+
 	
 	public static final Message parse(String message) {
 		Message m = new Message();
@@ -87,7 +94,7 @@ public class MessageParser {
 			MimeMessage mimeMessage = new MimeMessage(session, is);
 			
 			//String contentType = mimeMessage.getContentType();
-			Object c = mimeMessage.getContent();
+			//Object c = mimeMessage.getContent();
 			if(mimeMessage.isMimeType("text/*"))
 				parseSinglepart(mimeMessage, data);
 			else if(mimeMessage.isMimeType("multipart/*"))
@@ -127,11 +134,13 @@ public class MessageParser {
 				BodyPart part = content.getBodyPart(x);
 				if(BodyPart.INLINE.equals(part.getDisposition())) {
 					String filename = getAttachmentFilename(part);
-					message.addInlineResource("1", filename, part.getContentType(), part.getSize());
+					//message.addInlineResource(getAttachmentId(part), filename, part.getContentType(), part.getSize());
+					Attachment a = message.addAttachment(getAttachmentId(part), filename, part.getContentType(), part.getSize());
 				} 
 				else if(BodyPart.ATTACHMENT.equals(part.getDisposition())) {
 					String filename = getAttachmentFilename(part);
-					message.addAttachment(Integer.toString(x), filename, part.getContentType(), part.getSize());
+					//System.out.println("ATTACHMENT CONTENT-ID: " + getAttachmentId(part));
+					Attachment a = message.addAttachment(getAttachmentId(part), filename, part.getContentType(), part.getSize());
 				}
 			}
 		} catch(MessagingException e) {
@@ -151,13 +160,20 @@ public class MessageParser {
 		
 		for(int x = 0; x < count; x++) {
 			BodyPart bp = content.getBodyPart(x);
-			String contentType = bp.getContentType();
-			Object c = bp.getContent();
+			//String contentType = bp.getContentType();
+			//Object c = bp.getContent();
+			System.out.print("DISP: " + bp.getDisposition() + "    CONTENT_TYPE: ");
+			System.out.println(bp.getContentType());
 			if(BodyPart.ATTACHMENT.equalsIgnoreCase(bp.getDisposition())) {
 				continue;// Currently, do nothing
 			} else {
 				if(bp.isMimeType(MIME_ALT)) {
-					parseMultipart((Multipart)bp.getContent(), messageData);
+					Object c = bp.getContent();
+					parseMultipart((Multipart)c, messageData);
+				}
+				else if(bp.isMimeType(MIME_RELATED)) {
+					Object c = bp.getContent();
+					parseMultipart((Multipart)c, messageData);
 				}
 				else if(bp.isMimeType(MIME_HTML)) {
 					messageData.setHtmlMessage(bp.getContent().toString());
@@ -228,5 +244,15 @@ public class MessageParser {
 		}
 		
 		return "<missing filename>";
+	}
+	
+	private static String getAttachmentId(BodyPart part) throws MessagingException {
+		String[] idHeader = part.getHeader("Content-ID");
+		if(idHeader != null && idHeader.length > 0) {
+			Matcher m = CONTENT_ID_REGEX.matcher(idHeader[0]);
+			if(m.find())
+				return m.group(1);
+		}
+		return UUID.randomUUID().toString();
 	}
 }
