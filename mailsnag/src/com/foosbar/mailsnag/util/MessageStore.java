@@ -33,14 +33,11 @@ public class MessageStore {
 	public static final Message persist(String data) {
 
 		//Parse Message
-		Message message = MessageParser.parse(data);
+		Message message = MessageParser.parse(data, getRandomFilename());
 		
 		//Set message as unread
 		message.setUnread(true);
 		
-		//Create random filename
-		message.setFilename(getRandomFilename());
-
 		//Writer writer = null;
 		BufferedOutputStream out = null;
 		try {
@@ -57,26 +54,59 @@ public class MessageStore {
 			e.printStackTrace();
 		} finally {
 			try {
-				//if(writer != null)
-				//	writer.close();
 				if(out != null)
 					out.close();
 			} catch(Exception e) {}
-		}
-
-		for(Attachment attachment : message.getAttachments().values()) {
-			persistAttachment(attachment, data);
 		}
 		
 		return message;
 	}
 
-	public static final void persistAttachments(Message message, String data) {
-		for(Attachment a : message.getAttachments().values())
-			persistAttachment(a, data);
+	// Save message to directory
+	//    workspace/.metadata/.plugins/com.foosbar.mailsnag
+	public static final void persistAttachment(Attachment attachment, BodyPart part) {
+		
+		Message message = attachment.getMessage();
+		
+		try {
+			
+			File root_dir = new File(Activator.getDefault().getStateLocation().toFile(), message.getAttachmentDir());
+			
+			if(!root_dir.exists())
+				root_dir.mkdir();
+			
+			File dir = new File(root_dir, attachment.getId());
+			
+			if(!dir.exists())
+				dir.mkdir();
+					
+			File file = new File(dir, attachment.getName());
+			if(!file.exists()) {
+				InputStream in = null;
+				OutputStream out = null;
+	
+				try {
+					in  = new BufferedInputStream(part.getInputStream());
+					out = new BufferedOutputStream(new FileOutputStream(file));
+					byte[] buffer = new byte[4096];
+					while(in.read(buffer) != -1)
+						out.write(buffer);
+							
+				} catch(Exception e) {
+					e.printStackTrace();
+				} finally {
+					try {
+						if(out != null)
+							out.close();
+					} catch(Exception e) {}
+				}
+			}
+		} catch(Exception e) {
+			e.printStackTrace();
+		} finally {
+		}
 	}
 
-	
 	// Save message to directory
 	//    workspace/.metadata/.plugins/com.foosbar.mailsnag
 	public static final void persistAttachment(Attachment attachment, String data) {
@@ -215,8 +245,7 @@ public class MessageStore {
 			while (reader.read(buffer) > 0)
 	            builder.append(buffer);
 			
-	        Message message = MessageParser.parse(builder.toString());
-	        message.setFilename(filename);
+	        Message message = MessageParser.parse(builder.toString(), filename);
 	        
 	        return message;
 	        

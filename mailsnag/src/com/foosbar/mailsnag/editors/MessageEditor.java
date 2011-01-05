@@ -41,7 +41,6 @@ import com.foosbar.mailsnag.model.Message;
 import com.foosbar.mailsnag.model.Message.Attachment;
 import com.foosbar.mailsnag.model.MessageData;
 import com.foosbar.mailsnag.util.InlineFilter;
-import com.foosbar.mailsnag.util.MessageStore;
 
 /**
  * A multi-tab editor for inspecting emails
@@ -203,7 +202,9 @@ public class MessageEditor extends MultiPageEditorPart implements IResourceChang
 			composite.setLayout(new FillLayout());
 
 			Browser browser = new Browser(composite, SWT.H_SCROLL | SWT.V_SCROLL);
-			browser.setText(InlineFilter.filter(message, messageData.getHtmlMessage(), Activator.getDefault().getStateLocation().toString() + File.separator + message.getAttachmentDir()));
+			String filteredText = InlineFilter.filter(message, messageData.getHtmlMessage(), Activator.getDefault().getStateLocation().toString() + File.separator + message.getAttachmentDir());
+			System.out.println(filteredText);
+			browser.setText(filteredText);
 			browser.setCapture(true);
 
 			// Get Preferences
@@ -219,6 +220,8 @@ public class MessageEditor extends MultiPageEditorPart implements IResourceChang
 					"HTML Format");
 
 		} catch (Exception e) {
+			e.printStackTrace();
+			e.getCause().printStackTrace();
 			ErrorDialog.openError(
 				getSite().getShell(),
 				"Error creating nested text editor",
@@ -230,9 +233,6 @@ public class MessageEditor extends MultiPageEditorPart implements IResourceChang
 	 * Creates the pages of the multi-page editor.
 	 */
 	protected void createPages() {
-		//Make sure attachments are persisted
-		MessageStore.persistAttachments(message, messageData.getMessage());
-		
 		//Create HTML View of Email if necessary
 		createHtmlPage();
 		

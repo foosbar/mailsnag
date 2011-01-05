@@ -1,12 +1,10 @@
 package com.foosbar.mailsnag.commands;
 
 import java.util.Iterator;
-import java.util.ResourceBundle;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
@@ -14,11 +12,9 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.ide.IDE;
 
-import com.foosbar.mailsnag.Activator;
 import com.foosbar.mailsnag.editors.MessageEditor;
 import com.foosbar.mailsnag.editors.MessageEditorInput;
 import com.foosbar.mailsnag.model.Message;
-import com.foosbar.mailsnag.util.MessageStore;
 import com.foosbar.mailsnag.views.MessagesView;
 import com.foosbar.mailsnag.views.MessagesView.ViewContentProvider;
 
@@ -34,6 +30,7 @@ public class OpenMessage extends AbstractHandler {
 
 			ViewContentProvider provider = (ViewContentProvider) viewer.getViewer().getContentProvider();
 			IStructuredSelection iss = (IStructuredSelection) viewer.getViewer().getSelection();
+			@SuppressWarnings("unchecked")
 			Iterator<Object> it = iss.iterator();
 			IWorkbenchPage page = part.getSite().getPage();
 			while(it.hasNext()) {

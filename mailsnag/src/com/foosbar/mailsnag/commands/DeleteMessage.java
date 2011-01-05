@@ -48,6 +48,7 @@ public class DeleteMessage extends AbstractHandler {
 					message);
 			
 			if(confirm) {
+				@SuppressWarnings("unchecked")
 				Iterator<Object> it = iss.iterator();
 				while(it.hasNext()) {
 					Object obj = it.next();

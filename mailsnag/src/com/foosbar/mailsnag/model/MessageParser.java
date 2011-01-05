@@ -21,6 +21,7 @@ import javax.mail.internet.MimeMessage.RecipientType;
 import javax.mail.internet.MimeMultipart;
 
 import com.foosbar.mailsnag.model.Message.Attachment;
+import com.foosbar.mailsnag.util.MessageStore;
 
 public class MessageParser {
 
@@ -32,7 +33,7 @@ public class MessageParser {
 	private static final Pattern CONTENT_ID_REGEX = Pattern.compile("<(.*?)>");
 
 	
-	public static final Message parse(String message) {
+	public static final Message parse(String message, String filename) {
 		Message m = new Message();
 		
 		Session session = Session.getDefaultInstance(new Properties());
@@ -41,6 +42,9 @@ public class MessageParser {
 		try {
 			is = new ByteArrayInputStream(message.getBytes());
 			MimeMessage mimeMessage = new MimeMessage(session, is);
+			
+			// Set Filename
+			m.setFilename(filename);
 			
 			// Set From Addresses
 			m.setFrom(parseAddresses(mimeMessage.getFrom()));
@@ -93,20 +97,11 @@ public class MessageParser {
 			
 			MimeMessage mimeMessage = new MimeMessage(session, is);
 			
-			//String contentType = mimeMessage.getContentType();
-			//Object c = mimeMessage.getContent();
 			if(mimeMessage.isMimeType("text/*"))
 				parseSinglepart(mimeMessage, data);
 			else if(mimeMessage.isMimeType("multipart/*"))
 				parseMultipart(mimeMessage, data);
-			
-			/*
-			mimeMessage.isMimeType(mimeType)
-			if(mimeMessage.getContent() instanceof Multipart)
-				parseMultipart(mimeMessage, data);
-			else
-				parseSinglepart(mimeMessage, data);
-			*/
+
 		} catch(Exception e) {
 			
 			e.printStackTrace();
@@ -128,19 +123,43 @@ public class MessageParser {
 				return;
 			
 			MimeMultipart content = (MimeMultipart)mimeMessage.getContent();
-			int count = content.getCount();
+			
+			parseAttachments(message, content);
+
+		} catch(MessagingException e) {
+			e.printStackTrace();
+		} catch(IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private static void parseAttachments(Message message, Multipart multiPart) {
+		try {
+			
+			int count = multiPart.getCount();
 			
 			for(int x = 0; x < count; x++) {
-				BodyPart part = content.getBodyPart(x);
-				if(BodyPart.INLINE.equals(part.getDisposition())) {
+				BodyPart part = multiPart.getBodyPart(x);
+				
+				if(part.isMimeType(MIME_ALT)) {
+					Object c = part.getContent();
+					parseAttachments(message, (Multipart)c);
+				}
+				else if(part.isMimeType(MIME_RELATED)) {
+					Object c = part.getContent();
+					parseAttachments(message, (Multipart)c);
+				}
+				else if(BodyPart.INLINE.equals(part.getDisposition())) {
 					String filename = getAttachmentFilename(part);
-					//message.addInlineResource(getAttachmentId(part), filename, part.getContentType(), part.getSize());
 					Attachment a = message.addAttachment(getAttachmentId(part), filename, part.getContentType(), part.getSize());
+					//Persist Attachments
+					MessageStore.persistAttachment(a, part);
 				} 
 				else if(BodyPart.ATTACHMENT.equals(part.getDisposition())) {
 					String filename = getAttachmentFilename(part);
-					//System.out.println("ATTACHMENT CONTENT-ID: " + getAttachmentId(part));
 					Attachment a = message.addAttachment(getAttachmentId(part), filename, part.getContentType(), part.getSize());
+					//Persist Attachments
+					MessageStore.persistAttachment(a, part);
 				}
 			}
 		} catch(MessagingException e) {
@@ -149,6 +168,7 @@ public class MessageParser {
 			e.printStackTrace();
 		}
 	}
+
 
 	private static void parseMultipart(MimeMessage mimeMessage, MessageData messageData) throws IOException, MessagingException {
 		Multipart content = (Multipart)mimeMessage.getContent();
@@ -160,10 +180,7 @@ public class MessageParser {
 		
 		for(int x = 0; x < count; x++) {
 			BodyPart bp = content.getBodyPart(x);
-			//String contentType = bp.getContentType();
-			//Object c = bp.getContent();
-			System.out.print("DISP: " + bp.getDisposition() + "    CONTENT_TYPE: ");
-			System.out.println(bp.getContentType());
+
 			if(BodyPart.ATTACHMENT.equalsIgnoreCase(bp.getDisposition())) {
 				continue;// Currently, do nothing
 			} else {

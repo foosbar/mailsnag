@@ -19,6 +19,10 @@ public class InlineFilter {
 
 			String contentId = m.group(6);
 			Attachment a = message.getAttachments().get(contentId);
+			
+			if(a == null)
+				continue;
+			
 			m.appendReplacement(sb, "<$1$2$3$4" + path + File.separator + contentId + File.separator + a.getName() + "$7$8>");
 			
 		}

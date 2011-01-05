@@ -2,17 +2,35 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: MailSnag
 Bundle-SymbolicName: com.foosbar.mailsnag;singleton:=true
-Bundle-Version: 0.3.8
+Bundle-Version: 0.4.0
 Bundle-Activator: com.foosbar.mailsnag.Activator
 Bundle-Localization: i18n/Resources
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.ui.ide;bundle-version="3.4.2",
  org.eclipse.core.resources;bundle-version="3.4.2",
- org.eclipse.ui.forms;bundle-version="3.3.104",
- org.junit
+ org.eclipse.ui.forms;bundle-version="3.3.104"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Bundle-ClassPath: lib/activation.jar,
  lib/mailapi.jar,
  .
+Export-Package: com.foosbar.mailsnag,
+ com.foosbar.mailsnag.commands,
+ com.foosbar.mailsnag.editors,
+ com.foosbar.mailsnag.model,
+ com.foosbar.mailsnag.preferences,
+ com.foosbar.mailsnag.smtp,
+ com.foosbar.mailsnag.util,
+ com.foosbar.mailsnag.views,
+ com.sun.activation.registries,
+ com.sun.activation.viewers,
+ com.sun.mail.handlers,
+ com.sun.mail.util,
+ com.sun.mail.util.logging,
+ javax.activation,
+ javax.mail,
+ javax.mail.event,
+ javax.mail.internet,
+ javax.mail.search,
+ javax.mail.util
