@@ -142,8 +142,12 @@ public class MailHandler extends Thread {
 						respond(RSPN_OK, out);
 						continue;
 					} else {
+						// Issue 11 - I believe the trim
+						//    was implemented to fix a previous issue.
+						//msgBody.append(inputLine.trim()) 
+
 						// Write line to message body
-						msgBody.append(inputLine.trim())
+						msgBody.append(inputLine)
 							.append(NEWLINE);
 						continue;
 					}
