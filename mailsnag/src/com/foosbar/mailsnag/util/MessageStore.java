@@ -71,16 +71,20 @@ public class MessageStore {
 		try {
 			
 			File root_dir = new File(Activator.getDefault().getStateLocation().toFile(), message.getAttachmentDir());
+			root_dir.deleteOnExit();
 			
 			if(!root_dir.exists())
 				root_dir.mkdir();
 			
 			File dir = new File(root_dir, attachment.getId());
+			dir.deleteOnExit();
 			
 			if(!dir.exists())
 				dir.mkdir();
 					
 			File file = new File(dir, attachment.getName());
+			file.deleteOnExit();
+			
 			if(!file.exists()) {
 				InputStream in = null;
 				OutputStream out = null;
@@ -137,11 +141,13 @@ public class MessageStore {
 			int count = content.getCount();
 			
 			File root_dir = new File(Activator.getDefault().getStateLocation().toFile(), message.getAttachmentDir());
+			root_dir.deleteOnExit();
 			
 			if(!root_dir.exists())
 				root_dir.mkdir();
 			
 			File dir = new File(root_dir, attachment.getId());
+			dir.deleteOnExit();
 			
 			int counter = 0;
 			for(int x = 0; x < count; x++) {
@@ -152,10 +158,13 @@ public class MessageStore {
 					if(attachment.getIndex() != counter++)
 						continue;
 					
-					if(!dir.exists())
+					if(!dir.exists()) {
 						dir.mkdir();
+					}
 					
 					File file = new File(dir, attachment.getName());
+					file.deleteOnExit();
+					
 					if(!file.exists()) {
 						InputStream in = null;
 						OutputStream out = null;
@@ -220,19 +229,26 @@ public class MessageStore {
 			if(file.exists()) {
 				String attachmentDir = file.getName().substring(0, file.getName().length()-4);
 				File aDir = new File(dir, attachmentDir);
-				if(aDir.exists()) {
-					File[] attachments = aDir.listFiles();
-					for(File attachment : attachments)
-						attachment.delete();
-					aDir.delete();
-				}
-
+				deleteAttachments(aDir);
 				file.delete();
 			}
 			
 		} catch(Exception e) {
 			e.printStackTrace();
 		} finally {
+		}
+	}
+	
+	private static final void deleteAttachments(File directory) {
+		if(directory.exists()) {
+			File[] files = directory.listFiles();
+			for(File file : files) {
+				if(file.isDirectory())
+					deleteAttachments(file);
+				else
+					file.delete();
+			}
+			directory.delete();
 		}
 	}
 	
