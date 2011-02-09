@@ -89,9 +89,16 @@ public class MessageStore {
 					in  = new BufferedInputStream(part.getInputStream());
 					out = new BufferedOutputStream(new FileOutputStream(file));
 					byte[] buffer = new byte[4096];
-					while(in.read(buffer) != -1)
+					
+					long totalBytesRead = 0;
+					int bytesRead = 0;
+					
+					while( (bytesRead = in.read(buffer)) != -1) {
 						out.write(buffer);
-							
+						totalBytesRead += bytesRead;
+					}
+					
+					attachment.setSize(totalBytesRead);
 				} catch(Exception e) {
 					e.printStackTrace();
 				} finally {

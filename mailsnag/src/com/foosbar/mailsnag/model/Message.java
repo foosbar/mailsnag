@@ -32,7 +32,7 @@ public class Message {
 		a.setId(id);
 		a.setMimeType(mimeType);
 		a.setName(name);
-		a.setSize(size);
+		//a.setSize(size);
 		a.setMessage(this);
 		a.setIndex(attachments.size());
 		attachments.put(id, a);
@@ -214,7 +214,7 @@ public class Message {
 			return size;
 		}
 
-		protected void setSize(long size) {
+		public void setSize(long size) {
 			this.size = size;
 		}
 
