@@ -1,6 +1,7 @@
 package com.foosbar.mailsnag.smtp;
 
 import java.net.BindException;
+import java.util.ResourceBundle;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -40,11 +41,13 @@ public class ServerThreadGroup extends ThreadGroup {
         					.getInt(PreferenceConstants.PARAM_PORT);
         			
         			IStatus status = new Status(IStatus.ERROR, Activator.PLUGIN_ID, "The application couldn't bind to the specified port.  Check to make sure the port isn't in use by another process or you have permission to bind to the port." , e);
+        	
+        			ResourceBundle bundle = Activator.getResourceBundle();
         			
         			ErrorDialog.openError(
         					view.getViewer().getControl().getShell(), 
         					null, 
-        					"Couldn't bind SMTP server to port " + port, 
+        					String.format(bundle.getString("exception.port.bind"),port), 
         					status
         				);
         		}        			
