@@ -304,17 +304,6 @@ public class MessagesView extends ViewPart {
 		//IContextActivation contextActivation = 
 		contextService.activateContext("com.foos-bar.mailsnag.contexts");
 		
-		// often in createPartControl(Composite)
-		//IHandlerService hs = (IHandlerService) getSite().getService(IHandlerService.class);
-		//hs.activateHandler(ActionFactory.DELETE.getCommandId(), new DeleteMessage());
-
-		IPreferenceStore store = 
-			Activator.getDefault().getPreferenceStore();
-		
-		//Start server if the preferences indicate such.
-		if(store.getBoolean(PreferenceConstants.PARAM_STARTUP))
-			Activator.getDefault().startServer();
-
 	}
 
 	public void showNewMessages() {
