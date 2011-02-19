@@ -217,7 +217,7 @@ public class MessageEditor extends MultiPageEditorPart implements IResourceChang
 
 			setPageText(
 					addPage(composite), 
-					"HTML Format");
+					BUNDLE.getString("editor.htmlFormat"));
 
 		} catch (Exception e) {
 			e.printStackTrace();
