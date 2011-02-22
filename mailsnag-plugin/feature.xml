@@ -2,7 +2,7 @@
 <feature
       id="com.foosbar.mailsnag"
       label="MailSnag"
-      version="0.4.3">
+      version="0.4.5">
 
    <description>
       An Eclipse plugin useful for testing applications that send emails.  The plugin
