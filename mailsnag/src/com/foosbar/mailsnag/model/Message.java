@@ -228,6 +228,9 @@ public class Message {
 			if( !(obj instanceof Attachment) )
 				return false;
 			
+			if(this == obj)
+				return true;
+			
 			Attachment ir = (Attachment)obj;
 			
 			return id.equals(ir.getId());
