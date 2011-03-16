@@ -136,10 +136,15 @@ public class Message {
 		if(obj == null)
 			return false;
 		
+		if(!(obj instanceof Message))
+			return false;
+
+		Message m = (Message)obj;
+		
 		if(id == null)
 			return false;
-		
-		return id.equals( ((Message)obj).getId());
+
+		return id.equals( m.getId() );
 	}
 
 	@Override
