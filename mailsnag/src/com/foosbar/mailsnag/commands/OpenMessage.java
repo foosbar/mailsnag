@@ -21,7 +21,6 @@ import com.foosbar.mailsnag.views.MessagesView.ViewContentProvider;
 public class OpenMessage extends AbstractHandler {
 
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		System.out.println("DeleteHandler");
 		IWorkbenchPart part = HandlerUtil.getActivePart(event);
 		
 		if(part instanceof MessagesView) {
