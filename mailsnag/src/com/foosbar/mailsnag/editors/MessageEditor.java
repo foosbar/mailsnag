@@ -17,12 +17,10 @@ import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorRegistry;
 import org.eclipse.ui.IEditorSite;
-import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.events.HyperlinkAdapter;
@@ -33,7 +31,6 @@ import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.forms.widgets.TableWrapData;
 import org.eclipse.ui.forms.widgets.TableWrapLayout;
 import org.eclipse.ui.ide.IDE;
-import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.MultiPageEditorPart;
 
 import com.foosbar.mailsnag.Activator;
@@ -314,20 +311,30 @@ public class MessageEditor extends MultiPageEditorPart implements IResourceChang
 	}
 	/**
 	 * Closes all project files on project close.
+	 * 
+	 * Commented out because it doesn't worked as anticipated.
 	 */
-	public void resourceChanged(final IResourceChangeEvent event){
+	public void resourceChanged(final IResourceChangeEvent event) {
+		/*
 		if (event.getType() == IResourceChangeEvent.POST_CHANGE) {
 			Display.getDefault().asyncExec(new Runnable() {
 				public void run() {
 					IWorkbenchPage[] pages = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getPages();
 					for (int i = 0; i < pages.length; i++) {
-						if (((FileEditorInput) getEditorInput()).getFile().getProject().equals(event.getResource())) {
-							IEditorPart editorPart = pages[i].findEditor(getEditorInput());
+						IEditorInput editor = getEditorInput();
+						
+						if(!(editor instanceof MessageEditorInput))
+							continue;
+						
+						MessageEditorInput mEditor = (MessageEditorInput) editor;
+						event.getResource().
+						if ( mEditor.getFile().getProject().equals(event.getResource()) ) {
+							IEditorPart editorPart = pages[i].findEditor(mEditor);
 							pages[i].closeEditor(editorPart, true);
 						}
 					}
 				}
 			});		
-		}
+		}*/
 	}
 }
