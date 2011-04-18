@@ -45,6 +45,10 @@ public class MessageEditorInput implements IEditorInput {
 			return message.getSubject();
 	}
 
+	public String getParticipant() {
+		return participant;
+	}
+	
 	public IPersistableElement getPersistable() {
 		return null;
 	}
@@ -68,6 +72,10 @@ public class MessageEditorInput implements IEditorInput {
 			return false;
 		
 		MessageEditorInput other = (MessageEditorInput) obj;
+		
+		if(participant == null)
+			return (other.getParticipant() == null);
+		
 		return participant.equals(other.participant);
 	}
 
