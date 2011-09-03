@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
 
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 
 import com.foosbar.mailsnag.Activator;
@@ -184,13 +185,14 @@ public class MailHandler
 				// Update the Content Provider
 				Display.getDefault().asyncExec(new Runnable() {
 					public void run() {
-						MessagesView view = (MessagesView) PlatformUI
-								.getWorkbench().getActiveWorkbenchWindow()
-								.getActivePage().findView(MessagesView.ID);
-						ViewContentProvider provider =
-								(ViewContentProvider) view.getViewer()
-										.getContentProvider();
-						provider.add(message);
+						for (IWorkbenchWindow bench : PlatformUI.getWorkbench()
+								.getWorkbenchWindows()) {
+							MessagesView view = (MessagesView) bench
+									.getActivePage().findView(MessagesView.ID);
+							ViewContentProvider provider = (ViewContentProvider) view
+									.getViewer().getContentProvider();
+							provider.add(message);
+						}
 					}
 				});
 			}
