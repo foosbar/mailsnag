@@ -1,6 +1,5 @@
 package com.foosbar.mailsnag.editors;
 
-import java.io.File;
 import java.text.NumberFormat;
 import java.util.Collection;
 import java.util.ResourceBundle;
@@ -215,7 +214,7 @@ public class MessageEditor
 			StringBuilder path = new StringBuilder("file:///")
 					.append(Activator.getDefault().getStateLocation()
 							.toString())
-					.append(File.separator)
+					.append('/')
 					.append(this.message.getAttachmentDir());
 
 			System.out.println("PATH => " + path);

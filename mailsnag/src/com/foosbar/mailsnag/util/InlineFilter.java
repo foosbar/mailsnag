@@ -1,6 +1,5 @@
 package com.foosbar.mailsnag.util;
 
-import java.io.File;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,8 +26,8 @@ public class InlineFilter {
 				continue;
 			}
 
-			m.appendReplacement(sb, "<$1$2$3$4" + path + File.separator
-					+ contentId + File.separator + a.getName() + "$7$8>");
+			m.appendReplacement(sb, "<$1$2$3$4" + path + "/"
+					+ contentId + "/" + a.getName() + "$7$8>");
 
 		}
 		m.appendTail(sb);
