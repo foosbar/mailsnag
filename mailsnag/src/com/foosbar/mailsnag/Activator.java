@@ -17,7 +17,7 @@ import com.foosbar.mailsnag.util.MessageStore;
 import com.foosbar.mailsnag.views.MessagesView;
 
 /**
- * The activator class controls the plug-in life cycle
+ * The activator class controls the plug-in life cycle.
  */
 public class Activator
 		extends AbstractUIPlugin
