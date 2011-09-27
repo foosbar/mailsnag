@@ -1,3 +1,13 @@
+/*******************************************************************************
+ * Copyright (c) 2010-2011 Foos-Bar.com
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ * Kevin Kelley - initial API and implementation
+ *******************************************************************************/
 package com.foosbar.mailsnag.smtp;
 
 import java.net.BindException;
@@ -13,46 +23,44 @@ import com.foosbar.mailsnag.Activator;
 import com.foosbar.mailsnag.preferences.PreferenceConstants;
 import com.foosbar.mailsnag.views.MessagesView;
 
-
 public class ServerThreadGroup extends ThreadGroup {
-	
+
 	public ServerThreadGroup(String name) {
 		super(name);
 	}
 
 	@Override
 	public void uncaughtException(Thread t, final Throwable e) {
-		Display.getDefault().asyncExec(new Runnable(){
-            public void run() {
+		Display.getDefault().asyncExec(new Runnable() {
+			public void run() {
 
-            	MessagesView view = (MessagesView) PlatformUI
-    			.getWorkbench()
-    				.getActiveWorkbenchWindow()
-    					.getActivePage()
-    						.findView(MessagesView.ID);
+				MessagesView view = (MessagesView) PlatformUI.getWorkbench()
+						.getActiveWorkbenchWindow().getActivePage()
+						.findView(MessagesView.ID);
 
-        		view.disableStopServer();
-        		view.enableStartServer();
-        		
-        		if(e.getCause() instanceof BindException) {
-        			
-        			int port = 
-        				Activator.getDefault().getPreferenceStore()
-        					.getInt(PreferenceConstants.PARAM_PORT);
-        			
-        			IStatus status = new Status(IStatus.ERROR, Activator.PLUGIN_ID, "The application couldn't bind to the specified port.  Check to make sure the port isn't in use by another process or you have permission to bind to the port." , e);
-        	
-        			ResourceBundle bundle = Activator.getResourceBundle();
-        			
-        			ErrorDialog.openError(
-        					view.getViewer().getControl().getShell(), 
-        					null, 
-        					String.format(bundle.getString("exception.port.bind"),port), 
-        					status
-        				);
-        		}        			
-            }
+				view.disableStopServer();
+				view.enableStartServer();
+
+				if (e.getCause() instanceof BindException) {
+
+					int port = Activator.getDefault().getPreferenceStore()
+							.getInt(PreferenceConstants.PARAM_PORT);
+
+					IStatus status = new Status(
+							IStatus.ERROR,
+							Activator.PLUGIN_ID,
+							"The application couldn't bind to the specified port.  Check to make sure the port isn't in use by another process or you have permission to bind to the port.",
+							e);
+
+					ResourceBundle bundle = Activator.getResourceBundle();
+
+					ErrorDialog.openError(view.getViewer().getControl()
+							.getShell(), null, String.format(
+							bundle.getString("exception.port.bind"), port),
+							status);
+				}
+			}
 		});
 	}
-	
+
 }

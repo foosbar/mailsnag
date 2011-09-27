@@ -1,3 +1,13 @@
+/*******************************************************************************
+ * Copyright (c) 2010-2011 Foos-Bar.com
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ * Kevin Kelley - initial API and implementation
+ *******************************************************************************/
 package com.foosbar.mailsnag.smtp;
 
 import java.io.BufferedReader;
@@ -19,8 +29,7 @@ import com.foosbar.mailsnag.util.MessageStore;
 import com.foosbar.mailsnag.views.MessagesView;
 import com.foosbar.mailsnag.views.MessagesView.ViewContentProvider;
 
-public class MailHandler
-		extends Thread {
+public class MailHandler extends Thread {
 
 	private static final Pattern CMD_DATA = Pattern.compile("^DATA",
 			Pattern.CASE_INSENSITIVE);
@@ -53,11 +62,9 @@ public class MailHandler
 
 		this.socket = socket;
 
-		this.pStore =
-				Activator.getDefault().getPreferenceStore();
+		pStore = Activator.getDefault().getPreferenceStore();
 
-		this.debug =
-				this.pStore.getBoolean(PreferenceConstants.PARAM_DEBUG);
+		debug = pStore.getBoolean(PreferenceConstants.PARAM_DEBUG);
 	}
 
 	@Override
@@ -67,18 +74,16 @@ public class MailHandler
 
 			StringBuilder msgBody = new StringBuilder();
 
-			if (this.debug) {
+			if (debug) {
 				System.out.println("Incoming Message; Handler Thread Running");
 			}
 
-			PrintWriter out = new PrintWriter(this.socket.getOutputStream(),
-					true);
+			PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
 
 			respond(RSPN_HI, out);
 
-			BufferedReader in =
-					new BufferedReader(new InputStreamReader(
-							this.socket.getInputStream()));
+			BufferedReader in = new BufferedReader(new InputStreamReader(
+					socket.getInputStream()));
 
 			boolean readingData = false;
 
@@ -87,7 +92,7 @@ public class MailHandler
 
 				if (!readingData) {
 
-					if (this.debug) {
+					if (debug) {
 						System.out.println("Client Command: " + inputLine);
 					}
 
@@ -135,7 +140,7 @@ public class MailHandler
 					m = CMD_QUIT.matcher(inputLine);
 					if (m.matches()) {
 						respond(RSPN_BYE, out);
-						if (this.debug) {
+						if (debug) {
 							System.out.println("Closing connection");
 						}
 						break;
@@ -156,7 +161,7 @@ public class MailHandler
 				// Reading the data block
 				else {
 
-					if (this.debug) {
+					if (debug) {
 						System.out.println(inputLine);
 					}
 
@@ -170,8 +175,7 @@ public class MailHandler
 						// msgBody.append(inputLine.trim())
 
 						// Write line to message body
-						msgBody.append(inputLine)
-								.append(NEWLINE);
+						msgBody.append(inputLine).append(NEWLINE);
 						continue;
 					}
 				}
@@ -201,8 +205,8 @@ public class MailHandler
 			e.printStackTrace();
 		} finally {
 			try {
-				if (this.socket != null && !this.socket.isClosed()) {
-					this.socket.close();
+				if (socket != null && !socket.isClosed()) {
+					socket.close();
 				}
 			} catch (Exception e) {
 			}
@@ -211,7 +215,7 @@ public class MailHandler
 
 	private void respond(String response, PrintWriter writer) {
 
-		if (this.debug) {
+		if (debug) {
 			System.out.print("Server Response: " + response);
 		}
 

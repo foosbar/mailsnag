@@ -1,3 +1,13 @@
+/*******************************************************************************
+ * Copyright (c) 2010-2011 Foos-Bar.com
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ * Kevin Kelley - initial API and implementation
+ *******************************************************************************/
 package com.foosbar.mailsnag.model;
 
 import java.util.Date;
@@ -10,9 +20,9 @@ import java.util.Map;
  * @author Kevin Kelley (dev@foos-bar.com)
  */
 public class Message {
-	
+
 	public static final String EXTENSION = ".eml";
-	
+
 	private String cc;
 	private String filename;
 	private String from;
@@ -22,24 +32,25 @@ public class Message {
 	private String to;
 	private Map<String, Attachment> attachments;
 	private boolean unread;
-	
+
 	public Message() {
 		attachments = new HashMap<String, Attachment>();
 	}
-	
-	public Attachment addAttachment(String id, String name, String mimeType, long size) {
+
+	public Attachment addAttachment(String id, String name, String mimeType,
+			long size) {
 		Attachment a = new Attachment();
 		a.setId(id);
 		a.setMimeType(mimeType);
 		a.setName(name);
-		//a.setSize(size);
+		// a.setSize(size);
 		a.setMessage(this);
 		a.setIndex(attachments.size());
 		attachments.put(id, a);
-		
+
 		return a;
 	}
-	
+
 	public String getAttachmentDir() {
 		return filename.substring(0, filename.length() - 4);
 	}
@@ -49,8 +60,9 @@ public class Message {
 	}
 
 	public String getCc() {
-		if(cc == null)
+		if (cc == null) {
 			return "";
+		}
 		return cc;
 	}
 
@@ -59,8 +71,9 @@ public class Message {
 	}
 
 	public String getFrom() {
-		if(from == null)
+		if (from == null) {
 			return "";
+		}
 		return from;
 	}
 
@@ -71,16 +84,18 @@ public class Message {
 	public Date getReceived() {
 		return received;
 	}
-	
+
 	public String getSubject() {
-		if(subject == null)
+		if (subject == null) {
 			return "";
+		}
 		return subject;
 	}
 
 	public String getTo() {
-		if(to == null)
+		if (to == null) {
 			return "";
+		}
 		return to;
 	}
 
@@ -91,11 +106,11 @@ public class Message {
 	public void setAttachments(Map<String, Attachment> attachments) {
 		this.attachments = attachments;
 	}
-	
+
 	public void setCc(String cc) {
 		this.cc = cc;
 	}
-	
+
 	public void setFilename(String filename) {
 		this.filename = filename;
 	}
@@ -103,7 +118,7 @@ public class Message {
 	public void setFrom(String from) {
 		this.from = from;
 	}
-	
+
 	public void setId(String id) {
 		this.id = id;
 	}
@@ -119,7 +134,7 @@ public class Message {
 	public void setTo(String to) {
 		this.to = to;
 	}
-	
+
 	public boolean isUnread() {
 		return unread;
 	}
@@ -130,32 +145,34 @@ public class Message {
 
 	@Override
 	public boolean equals(Object obj) {
-		if(this == obj)
+		if (this == obj) {
 			return true;
-		
-		if(obj == null)
-			return false;
-		
-		if(!(obj instanceof Message))
-			return false;
+		}
 
-		Message m = (Message)obj;
-		
-		if(id == null)
+		if (obj == null) {
 			return false;
+		}
 
-		return id.equals( m.getId() );
+		if (!(obj instanceof Message)) {
+			return false;
+		}
+
+		Message m = (Message) obj;
+
+		if (id == null) {
+			return false;
+		}
+
+		return id.equals(m.getId());
 	}
 
 	@Override
 	public int hashCode() {
-		return id != null ?
-				id.hashCode(): 
-					super.hashCode();
+		return id != null ? id.hashCode() : super.hashCode();
 	}
 
 	public class Attachment {
-		
+
 		private String filename;
 		private int index;
 		private String id;
@@ -163,7 +180,7 @@ public class Message {
 		private String name;
 		private long size;
 		private Message message;
-		
+
 		private Attachment() {
 		}
 
@@ -225,14 +242,16 @@ public class Message {
 
 		@Override
 		public boolean equals(Object obj) {
-			if( !(obj instanceof Attachment) )
+			if (!(obj instanceof Attachment)) {
 				return false;
-			
-			if(this == obj)
+			}
+
+			if (this == obj) {
 				return true;
-			
-			Attachment ir = (Attachment)obj;
-			
+			}
+
+			Attachment ir = (Attachment) obj;
+
 			return id.equals(ir.getId());
 		}
 
