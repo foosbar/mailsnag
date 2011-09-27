@@ -1,3 +1,13 @@
+/*******************************************************************************
+ * Copyright (c) 2010-2011 Foos-Bar.com
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ * Kevin Kelley - initial API and implementation
+ *******************************************************************************/
 package com.foosbar.mailsnag;
 
 import java.util.ResourceBundle;
@@ -19,16 +29,14 @@ import com.foosbar.mailsnag.views.MessagesView;
 /**
  * The activator class controls the plug-in life cycle.
  */
-public class Activator
-		extends AbstractUIPlugin
-		implements IStartup {
+public class Activator extends AbstractUIPlugin implements IStartup {
 
 	// The plug-in ID
 	public static final String PLUGIN_ID = "com.foos-bar.mailsnag";
 
 	// Locale Specific Resource Bundle
-	private static final ResourceBundle BUNDLE =
-			ResourceBundle.getBundle("i18n.Resources");
+	private static final ResourceBundle BUNDLE = ResourceBundle
+			.getBundle("i18n.Resources");
 
 	// The shared instance
 	private static Activator plugin;
@@ -50,8 +58,7 @@ public class Activator
 	 * .BundleContext)
 	 */
 	@Override
-	public void start(BundleContext context)
-			throws Exception {
+	public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
 
@@ -62,17 +69,15 @@ public class Activator
 			public void run() {
 
 				// Check if view is loaded
-				MessagesView view = (MessagesView) PlatformUI
-						.getWorkbench()
-						.getActiveWorkbenchWindow()
-						.getActivePage()
+				MessagesView view = (MessagesView) PlatformUI.getWorkbench()
+						.getActiveWorkbenchWindow().getActivePage()
 						.findView(MessagesView.ID);
 
 				// If view is loaded, check user preference
 				if (view != null) {
 					// Get user preferences
-					IPreferenceStore store =
-							Activator.getDefault().getPreferenceStore();
+					IPreferenceStore store = Activator.getDefault()
+							.getPreferenceStore();
 
 					// Start server if the preferences indicate such.
 					if (store.getBoolean(PreferenceConstants.PARAM_STARTUP)) {
@@ -85,7 +90,7 @@ public class Activator
 
 	public void startServer() {
 		ThreadGroup tg = new ServerThreadGroup("SMTPServer");
-		new Thread(tg, this.server).start();
+		new Thread(tg, server).start();
 	}
 
 	/*
@@ -96,19 +101,17 @@ public class Activator
 	 * )
 	 */
 	@Override
-	public void stop(BundleContext context)
-			throws Exception {
+	public void stop(BundleContext context) throws Exception {
 		// Get Persist Preference
-		boolean persist =
-				plugin.getPreferenceStore().getBoolean(
-						PreferenceConstants.PARAM_PERSIST);
+		boolean persist = plugin.getPreferenceStore().getBoolean(
+				PreferenceConstants.PARAM_PERSIST);
 
 		// If not persisting, delete all messages
 		if (!persist) {
 			MessageStore.removeAll();
 		}
 
-		if (this.server != null) {
+		if (server != null) {
 			Activator.getDefault().stopServer();
 		}
 
@@ -116,7 +119,7 @@ public class Activator
 	}
 
 	public void stopServer() {
-		this.server.close();
+		server.close();
 	}
 
 	/**

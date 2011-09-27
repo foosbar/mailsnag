@@ -1,3 +1,13 @@
+/*******************************************************************************
+ * Copyright (c) 2010-2011 Foos-Bar.com
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ * Kevin Kelley - initial API and implementation
+ *******************************************************************************/
 package com.foosbar.mailsnag.commands;
 
 import java.util.Iterator;
@@ -22,30 +32,32 @@ public class OpenMessage extends AbstractHandler {
 
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		IWorkbenchPart part = HandlerUtil.getActivePart(event);
-		
-		if(part instanceof MessagesView) {
 
-			MessagesView viewer = (MessagesView)part;
+		if (part instanceof MessagesView) {
 
-			ViewContentProvider provider = (ViewContentProvider) viewer.getViewer().getContentProvider();
-			IStructuredSelection iss = (IStructuredSelection) viewer.getViewer().getSelection();
+			MessagesView viewer = (MessagesView) part;
+
+			ViewContentProvider provider = (ViewContentProvider) viewer
+					.getViewer().getContentProvider();
+			IStructuredSelection iss = (IStructuredSelection) viewer
+					.getViewer().getSelection();
 			@SuppressWarnings("unchecked")
 			Iterator<Object> it = iss.iterator();
 			IWorkbenchPage page = part.getSite().getPage();
-			while(it.hasNext()) {
+			while (it.hasNext()) {
 				Object obj = it.next();
-				if(obj instanceof Message) {
-					Message m = (Message)obj;
-	       			MessageEditorInput input = new MessageEditorInput(m);
-	       			try {
-	       				IDE.openEditor(page, input, MessageEditor.ID, true);
-	       				provider.setRead(m);
-	       				viewer.showLogo();
-	       			} catch(PartInitException e) {
-	       				e.printStackTrace();
-	       			}
-		        }
-	        }
+				if (obj instanceof Message) {
+					Message m = (Message) obj;
+					MessageEditorInput input = new MessageEditorInput(m);
+					try {
+						IDE.openEditor(page, input, MessageEditor.ID, true);
+						provider.setRead(m);
+						viewer.showLogo();
+					} catch (PartInitException e) {
+						e.printStackTrace();
+					}
+				}
+			}
 		}
 		return null;
 	}

@@ -1,3 +1,13 @@
+/*******************************************************************************
+ * Copyright (c) 2010-2011 Foos-Bar.com
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ * Kevin Kelley - initial API and implementation
+ *******************************************************************************/
 package com.foosbar.mailsnag.editors;
 
 import java.text.NumberFormat;
@@ -45,9 +55,8 @@ import com.foosbar.mailsnag.util.InlineFilter;
  * <li>page 2 Raw Data for inspecting the entire email stream.
  * </ul>
  */
-public class MessageEditor
-		extends MultiPageEditorPart
-		implements IResourceChangeListener {
+public class MessageEditor extends MultiPageEditorPart implements
+		IResourceChangeListener {
 
 	public static final String ID = "com.foosbar.mailsnag.editors.MessageEditor";
 
@@ -76,7 +85,7 @@ public class MessageEditor
 
 		StyledText text = new StyledText(composite, SWT.H_SCROLL | SWT.V_SCROLL);
 		text.setEditable(false);
-		text.setText(this.messageData.getMessage());
+		text.setText(messageData.getMessage());
 
 		int index = addPage(composite);
 		setPageText(index, BUNDLE.getString("editor.rawData"));
@@ -87,12 +96,11 @@ public class MessageEditor
 	 */
 	void createAttachments() {
 
-		if (!this.message.hasAttachments()) {
+		if (!message.hasAttachments()) {
 			return;
 		}
 
-		Collection<Attachment> attachments = this.message.getAttachments()
-				.values();
+		Collection<Attachment> attachments = message.getAttachments().values();
 
 		Composite composite = new Composite(getContainer(), SWT.NONE);
 		FillLayout layout = new FillLayout();
@@ -127,13 +135,10 @@ public class MessageEditor
 					// messageData.getMessage());
 
 					try {
-						IDE.openEditor(
-								PlatformUI.getWorkbench()
-										.getActiveWorkbenchWindow()
-										.getActivePage(),
+						IDE.openEditor(PlatformUI.getWorkbench()
+								.getActiveWorkbenchWindow().getActivePage(),
 								new AttachmentEditorInput(attachment),
-								IEditorRegistry.SYSTEM_EXTERNAL_EDITOR_ID,
-								true);
+								IEditorRegistry.SYSTEM_EXTERNAL_EDITOR_ID, true);
 
 					} catch (PartInitException ex) {
 						ex.printStackTrace();
@@ -166,7 +171,7 @@ public class MessageEditor
 	 */
 	void createTextPage() {
 
-		if (this.messageData == null || !this.messageData.hasTextMessage()) {
+		if (messageData == null || !messageData.hasTextMessage()) {
 			return;
 		}
 
@@ -177,7 +182,7 @@ public class MessageEditor
 
 		StyledText text = new StyledText(composite, SWT.H_SCROLL | SWT.V_SCROLL);
 		text.setEditable(false);
-		text.setText(this.messageData.getTextMessage());
+		text.setText(messageData.getTextMessage());
 
 		int index = addPage(composite);
 		setPageText(index, BUNDLE.getString("editor.textFormat"));
@@ -188,7 +193,7 @@ public class MessageEditor
 	 */
 	void createHtmlPage() {
 
-		if (this.messageData == null || !this.messageData.hasHtmlMessage()) {
+		if (messageData == null || !messageData.hasHtmlMessage()) {
 			return;
 		}
 
@@ -213,14 +218,13 @@ public class MessageEditor
 
 			StringBuilder path = new StringBuilder("file:///")
 					.append(Activator.getDefault().getStateLocation()
-							.toString())
-					.append('/')
-					.append(this.message.getAttachmentDir());
+							.toString()).append('/')
+					.append(message.getAttachmentDir());
 
 			System.out.println("PATH => " + path);
 
-			String filteredText = InlineFilter.filter(this.message,
-					this.messageData.getHtmlMessage(), path.toString());
+			String filteredText = InlineFilter.filter(message,
+					messageData.getHtmlMessage(), path.toString());
 
 			System.out.println(filteredText);
 			browser.setText(filteredText);
@@ -234,18 +238,14 @@ public class MessageEditor
 			// browser.setJavascriptEnabled(pStore
 			// .getBoolean(PreferenceConstants.PARAM_JAVASCRIPT));
 
-			setPageText(
-					addPage(composite),
+			setPageText(addPage(composite),
 					BUNDLE.getString("editor.htmlFormat"));
 
 		} catch (Exception e) {
 			e.printStackTrace();
 			e.getCause().printStackTrace();
-			ErrorDialog.openError(
-					getSite().getShell(),
-					"Error creating nested text editor",
-					null,
-					null);
+			ErrorDialog.openError(getSite().getShell(),
+					"Error creating nested text editor", null, null);
 		}
 	}
 
@@ -323,11 +323,9 @@ public class MessageEditor
 		setSite(site);
 		setInput(editorInput);
 
-		this.message =
-				((MessageEditorInput) editorInput).getMessage();
+		message = ((MessageEditorInput) editorInput).getMessage();
 
-		this.messageData =
-				((MessageEditorInput) editorInput).getMessageData();
+		messageData = ((MessageEditorInput) editorInput).getMessageData();
 
 		setPartName(((MessageEditorInput) editorInput).getName());
 	}

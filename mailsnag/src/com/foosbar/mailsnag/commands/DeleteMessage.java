@@ -1,3 +1,13 @@
+/*******************************************************************************
+ * Copyright (c) 2010-2011 Foos-Bar.com
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ * Kevin Kelley - initial API and implementation
+ *******************************************************************************/
 package com.foosbar.mailsnag.commands;
 
 import java.util.Iterator;
@@ -22,40 +32,41 @@ public class DeleteMessage extends AbstractHandler {
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 
 		IWorkbenchPart part = HandlerUtil.getActivePart(event);
-		
-		if(part instanceof MessagesView) {
 
-			MessagesView viewer = (MessagesView)part;
-			
+		if (part instanceof MessagesView) {
+
+			MessagesView viewer = (MessagesView) part;
+
 			viewer.showLogo();
-			
-			IStructuredSelection iss = (IStructuredSelection) HandlerUtil.getCurrentSelection(event);
+
+			IStructuredSelection iss = (IStructuredSelection) HandlerUtil
+					.getCurrentSelection(event);
 			int size = iss.size();
-			
-			if(size == 0)
+
+			if (size == 0) {
 				return null;
+			}
 
 			ResourceBundle BUNDLE = Activator.getResourceBundle();
-			
-			String message = (size == 1) ? 
-					BUNDLE.getString("action.delete.confirm.single") : 
-						String.format(BUNDLE.getString("action.delete.confirm.plural"),size) ;
-			
-			boolean confirm =
-				MessageDialog.openConfirm(
-					viewer.getViewer().getControl().getShell(),
-					BUNDLE.getString("action.delete.confirm"),
-					message);
-			
-			if(confirm) {
+
+			String message = size == 1 ? BUNDLE
+					.getString("action.delete.confirm.single") : String.format(
+					BUNDLE.getString("action.delete.confirm.plural"), size);
+
+			boolean confirm = MessageDialog.openConfirm(viewer.getViewer()
+					.getControl().getShell(),
+					BUNDLE.getString("action.delete.confirm"), message);
+
+			if (confirm) {
 				@SuppressWarnings("unchecked")
 				Iterator<Object> it = iss.iterator();
-				while(it.hasNext()) {
+				while (it.hasNext()) {
 					Object obj = it.next();
-					if(obj != null && obj instanceof Message) {
-						Message m = (Message)obj;
-						MessageStore.delete((Message)obj);
-						((ViewContentProvider) viewer.getViewer().getContentProvider()).remove(m);
+					if (obj != null && obj instanceof Message) {
+						Message m = (Message) obj;
+						MessageStore.delete((Message) obj);
+						((ViewContentProvider) viewer.getViewer()
+								.getContentProvider()).remove(m);
 					}
 				}
 				viewer.getViewer().refresh();
