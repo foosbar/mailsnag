@@ -21,23 +21,24 @@ import com.foosbar.mailsnag.util.MessageStore;
 /**
  * @author Kevin Kelley (dev@foos-bar.com)
  */
-public class MessageEditorInput implements IEditorInput {
+public class MessageEditorInput
+		implements IEditorInput {
 
 	private final String participant;
 	private final Message message;
 
 	public MessageEditorInput(Message message) {
 		super();
-		participant = message.getId();
+		this.participant = message.getId();
 		this.message = message;
 	}
 
 	public Message getMessage() {
-		return message;
+		return this.message;
 	}
 
 	public MessageData getMessageData() {
-		return MessageStore.loadData(message);
+		return MessageStore.loadData(this.message);
 	}
 
 	public boolean exists() {
@@ -49,16 +50,16 @@ public class MessageEditorInput implements IEditorInput {
 	}
 
 	public String getName() {
-		if (message.getSubject() == null
-				|| "".equals(message.getSubject().trim())) {
+		if (this.message.getSubject() == null
+				|| "".equals(this.message.getSubject().trim())) {
 			return "<No Subject>";
 		} else {
-			return message.getSubject();
+			return this.message.getSubject();
 		}
 	}
 
 	public String getParticipant() {
-		return participant;
+		return this.participant;
 	}
 
 	public IPersistableElement getPersistable() {
@@ -66,10 +67,10 @@ public class MessageEditorInput implements IEditorInput {
 	}
 
 	public String getToolTipText() {
-		if (message == null) {
+		if (this.message == null) {
 			return "";
 		}
-		return message.getFrom();
+		return this.message.getFrom();
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -89,15 +90,18 @@ public class MessageEditorInput implements IEditorInput {
 
 		MessageEditorInput other = (MessageEditorInput) obj;
 
-		if (participant == null) {
+		if (this.participant == null) {
 			return other.getParticipant() == null;
 		}
 
-		return participant.equals(other.participant);
+		return this.participant.equals(other.participant);
 	}
 
 	@Override
 	public int hashCode() {
-		return participant.hashCode();
+		if (this.participant != null) {
+			return this.participant.hashCode();
+		}
+		return super.hashCode();
 	}
 }
