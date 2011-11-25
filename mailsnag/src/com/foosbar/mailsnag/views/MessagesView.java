@@ -207,7 +207,11 @@ public class MessagesView extends ViewPart {
 			case 4:
 				return message.getSubject();
 			case 5:
-				return DATE_FORMATTER.format(message.getReceived());
+				if (message.getReceived() == null) {
+					return "";
+				} else {
+					return DATE_FORMATTER.format(message.getReceived());
+				}
 			default:
 				throw new RuntimeException("Should not happen");
 			}

@@ -11,6 +11,7 @@
 package com.foosbar.mailsnag.views;
 
 import java.text.Collator;
+import java.util.Date;
 
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerSorter;
@@ -62,10 +63,19 @@ public class MessageSorter extends ViewerSorter {
 		} else if (MessagesView.COL_CC.equals(columnName)) {
 			result = Collator.getInstance().compare(m1.getTo(), m2.getTo());
 		} else if (MessagesView.COL_RECEIVED.equals(columnName)) {
-			result = m1.getReceived().compareTo(m2.getReceived());
+			result = compareDates(m1.getReceived(), m2.getReceived());
 		}
-
 		// If descending order, flip the direction
 		return direction == DESCENDING ? -result : result;
+	}
+
+	public int compareDates(Date d1, Date d2) {
+		if (d1 == null) {
+			return -1;
+		}
+		if (d2 == null) {
+			return 1;
+		}
+		return d1.compareTo(d2);
 	}
 }
