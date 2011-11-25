@@ -18,13 +18,13 @@ import org.eclipse.ui.handlers.HandlerUtil;
 
 import com.foosbar.mailsnag.views.MessagesView;
 
-public class OpenMessage extends AbstractHandler {
+public class OpenMessageWithSystemEditor extends AbstractHandler {
 
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		IWorkbenchPart part = HandlerUtil.getActivePart(event);
 		if (part instanceof MessagesView) {
 			MessagesView viewer = (MessagesView) part;
-			viewer.openMessage();
+			viewer.openMessageWithSystemEditor();
 		}
 		return null;
 	}

@@ -27,6 +27,12 @@ import com.foosbar.mailsnag.util.MessageStore;
 import com.foosbar.mailsnag.views.MessagesView;
 import com.foosbar.mailsnag.views.MessagesView.ViewContentProvider;
 
+/**
+ * Handler for deleting selected messages.
+ * 
+ * @author kkelley
+ * 
+ */
 public class DeleteMessage extends AbstractHandler {
 
 	public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -35,12 +41,13 @@ public class DeleteMessage extends AbstractHandler {
 
 		if (part instanceof MessagesView) {
 
-			MessagesView viewer = (MessagesView) part;
+			final MessagesView viewer = (MessagesView) part;
 
 			viewer.showLogo();
 
 			IStructuredSelection iss = (IStructuredSelection) HandlerUtil
 					.getCurrentSelection(event);
+
 			int size = iss.size();
 
 			if (size == 0) {
@@ -58,20 +65,24 @@ public class DeleteMessage extends AbstractHandler {
 					BUNDLE.getString("action.delete.confirm"), message);
 
 			if (confirm) {
-				@SuppressWarnings("unchecked")
-				Iterator<Object> it = iss.iterator();
-				while (it.hasNext()) {
-					Object obj = it.next();
-					if (obj != null && obj instanceof Message) {
-						Message m = (Message) obj;
-						MessageStore.delete((Message) obj);
-						((ViewContentProvider) viewer.getViewer()
-								.getContentProvider()).remove(m);
-					}
-				}
-				viewer.getViewer().refresh();
+				deleteMessages(iss, viewer);
 			}
 		}
 		return null;
+	}
+
+	private void deleteMessages(IStructuredSelection iss, MessagesView viewer) {
+		@SuppressWarnings("unchecked")
+		Iterator<Object> it = iss.iterator();
+		while (it.hasNext()) {
+			Object obj = it.next();
+			if (obj != null && obj instanceof Message) {
+				Message m = (Message) obj;
+				MessageStore.delete((Message) obj);
+				((ViewContentProvider) viewer.getViewer().getContentProvider())
+						.remove(m);
+			}
+		}
+		viewer.getViewer().refresh();
 	}
 }

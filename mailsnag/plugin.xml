@@ -90,6 +90,10 @@
             id="com.foosbar.mailsnag.commands.open"
             name="OpenMessage">
       </command>
+      <command
+            id="com.foosbar.mailsnag.commands.open.system.editor"
+            name="OpenMessageWithSystemEditor">
+      </command>
    </extension>
    <extension
          point="org.eclipse.ui.handlers">
@@ -111,6 +115,15 @@
             </reference>
          </enabledWhen>
       </handler>
+      <handler
+            class="com.foosbar.mailsnag.commands.OpenMessageWithSystemEditor"
+            commandId="com.foosbar.mailsnag.commands.open.system.editor">
+         <enabledWhen>
+            <reference
+                  definitionId="oneElementSelected">
+            </reference>
+         </enabledWhen>
+      </handler>
    </extension>
    <extension
          point="org.eclipse.ui.menus">
@@ -120,6 +133,11 @@
          <command
                commandId="com.foosbar.mailsnag.commands.open"
                label="%action.open"
+               style="push">
+         </command>
+         <command
+               commandId="com.foosbar.mailsnag.commands.open.system.editor"
+               label="%action.open.system"
                style="push">
          </command>
          <separator

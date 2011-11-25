@@ -28,6 +28,8 @@ import com.foosbar.mailsnag.views.MessagesView;
 
 /**
  * The activator class controls the plug-in life cycle.
+ * 
+ * @author kkelley
  */
 public class Activator extends AbstractUIPlugin implements IStartup {
 
@@ -88,6 +90,9 @@ public class Activator extends AbstractUIPlugin implements IStartup {
 		});
 	}
 
+	/**
+	 * Creates a new ThreadGroup for the SMTP Server.
+	 */
 	public void startServer() {
 		ThreadGroup tg = new ServerThreadGroup("SMTPServer");
 		new Thread(tg, server).start();
