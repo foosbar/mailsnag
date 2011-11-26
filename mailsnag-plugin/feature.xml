@@ -2,7 +2,7 @@
 <feature
       id="com.foosbar.mailsnag"
       label="MailSnag"
-      version="0.5.5">
+      version="1.0.0">
 
    <description>
       An Eclipse plugin useful for testing applications that send emails.  The plugin
@@ -94,6 +94,8 @@ This Agreement is governed by the laws of the State of New York and the intellec
       <import plugin="org.eclipse.ui.ide" version="3.4.2" match="greaterOrEqual"/>
       <import plugin="org.eclipse.core.resources" version="3.4.2" match="greaterOrEqual"/>
       <import plugin="org.eclipse.ui.forms" version="3.3.104" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.core.filesystem" version="1.3.100" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.mylyn.commons.ui" version="3.6.1" match="greaterOrEqual"/>
    </requires>
 
    <plugin
