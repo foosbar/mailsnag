@@ -42,6 +42,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
@@ -65,6 +66,7 @@ import com.foosbar.mailsnag.editors.MessageEditorInput;
 import com.foosbar.mailsnag.model.Message;
 import com.foosbar.mailsnag.util.EmailFilenameFilter;
 import com.foosbar.mailsnag.util.MessageStore;
+import com.foosbar.mailsnag.util.NotificationManager;
 
 public class MessagesView extends ViewPart {
 
@@ -152,9 +154,7 @@ public class MessagesView extends ViewPart {
 
 			showNewMessages();
 
-			// Ignored during development
-			// AlertManager.getInstance()
-			// .addToaster(message, Display.getDefault());
+			NotificationManager.notify(message, Display.getDefault());
 		}
 
 		public void remove(Message message) {
