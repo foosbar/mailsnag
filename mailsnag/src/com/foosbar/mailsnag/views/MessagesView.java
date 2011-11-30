@@ -27,6 +27,7 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
@@ -64,6 +65,7 @@ import com.foosbar.mailsnag.Activator;
 import com.foosbar.mailsnag.editors.MessageEditor;
 import com.foosbar.mailsnag.editors.MessageEditorInput;
 import com.foosbar.mailsnag.model.Message;
+import com.foosbar.mailsnag.preferences.PreferenceConstants;
 import com.foosbar.mailsnag.util.EmailFilenameFilter;
 import com.foosbar.mailsnag.util.MessageStore;
 import com.foosbar.mailsnag.util.NotificationManager;
@@ -152,9 +154,8 @@ public class MessagesView extends ViewPart {
 			// getSite().getPart().setFocus();
 			getSite().getPage().activate(getSite().getPart());
 
-			showNewMessages();
+			showNewMessages(message);
 
-			NotificationManager.notify(message, Display.getDefault());
 		}
 
 		public void remove(Message message) {
@@ -339,8 +340,19 @@ public class MessagesView extends ViewPart {
 
 	}
 
-	public void showNewMessages() {
+	public void showNewMessages(Message message) {
 		this.setTitleImage(IMG_NEW_MESSAGES.createImage());
+
+		// Get Preferences
+		IPreferenceStore pStore = Activator.getDefault().getPreferenceStore();
+
+		// Display Debug Messages?
+		boolean popupEnabled = pStore
+				.getBoolean(PreferenceConstants.PARAM_NOTIFICATION_ENABLED);
+
+		if (popupEnabled) {
+			NotificationManager.notify(message, Display.getDefault());
+		}
 	}
 
 	public void showLogo() {

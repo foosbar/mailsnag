@@ -29,17 +29,18 @@ import com.foosbar.mailsnag.Activator;
  * This page is used to modify preferences only. They are stored in the
  * preference store that belongs to the main plug-in class. That way,
  * preferences can be accessed directly via the preference store.
+ * 
+ * @author Kevin Kelley
  */
-
 public class PreferencePage extends FieldEditorPreferencePage implements
 		IWorkbenchPreferencePage {
+
+	private final ResourceBundle bundle;
 
 	public PreferencePage() {
 		super(GRID);
 		setPreferenceStore(Activator.getDefault().getPreferenceStore());
-
-		ResourceBundle bundle = Activator.getResourceBundle();
-
+		bundle = Activator.getResourceBundle();
 		setDescription(bundle.getString("preference.description"));
 	}
 
@@ -50,54 +51,52 @@ public class PreferencePage extends FieldEditorPreferencePage implements
 	 */
 	@Override
 	public void createFieldEditors() {
-		// addField(new DirectoryFieldEditor(PreferenceConstants.P_PATH,
-		// "&Directory preference:", getFieldEditorParent()));
-		// addField(
-		// new BooleanFieldEditor(
-		// PreferenceConstants.P_BOOLEAN,
-		// "&An example of a boolean preference",
-		// getFieldEditorParent()));
-
-		// addField(new RadioGroupFieldEditor(
-		// PreferenceConstants.P_CHOICE,
-		// "An example of a multiple-choice preference",
-		// 1,
-		// new String[][] { { "&Choice 1", "choice1" }, {
-		// "C&hoice 2", "choice2" }
-		// }, getFieldEditorParent()));
-		// addField(
-		// new StringFieldEditor(PreferenceConstants.P_STRING,
-		// "A &text preference:", getFieldEditorParent()));
-
-		ResourceBundle bundle = Activator.getResourceBundle();
-
-		IntegerFieldEditor port = new IntegerFieldEditor(
-				PreferenceConstants.PARAM_PORT,
-				bundle.getString("preference.port"), getFieldEditorParent());
-
+		// The port number field
+		IntegerFieldEditor port = addIntField(PreferenceConstants.PARAM_PORT,
+				"preference.port");
+		// Sets range of valid port numbers
 		port.setValidRange(1, 65535);
 
-		BooleanFieldEditor persist = new BooleanFieldEditor(
-				PreferenceConstants.PARAM_PERSIST,
-				bundle.getString("preference.persist"), getFieldEditorParent());
+		// The message persistence field
+		addBooleanField(PreferenceConstants.PARAM_PERSIST, "preference.persist");
 
-		BooleanFieldEditor debug = new BooleanFieldEditor(
-				PreferenceConstants.PARAM_DEBUG,
-				bundle.getString("preference.debug"), getFieldEditorParent());
+		// The notification popup field
+		addBooleanField(PreferenceConstants.PARAM_NOTIFICATION_ENABLED,
+				"preference.notification");
 
-		BooleanFieldEditor startup = new BooleanFieldEditor(
-				PreferenceConstants.PARAM_STARTUP,
-				bundle.getString("preference.startup"), getFieldEditorParent());
+		// The debug output field
+		addBooleanField(PreferenceConstants.PARAM_DEBUG, "preference.debug");
 
-		// BooleanFieldEditor javascript =
-		// new BooleanFieldEditor(PreferenceConstants.PARAM_JAVASCRIPT,
-		// bundle.getString("preference.javascript"), getFieldEditorParent());
+		// The
+		addBooleanField(PreferenceConstants.PARAM_STARTUP, "preference.startup");
+	}
 
-		addField(port);
-		addField(persist);
-		addField(debug);
-		addField(startup);
-		// addField(javascript);
+	/**
+	 * Creates an true/false input field.
+	 * 
+	 * @param fieldId
+	 * @param messageId
+	 * @return
+	 */
+	private BooleanFieldEditor addBooleanField(String fieldId, String messageId) {
+		BooleanFieldEditor field = new BooleanFieldEditor(fieldId,
+				bundle.getString(messageId), getFieldEditorParent());
+		addField(field);
+		return field;
+	}
+
+	/**
+	 * Creates an integer input field
+	 * 
+	 * @param fieldId
+	 * @param messageId
+	 * @return
+	 */
+	private IntegerFieldEditor addIntField(String fieldId, String messageId) {
+		IntegerFieldEditor field = new IntegerFieldEditor(fieldId,
+				bundle.getString(messageId), getFieldEditorParent());
+		addField(field);
+		return field;
 	}
 
 	/*
