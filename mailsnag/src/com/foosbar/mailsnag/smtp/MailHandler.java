@@ -21,6 +21,7 @@ import java.util.regex.Pattern;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
 import com.foosbar.mailsnag.Activator;
@@ -198,14 +199,29 @@ public class MailHandler extends Thread {
 			// Update the Content Provider
 			Display.getDefault().asyncExec(new Runnable() {
 				public void run() {
+					boolean foundView = false;
 					for (IWorkbenchWindow bench : PlatformUI.getWorkbench()
 							.getWorkbenchWindows()) {
 						MessagesView view = (MessagesView) bench
 								.getActivePage().findView(MessagesView.ID);
-						ViewContentProvider provider = (ViewContentProvider) view
-								.getViewer().getContentProvider();
-						provider.add(message);
+						if (view != null) {
+							foundView = true;
+							ViewContentProvider provider = (ViewContentProvider) view
+									.getViewer().getContentProvider();
+							provider.add(message);
+						}
 					}
+					/* Need to move this code to a place where the popup can open the view.
+					if (!foundView) {
+						try {
+							PlatformUI.getWorkbench()
+									.getActiveWorkbenchWindow().getActivePage()
+									.showView(MessagesView.ID);
+						} catch (PartInitException e) {
+							e.printStackTrace(System.err);
+						}
+					}
+					*/
 				}
 			});
 		}
