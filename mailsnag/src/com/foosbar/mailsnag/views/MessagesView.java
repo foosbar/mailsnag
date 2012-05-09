@@ -171,29 +171,15 @@ public class MessagesView extends ViewPart {
 		}
 	}
 
+	/**
+	 * Returns the label for each of the columns based on the index for that
+	 * column.
+	 * 
+	 * @author Kevin Kelley
+	 */
 	class ViewLabelProvider extends LabelProvider implements
-			ITableLabelProvider {
+	ITableLabelProvider {
 
-		/*
-		 * class ViewLabelProvider extends StyledCellLabelProvider {
-		 * 
-		 * @Override public void update(ViewerCell cell) {
-		 * 
-		 * Message message = (Message)cell.getElement(); int index =
-		 * cell.getColumnIndex(); String columnText = getColumnText(message,
-		 * index); cell.setText(columnText);
-		 * cell.setImage(getColumnImage(message, index));
-		 * 
-		 * if(message.isUnread()) { FontData fdata =
-		 * cell.getFont().getFontData()[0]; fdata.setStyle(SWT.BOLD); Font f =
-		 * new Font(Display.getDefault(), fdata);
-		 * 
-		 * StyleRange style = new StyleRange(); style.font = f; style.length =
-		 * cell.getText().length(); cell.setStyleRanges(new StyleRange[] { style
-		 * }); }
-		 * 
-		 * super.update(cell); }
-		 */
 		public String getColumnText(Object obj, int index) {
 			Message message = (Message) obj;
 			switch (index) {
@@ -327,7 +313,7 @@ public class MessagesView extends ViewPart {
 
 		// Create the help context id for the viewer's control
 		PlatformUI.getWorkbench().getHelpSystem()
-				.setHelp(viewer.getControl(), "com.foos-bar.mailsnag.viewer");
+		.setHelp(viewer.getControl(), "com.foos-bar.mailsnag.viewer");
 		makeActions();
 		hookContextMenu();
 		hookDoubleClickAction();
@@ -449,11 +435,11 @@ public class MessagesView extends ViewPart {
 			@Override
 			public void run() {
 				PreferencesUtil
-						.createPreferenceDialogOn(
-								viewer.getControl().getShell(),
-								"com.foosbar.mailsnag.preferences.PreferencePage",
-								new String[] { "com.foosbar.mailsnag.preferences.PreferencePage" },
-								null).open();
+				.createPreferenceDialogOn(
+						viewer.getControl().getShell(),
+						"com.foosbar.mailsnag.preferences.PreferencePage",
+						new String[] { "com.foosbar.mailsnag.preferences.PreferencePage" },
+						null).open();
 			}
 		};
 

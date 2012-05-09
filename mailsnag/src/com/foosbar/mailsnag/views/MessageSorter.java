@@ -19,26 +19,29 @@ import org.eclipse.jface.viewers.ViewerSorter;
 import com.foosbar.mailsnag.model.Message;
 
 /**
- * @author Kevin Kelley
+ * Sorter is responsible for ordering messages based on the selected column. It
+ * also has the responsibility of determining if the column should be sorted in
+ * ascending or descending order.
  * 
+ * Default is descending order for newly selected columns.
+ * 
+ * @author Kevin Kelley
  */
 public class MessageSorter extends ViewerSorter {
 
-	private static final int DESCENDING = 1;
-
 	private String columnName;
-	private int direction;
+
+	private SortDirection direction;
 
 	public MessageSorter() {
-		direction = DESCENDING;
+		direction = SortDirection.DESCENDING;
 		columnName = "receiving";
 	}
 
 	public void setColumnName(String columnName) {
-		direction = columnName.equalsIgnoreCase(this.columnName) ? direction = 1 - direction
-				: DESCENDING;
-
-		this.columnName = columnName;
+		direction = columnName.equalsIgnoreCase(this.columnName) ? direction
+				.flip() : SortDirection.DESCENDING;
+				this.columnName = columnName;
 	}
 
 	@Override
@@ -66,7 +69,7 @@ public class MessageSorter extends ViewerSorter {
 			result = compareDates(m1.getReceived(), m2.getReceived());
 		}
 		// If descending order, flip the direction
-		return direction == DESCENDING ? -result : result;
+		return direction == SortDirection.DESCENDING ? -result : result;
 	}
 
 	public int compareDates(Date d1, Date d2) {
@@ -77,5 +80,18 @@ public class MessageSorter extends ViewerSorter {
 			return 1;
 		}
 		return d1.compareTo(d2);
+	}
+
+	public enum SortDirection {
+		ASCENDING,
+		DESCENDING;
+
+		public SortDirection flip() {
+			if (this == ASCENDING) {
+				return DESCENDING;
+			} else {
+				return ASCENDING;
+			}
+		}
 	}
 }
