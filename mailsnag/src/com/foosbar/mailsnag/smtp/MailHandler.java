@@ -199,13 +199,13 @@ public class MailHandler extends Thread {
 			// Update the Content Provider
 			Display.getDefault().asyncExec(new Runnable() {
 				public void run() {
-					boolean foundView = false;
+					//boolean foundView = false;
 					for (IWorkbenchWindow bench : PlatformUI.getWorkbench()
 							.getWorkbenchWindows()) {
 						MessagesView view = (MessagesView) bench
 								.getActivePage().findView(MessagesView.ID);
 						if (view != null) {
-							foundView = true;
+							//foundView = true;
 							ViewContentProvider provider = (ViewContentProvider) view
 									.getViewer().getContentProvider();
 							provider.add(message);

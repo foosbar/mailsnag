@@ -12,7 +12,6 @@ package com.foosbar.mailsnag.util;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -38,6 +37,8 @@ import com.foosbar.mailsnag.model.MessageParser;
 
 public class MessageStore {
 
+	private static final int BUFFER_SIZE = 8192;
+	
 	// Save message to directory
 	// workspace/.metadata/.plugins/com.foosbar.mailsnag
 	public static final Message persist(String data) {
@@ -109,13 +110,12 @@ public class MessageStore {
 				try {
 					in = new BufferedInputStream(part.getInputStream());
 					out = new BufferedOutputStream(new FileOutputStream(file));
-					byte[] buffer = new byte[4096];
-
-					long totalBytesRead = 0;
-					int bytesRead = 0;
-
-					while ((bytesRead = in.read(buffer)) != -1) {
-						out.write(buffer);
+					
+					int bytesRead;
+					long totalBytesRead = 0L;
+					byte[] buffer = new byte[BUFFER_SIZE];
+					while ( (bytesRead = in.read(buffer)) != -1 ) {
+						out.write(buffer, 0, bytesRead);
 						totalBytesRead += bytesRead;
 					}
 
@@ -194,12 +194,14 @@ public class MessageStore {
 						OutputStream out = null;
 
 						try {
-							in = new BufferedInputStream(part.getInputStream());
+							in = part.getInputStream();
 							out = new BufferedOutputStream(
 									new FileOutputStream(file));
-							byte[] buffer = new byte[4096];
-							while (in.read(buffer) != -1) {
-								out.write(buffer);
+
+							int bytesRead;
+							byte[] buffer = new byte[BUFFER_SIZE];
+							while ( (bytesRead = in.read(buffer)) != -1 ) {
+								out.write(buffer, 0, bytesRead);
 							}
 
 						} catch (Exception e) {
@@ -294,13 +296,14 @@ public class MessageStore {
 
 			StringBuilder builder = new StringBuilder();
 
-			reader = new BufferedReader(new InputStreamReader(
+			reader = new InputStreamReader(
 					new FileInputStream(new File(Activator.getDefault()
-							.getStateLocation().toFile(), filename))));
+							.getStateLocation().toFile(), filename)));
 
-			char[] buffer = new char[8192];
-			while (reader.read(buffer) > 0) {
-				builder.append(buffer);
+			int bytesRead;
+			char[] buffer = new char[BUFFER_SIZE];
+			while ( (bytesRead = reader.read(buffer)) != -1 ) {
+				builder.append(buffer, 0, bytesRead);
 			}
 
 			Message message = MessageParser.parse(builder.toString(), filename);
@@ -334,12 +337,14 @@ public class MessageStore {
 			StringBuilder builder = new StringBuilder();
 
 			String filename = message.getFilename();
-			reader = new BufferedReader(new InputStreamReader(
+			reader = new InputStreamReader(
 					new FileInputStream(new File(Activator.getDefault()
-							.getStateLocation().toFile(), filename))));
-			char[] buffer = new char[8192];
-			while (reader.read(buffer) > 0) {
-				builder.append(buffer);
+							.getStateLocation().toFile(), filename)));
+
+			int bytesRead;
+			char[] buffer = new char[BUFFER_SIZE];
+			while ( (bytesRead = reader.read(buffer)) != -1 ) {
+				builder.append(buffer, 0, bytesRead);
 			}
 
 			return builder.toString();
