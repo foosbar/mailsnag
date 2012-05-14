@@ -10,10 +10,13 @@
  *******************************************************************************/
 package com.foosbar.mailsnag.editors;
 
+import java.util.ResourceBundle;
+
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IPersistableElement;
 
+import com.foosbar.mailsnag.Activator;
 import com.foosbar.mailsnag.model.Message;
 import com.foosbar.mailsnag.model.MessageData;
 import com.foosbar.mailsnag.util.MessageStore;
@@ -24,6 +27,9 @@ import com.foosbar.mailsnag.util.MessageStore;
 public class MessageEditorInput
 		implements IEditorInput {
 
+	/* Locale Specific Resource Bundle */
+	private static final ResourceBundle BUNDLE = Activator.getResourceBundle();
+	
 	private final String participant;
 	private final Message message;
 
@@ -52,7 +58,7 @@ public class MessageEditorInput
 	public String getName() {
 		if (this.message.getSubject() == null
 				|| "".equals(this.message.getSubject().trim())) {
-			return "<No Subject>";
+			return BUNDLE.getString("notify.unknown.subject");
 		} else {
 			return this.message.getSubject();
 		}

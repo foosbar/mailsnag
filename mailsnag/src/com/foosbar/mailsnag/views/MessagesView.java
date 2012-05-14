@@ -90,7 +90,7 @@ public class MessagesView extends ViewPart {
 	private static final ImageDescriptor IMG_NEW_MESSAGES = ImageDescriptor
 			.createFromFile(Activator.class, "/icons/mail_new.gif");
 
-	// New Messages
+	// Logo for View
 	private static final ImageDescriptor IMG_LOGO = ImageDescriptor
 			.createFromFile(Activator.class, "/icons/mail.gif");
 
