@@ -182,6 +182,8 @@ public class MessageEditor extends MultiPageEditorPart implements
 
 		StyledText text = new StyledText(composite, SWT.H_SCROLL | SWT.V_SCROLL);
 		text.setEditable(false);
+		text.setWordWrap(true);
+		text.setMargins(5, 5, 5, 5);
 		text.setText(messageData.getTextMessage());
 
 		int index = addPage(composite);
