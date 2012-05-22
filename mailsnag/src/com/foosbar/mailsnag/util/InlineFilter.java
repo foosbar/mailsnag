@@ -41,9 +41,6 @@ public class InlineFilter {
 
 		}
 		m.appendTail(sb);
-
-		System.out.println(sb.toString());
-
 		return sb.toString();
 	}
 }
