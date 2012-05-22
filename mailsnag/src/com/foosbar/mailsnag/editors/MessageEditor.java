@@ -10,8 +10,10 @@
  *******************************************************************************/
 package com.foosbar.mailsnag.editors;
 
+import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.util.Collection;
+import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.eclipse.core.resources.IMarker;
@@ -20,11 +22,17 @@ import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorRegistry;
@@ -60,6 +68,11 @@ public class MessageEditor extends MultiPageEditorPart implements
 
 	public static final String ID = "com.foosbar.mailsnag.editors.MessageEditor";
 
+	// Locale Specific Date Formatter
+	private static final DateFormat DATE_FORMATTER = DateFormat
+			.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG,
+					Locale.getDefault());
+
 	/* Locale Specific Resource Bundle */
 	private static final ResourceBundle BUNDLE = Activator.getResourceBundle();
 
@@ -86,6 +99,7 @@ public class MessageEditor extends MultiPageEditorPart implements
 		StyledText text = new StyledText(composite, SWT.H_SCROLL | SWT.V_SCROLL);
 		text.setEditable(false);
 		text.setText(messageData.getMessage());
+		text.setMargins(5, 5, 5, 5);
 
 		int index = addPage(composite);
 		setPageText(index, BUNDLE.getString("editor.rawData"));
@@ -177,10 +191,17 @@ public class MessageEditor extends MultiPageEditorPart implements
 
 		Composite composite = new Composite(getContainer(), SWT.NONE);
 
-		FillLayout layout = new FillLayout();
-		composite.setLayout(layout);
+		populateEmailBanner(composite);
 
-		StyledText text = new StyledText(composite, SWT.H_SCROLL | SWT.V_SCROLL);
+		StyledText text = new StyledText(composite, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
+		
+		GridData gridData = new GridData();
+		gridData.horizontalSpan = 2;
+		gridData.horizontalAlignment = SWT.FILL;
+		gridData.grabExcessHorizontalSpace = true;
+		gridData.verticalAlignment = SWT.FILL;
+		gridData.grabExcessVerticalSpace = true;
+		text.setLayoutData(gridData);
 		text.setEditable(false);
 		text.setWordWrap(true);
 		text.setMargins(5, 5, 5, 5);
@@ -200,37 +221,32 @@ public class MessageEditor extends MultiPageEditorPart implements
 		}
 
 		try {
-
-			/*
-			 * File file =
-			 * MessageStore.createTempHtmlFile(messageData.getHtmlMessage());
-			 * 
-			 * WebBrowserEditor editor = new WebBrowserEditor();
-			 * WebBrowserEditorInput input = new
-			 * WebBrowserEditorInput(file.toURI().toURL());
-			 * 
-			 * setPageText( addPage(editor, input),
-			 * BUNDLE.getString("editor.htmlFormat"));
-			 */
 			Composite composite = new Composite(getContainer(), SWT.NONE);
-			composite.setLayout(new FillLayout());
 
-			Browser browser = new Browser(composite, SWT.H_SCROLL
-					| SWT.V_SCROLL);
-
+			populateEmailBanner(composite);
+			
 			StringBuilder path = new StringBuilder("file:///")
-					.append(Activator.getDefault().getStateLocation()
-							.toString()).append('/')
-					.append(message.getAttachmentDir());
-
-			System.out.println("PATH => " + path);
+				.append(Activator.getDefault().getStateLocation().toString())
+				.append('/')
+				.append(message.getAttachmentDir());
 
 			String filteredText = InlineFilter.filter(message,
 					messageData.getHtmlMessage(), path.toString());
 
-			System.out.println(filteredText);
+			Browser browser = new Browser(composite, SWT.NONE | SWT.BORDER);
+
 			browser.setText(filteredText);
 			browser.setCapture(true);
+
+			browser.execute("document.getElementsByTagName('body')[0].style.overflow='hidden'");
+			
+			GridData gridData = new GridData();
+			gridData.horizontalSpan = 2;
+			gridData.horizontalAlignment = SWT.FILL;
+			gridData.grabExcessHorizontalSpace = true;
+			gridData.verticalAlignment = SWT.FILL;
+			gridData.grabExcessVerticalSpace = true;
+			browser.setLayoutData(gridData);
 
 			// Get Preferences
 			// IPreferenceStore pStore =
@@ -244,13 +260,62 @@ public class MessageEditor extends MultiPageEditorPart implements
 					BUNDLE.getString("editor.htmlFormat"));
 
 		} catch (Exception e) {
-			e.printStackTrace();
-			e.getCause().printStackTrace();
+			e.printStackTrace(System.err);
 			ErrorDialog.openError(getSite().getShell(),
 					"Error creating nested text editor", null, null);
 		}
 	}
 
+	/**
+	 * Creates the display related to the email fields.  Allows
+	 * the text and html displays to look more like an actual email
+	 * message as viewed by a user.
+	 * 
+	 * @param composite
+	 */
+	private void populateEmailBanner(Composite composite) {
+
+		composite.setLayout(new GridLayout(2, false));
+
+		// From Line
+		addEmailBannerField(BUNDLE.getString("header.from"), message.getFrom(), composite);
+
+		// From Subject
+		addEmailBannerField(BUNDLE.getString("header.subject"), message.getSubject(), composite);
+		
+		// Date Received
+		addEmailBannerField(BUNDLE.getString("header.received"), DATE_FORMATTER.format(message.getReceived()), composite);
+		
+		// To Field
+		String to = message.getTo();
+		if(to != null && !"".equals(to)) {
+			addEmailBannerField(BUNDLE.getString("header.to"), message.getTo(), composite);
+		}
+
+		// To Field
+		String cc = message.getCc();
+		if(cc != null && !"".equals(cc)) {
+			addEmailBannerField(BUNDLE.getString("header.cc"), message.getCc(), composite);
+		}
+		
+		composite.layout(true);
+	}
+	
+	private void addEmailBannerField(String label, String value, Composite parent) {
+		// Grid layout data
+		GridData gridData = new GridData();
+		gridData.horizontalAlignment = SWT.FILL;
+		gridData.grabExcessHorizontalSpace = true;
+
+		new Label(parent, SWT.NONE)
+			.setText(label);
+		
+		Text valueField = new Text(parent, SWT.BORDER | SWT.READ_ONLY);
+		valueField.setLayoutData(gridData);
+		valueField.setText(value);
+		valueField.pack(true);
+	}
+	
 	/**
 	 * Creates the pages of the multi-page editor.
 	 */
