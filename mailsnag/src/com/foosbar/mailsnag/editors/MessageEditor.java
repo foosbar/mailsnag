@@ -22,11 +22,9 @@ import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.ErrorDialog;
-import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.custom.StyledText;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -234,7 +232,6 @@ public class MessageEditor extends MultiPageEditorPart implements
 					messageData.getHtmlMessage(), path.toString());
 
 			Browser browser = new Browser(composite, SWT.NONE | SWT.BORDER);
-
 			browser.setText(filteredText);
 			browser.setCapture(true);
 
@@ -280,7 +277,7 @@ public class MessageEditor extends MultiPageEditorPart implements
 		// From Line
 		addEmailBannerField(BUNDLE.getString("header.from"), message.getFrom(), composite);
 
-		// From Subject
+		// Subject
 		addEmailBannerField(BUNDLE.getString("header.subject"), message.getSubject(), composite);
 		
 		// Date Received
