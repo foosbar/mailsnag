@@ -21,8 +21,11 @@ import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.SWTError;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.layout.FillLayout;
@@ -62,7 +65,7 @@ import com.foosbar.mailsnag.util.InlineFilter;
  * </ul>
  */
 public class MessageEditor extends MultiPageEditorPart implements
-		IResourceChangeListener {
+IResourceChangeListener {
 
 	public static final String ID = "com.foosbar.mailsnag.editors.MessageEditor";
 
@@ -192,7 +195,7 @@ public class MessageEditor extends MultiPageEditorPart implements
 		populateEmailBanner(composite);
 
 		StyledText text = new StyledText(composite, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
-		
+
 		GridData gridData = new GridData();
 		gridData.horizontalSpan = 2;
 		gridData.horizontalAlignment = SWT.FILL;
@@ -222,37 +225,39 @@ public class MessageEditor extends MultiPageEditorPart implements
 			Composite composite = new Composite(getContainer(), SWT.NONE);
 
 			populateEmailBanner(composite);
-			
+
 			StringBuilder path = new StringBuilder("file:///")
-				.append(Activator.getDefault().getStateLocation().toString())
-				.append('/')
-				.append(message.getAttachmentDir());
+			.append(Activator.getDefault().getStateLocation().toString())
+			.append('/')
+			.append(message.getAttachmentDir());
 
 			String filteredText = InlineFilter.filter(message,
 					messageData.getHtmlMessage(), path.toString());
 
-			Browser browser = new Browser(composite, SWT.NONE | SWT.BORDER);
-			browser.setText(filteredText);
-			browser.setCapture(true);
+			try {
+				Browser browser = new Browser(composite, SWT.NONE | SWT.BORDER);
+				browser.setText(filteredText);
+				browser.setCapture(true);
 
-			browser.execute("document.getElementsByTagName('body')[0].style.overflow='hidden'");
-			
-			GridData gridData = new GridData();
-			gridData.horizontalSpan = 2;
-			gridData.horizontalAlignment = SWT.FILL;
-			gridData.grabExcessHorizontalSpace = true;
-			gridData.verticalAlignment = SWT.FILL;
-			gridData.grabExcessVerticalSpace = true;
-			browser.setLayoutData(gridData);
+				browser.execute("document.getElementsByTagName('body')[0].style.overflow='hidden'");
 
-			// Get Preferences
-			// IPreferenceStore pStore =
-			// Activator.getDefault().getPreferenceStore();
+				GridData gridData = new GridData();
+				gridData.horizontalSpan = 2;
+				gridData.horizontalAlignment = SWT.FILL;
+				gridData.grabExcessHorizontalSpace = true;
+				gridData.verticalAlignment = SWT.FILL;
+				gridData.grabExcessVerticalSpace = true;
+				browser.setLayoutData(gridData);
 
-			// Execute Javascript?
-			// browser.setJavascriptEnabled(pStore
-			// .getBoolean(PreferenceConstants.PARAM_JAVASCRIPT));
-
+			} catch (SWTError error) {
+				if (error.code == 2) {
+					IStatus status = new Status(IStatus.ERROR,
+							Activator.PLUGIN_ID, error.getLocalizedMessage());
+					ErrorDialog.openError(getSite().getShell(), null,
+							"MailSnag is unable to display the HTML output due to an Eclipse configuration error.\n\nSee http://blog.foos-bar.com/2012/05/eclipse-rcp-development-browser-control.html",
+							status);
+				}
+			}
 			setPageText(addPage(composite),
 					BUNDLE.getString("editor.htmlFormat"));
 
@@ -279,10 +284,10 @@ public class MessageEditor extends MultiPageEditorPart implements
 
 		// Subject
 		addEmailBannerField(BUNDLE.getString("header.subject"), message.getSubject(), composite);
-		
+
 		// Date Received
 		addEmailBannerField(BUNDLE.getString("header.received"), DATE_FORMATTER.format(message.getReceived()), composite);
-		
+
 		// To Field
 		String to = message.getTo();
 		if(to != null && !"".equals(to)) {
@@ -294,10 +299,10 @@ public class MessageEditor extends MultiPageEditorPart implements
 		if(cc != null && !"".equals(cc)) {
 			addEmailBannerField(BUNDLE.getString("header.cc"), message.getCc(), composite);
 		}
-		
+
 		composite.layout(true);
 	}
-	
+
 	private void addEmailBannerField(String label, String value, Composite parent) {
 		// Grid layout data
 		GridData gridData = new GridData();
@@ -305,14 +310,14 @@ public class MessageEditor extends MultiPageEditorPart implements
 		gridData.grabExcessHorizontalSpace = true;
 
 		new Label(parent, SWT.NONE)
-			.setText(label);
-		
+		.setText(label);
+
 		Text valueField = new Text(parent, SWT.BORDER | SWT.READ_ONLY);
 		valueField.setLayoutData(gridData);
 		valueField.setText(value);
 		valueField.pack(true);
 	}
-	
+
 	/**
 	 * Creates the pages of the multi-page editor.
 	 */

@@ -18,8 +18,19 @@ import org.eclipse.ui.handlers.HandlerUtil;
 
 import com.foosbar.mailsnag.views.MessagesView;
 
+/**
+ * Handler for opening a messsage. The message will have been selected from the
+ * Mail View and either double clicked, or "Right-Click" > Open Message from
+ * menu.
+ * 
+ * @author kkelley (dev@foos-bar.com)
+ * 
+ */
 public class OpenMessage extends AbstractHandler {
 
+	/**
+	 * Main Execution
+	 */
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		IWorkbenchPart part = HandlerUtil.getActivePart(event);
 		if (part instanceof MessagesView) {

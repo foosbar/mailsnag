@@ -27,9 +27,10 @@ import com.foosbar.mailsnag.util.MessageStore;
 import com.foosbar.mailsnag.views.MessagesView;
 
 /**
- * The activator class controls the plug-in life cycle.
+ * The activator class controls the plug-in life cycle. Its treated as a
+ * singleton that controls the SMTP server lifecycle as well.
  * 
- * @author kkelley
+ * @author kkelley (dev@foos-bar.com)
  */
 public class Activator extends AbstractUIPlugin implements IStartup {
 
@@ -52,12 +53,12 @@ public class Activator extends AbstractUIPlugin implements IStartup {
 	public Activator() {
 	}
 
-	/*
-	 * (non-Javadoc)
+	/**
+	 * Activates the plugin. The SMTP server will be started as well, if the
+	 * user has set the automatic preference to true.
 	 * 
-	 * @see
-	 * org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framewActivatorork
-	 * .BundleContext)
+	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framewActivatorork
+	 *      .BundleContext)
 	 */
 	@Override
 	public void start(BundleContext context) throws Exception {

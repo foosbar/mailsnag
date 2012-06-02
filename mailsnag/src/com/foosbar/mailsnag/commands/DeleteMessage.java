@@ -28,13 +28,18 @@ import com.foosbar.mailsnag.views.MessagesView;
 import com.foosbar.mailsnag.views.MessagesView.ViewContentProvider;
 
 /**
- * Handler for deleting selected messages.
+ * Handler for deleting selected messages. One or more messages can be selected
+ * in the Email view and deleted all at once. This handler will get an
+ * IStructuredSelection object containing references to those items selected.
  * 
- * @author kkelley
+ * @author kkelley (dev@foos-bar.com)
  * 
  */
 public class DeleteMessage extends AbstractHandler {
 
+	/**
+	 * Main execution
+	 */
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 
 		IWorkbenchPart part = HandlerUtil.getActivePart(event);
@@ -48,39 +53,64 @@ public class DeleteMessage extends AbstractHandler {
 			IStructuredSelection iss = (IStructuredSelection) HandlerUtil
 					.getCurrentSelection(event);
 
-			int size = iss.size();
+			if (!iss.isEmpty()) {
+				String message = getConfirmationMessage(iss.size());
 
-			if (size == 0) {
-				return null;
-			}
+				ResourceBundle BUNDLE = Activator.getResourceBundle();
+				boolean confirm = MessageDialog.openConfirm(viewer.getViewer()
+						.getControl().getShell(),
+						BUNDLE.getString("action.delete.confirm"), message);
 
-			ResourceBundle BUNDLE = Activator.getResourceBundle();
-
-			String message = size == 1 ? BUNDLE
-					.getString("action.delete.confirm.single") : String.format(
-					BUNDLE.getString("action.delete.confirm.plural"), size);
-
-			boolean confirm = MessageDialog.openConfirm(viewer.getViewer()
-					.getControl().getShell(),
-					BUNDLE.getString("action.delete.confirm"), message);
-
-			if (confirm) {
-				deleteMessages(iss, viewer);
+				if (confirm) {
+					deleteMessages(iss, viewer);
+				}
 			}
 		}
 		return null;
 	}
 
+	/**
+	 * Formats the confirmation message based on the selection size to be
+	 * deleted.
+	 * 
+	 * @param size
+	 *            Number of items selected for deletion
+	 * @return the confirmation message
+	 */
+	private String getConfirmationMessage(int size) {
+
+		ResourceBundle BUNDLE = Activator.getResourceBundle();
+
+		if(size == 1) {
+			return BUNDLE.getString("action.delete.confirm.single");
+		}
+
+		return String.format(BUNDLE
+				.getString("action.delete.confirm.plural"), size);
+	}
+
+	/**
+	 * Deletes the message from the filesystem and removes the entry from the
+	 * Mail View.
+	 * 
+	 * @param iss
+	 *            The selected items
+	 * @param viewer
+	 *            The viewer that contains the selected items
+	 */
 	private void deleteMessages(IStructuredSelection iss, MessagesView viewer) {
+
+		ViewContentProvider provider = (ViewContentProvider) viewer.getViewer()
+				.getContentProvider();
+
 		@SuppressWarnings("unchecked")
 		Iterator<Object> it = iss.iterator();
 		while (it.hasNext()) {
 			Object obj = it.next();
-			if (obj != null && obj instanceof Message) {
+			if (obj instanceof Message) {
 				Message m = (Message) obj;
-				MessageStore.delete((Message) obj);
-				((ViewContentProvider) viewer.getViewer().getContentProvider())
-						.remove(m);
+				MessageStore.delete(m);
+				provider.remove(m);
 			}
 		}
 		viewer.getViewer().refresh();

@@ -70,6 +70,14 @@ import com.foosbar.mailsnag.util.EmailFilenameFilter;
 import com.foosbar.mailsnag.util.MessageStore;
 import com.foosbar.mailsnag.util.NotificationManager;
 
+/**
+ * This is the main view for the plugin. It creates a table to display all
+ * existing and new messages. The table is sortable and messages can be open in
+ * the Email Editor or deleted from this part.
+ * 
+ * @author kkelley (dev@foos-bar.com)
+ * 
+ */
 public class MessagesView extends ViewPart {
 
 	public static final String ID = "com.foosbar.mailsnag.views.MessagesView";
@@ -110,7 +118,6 @@ public class MessagesView extends ViewPart {
 			.getString("header.received");
 
 	private TableViewer viewer;
-
 	private Action runServer;
 	private Action stopServer;
 	private Action openPreferences;
@@ -122,6 +129,11 @@ public class MessagesView extends ViewPart {
 		super();
 	}
 
+	/**
+	 * Provides the data necessary to populate the Mail View.
+	 * 
+	 * @author kkelley (dev@foos-bar.com)
+	 */
 	public class ViewContentProvider implements IStructuredContentProvider {
 		List<Message> messages = new ArrayList<Message>();
 
@@ -132,17 +144,27 @@ public class MessagesView extends ViewPart {
 		}
 
 		public void inputChanged(Viewer v, Object oldInput, Object newInput) {
+			// Nothing to do.
 		}
 
 		public void dispose() {
+			messages = null;
 		}
 
 		public Object[] getElements(Object parent) {
 			return messages.toArray();
 		}
 
+		/**
+		 * Adds a message to the current list of messages and updates the
+		 * control.
+		 * 
+		 * @param message
+		 */
 		public void add(Message message) {
 			messages.add(message);
+
+			// Refresh the viewer
 			getViewer().refresh();
 
 			// Sets label bold if the view is unfocused.
@@ -151,17 +173,23 @@ public class MessagesView extends ViewPart {
 
 			service.warnOfContentChange();
 
-			// getSite().getPart().setFocus();
 			getSite().getPage().activate(getSite().getPart());
-
 			showNewMessages(message);
-
 		}
 
+		/**
+		 * Remove a message from the list
+		 */
 		public void remove(Message message) {
 			messages.remove(message);
 		}
 
+		/**
+		 * Mark message as read. Note, this currently doesn't do anything, but
+		 * ideally, if new messages were bold...
+		 * 
+		 * @param message
+		 */
 		public void setRead(Message message) {
 			int idx = messages.indexOf(message);
 			if (idx >= 0) {
@@ -180,6 +208,10 @@ public class MessagesView extends ViewPart {
 	class ViewLabelProvider extends LabelProvider implements
 	ITableLabelProvider {
 
+		/**
+		 * Based on the index of each column, return the proper value to
+		 * populate the data.
+		 */
 		public String getColumnText(Object obj, int index) {
 			Message message = (Message) obj;
 			switch (index) {
@@ -204,6 +236,10 @@ public class MessagesView extends ViewPart {
 			}
 		}
 
+		/**
+		 * Returns an attachment icon for the first column (index == 0) if the
+		 * message contains an attachment
+		 */
 		public Image getColumnImage(Object obj, int index) {
 			if (index > 0) {
 				return null;
@@ -314,6 +350,8 @@ public class MessagesView extends ViewPart {
 		// Create the help context id for the viewer's control
 		PlatformUI.getWorkbench().getHelpSystem()
 		.setHelp(viewer.getControl(), "com.foos-bar.mailsnag.viewer");
+
+		// Create the actions
 		makeActions();
 		hookContextMenu();
 		hookDoubleClickAction();
@@ -471,27 +509,27 @@ public class MessagesView extends ViewPart {
 		stopServer.setEnabled(false);
 	}
 
-	@SuppressWarnings("unchecked")
+	/**
+	 * Opens the currently selected message or messages.
+	 */
 	public void openMessage() {
-
-		IStructuredSelection iss = (IStructuredSelection) getViewer()
-				.getSelection();
-		Iterator<Object> it = iss.iterator();
+		Iterator<Object> it = getSelectedMessagesIterator();
 		while (it.hasNext()) {
 			Object obj = it.next();
 			if (obj instanceof Message) {
-				Message m = (Message) obj;
-				openMessage(m, false);
+				openMessage((Message) obj, false);
 			}
 		}
 		return;
 	}
 
-	@SuppressWarnings("unchecked")
+	/**
+	 * Opens the currently selected message or messages in the default system
+	 * editor. The editor will be registered for .eml files by the operating
+	 * system.
+	 */
 	public void openMessageWithSystemEditor() {
-		IStructuredSelection iss = (IStructuredSelection) getViewer()
-				.getSelection();
-		Iterator<Object> it = iss.iterator();
+		Iterator<Object> it = getSelectedMessagesIterator();
 		while (it.hasNext()) {
 			Object obj = it.next();
 			if (obj instanceof Message) {
@@ -502,6 +540,26 @@ public class MessagesView extends ViewPart {
 		return;
 	}
 
+	/**
+	 * Gets an iterator containing elements selected in the Mail View
+	 * 
+	 * @return iterator with selected items
+	 */
+	@SuppressWarnings("unchecked")
+	private Iterator<Object> getSelectedMessagesIterator() {
+		IStructuredSelection iss = (IStructuredSelection) getViewer()
+				.getSelection();
+		return iss.iterator();
+	}
+
+	/**
+	 * Opens a single message. If the inSystemEditor property is set to true,
+	 * the plugin will request the operating system open the file ending in .eml
+	 * This is typically an email application or text editor.
+	 * 
+	 * @param message
+	 * @param inSystemEditor
+	 */
 	private void openMessage(Message message, boolean inSystemEditor) {
 		IEditorInput input = inSystemEditor ? getSystemEditorInput(message)
 				: getInternalEditorInput(message);
