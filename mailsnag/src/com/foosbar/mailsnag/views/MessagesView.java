@@ -469,6 +469,8 @@ public class MessagesView extends ViewPart {
 
 	private void makeActions() {
 
+		boolean isServerListening = Activator.getDefault().isServerListening();
+
 		openPreferences = new Action() {
 			@Override
 			public void run() {
@@ -495,6 +497,7 @@ public class MessagesView extends ViewPart {
 		runServer.setText(BUNDLE.getString("action.start"));
 		runServer.setToolTipText(BUNDLE.getString("action.start.tooltip"));
 		runServer.setImageDescriptor(IMG_RUN);
+		runServer.setEnabled(!isServerListening);
 
 		stopServer = new Action() {
 			@Override
@@ -506,7 +509,7 @@ public class MessagesView extends ViewPart {
 		stopServer.setText(BUNDLE.getString("action.stop"));
 		stopServer.setToolTipText(BUNDLE.getString("action.stop.tooltip"));
 		stopServer.setImageDescriptor(IMG_STOP);
-		stopServer.setEnabled(false);
+		stopServer.setEnabled(isServerListening);
 	}
 
 	/**

@@ -60,8 +60,10 @@ public class Server implements Runnable {
 				MessagesView view = (MessagesView) PlatformUI.getWorkbench()
 						.getActiveWorkbenchWindow().getActivePage()
 						.findView(MessagesView.ID);
-				view.disableStartServer();
-				view.enableStopServer();
+				if (view != null) {
+					view.disableStartServer();
+					view.enableStopServer();
+				}
 			}
 		});
 
@@ -108,6 +110,9 @@ public class Server implements Runnable {
 				e.printStackTrace(System.err);
 			}
 		}
+	}
 
+	public boolean isListening() {
+		return listening;
 	}
 }

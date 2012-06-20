@@ -58,10 +58,8 @@ public class MessageStore {
 					.toFile(), message.getFilename());
 
 			// Write file
-			if (file != null) {
-				out = new BufferedOutputStream(new FileOutputStream(file));
-				out.write(data.getBytes());
-			}
+			out = new BufferedOutputStream(new FileOutputStream(file));
+			out.write(data.getBytes());
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {

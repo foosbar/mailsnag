@@ -16,7 +16,6 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IStartup;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
@@ -24,7 +23,6 @@ import com.foosbar.mailsnag.preferences.PreferenceConstants;
 import com.foosbar.mailsnag.smtp.Server;
 import com.foosbar.mailsnag.smtp.ServerThreadGroup;
 import com.foosbar.mailsnag.util.MessageStore;
-import com.foosbar.mailsnag.views.MessagesView;
 
 /**
  * The activator class controls the plug-in life cycle. Its treated as a
@@ -70,23 +68,24 @@ public class Activator extends AbstractUIPlugin implements IStartup {
 		// b) User preference selected autostart
 		Display.getDefault().asyncExec(new Runnable() {
 			public void run() {
+				/*
+				 * // Check if view is loaded MessagesView view = (MessagesView)
+				 * PlatformUI.getWorkbench()
+				 * .getActiveWorkbenchWindow().getActivePage()
+				 * .findView(MessagesView.ID);
+				 * 
+				 * // If view is loaded, check user preference if (view != null)
+				 * {
+				 */
+				// Get user preferences
+				IPreferenceStore store = Activator.getDefault()
+						.getPreferenceStore();
 
-				// Check if view is loaded
-				MessagesView view = (MessagesView) PlatformUI.getWorkbench()
-						.getActiveWorkbenchWindow().getActivePage()
-						.findView(MessagesView.ID);
-
-				// If view is loaded, check user preference
-				if (view != null) {
-					// Get user preferences
-					IPreferenceStore store = Activator.getDefault()
-							.getPreferenceStore();
-
-					// Start server if the preferences indicate such.
-					if (store.getBoolean(PreferenceConstants.PARAM_STARTUP)) {
-						Activator.getDefault().startServer();
-					}
+				// Start server if the preferences indicate such.
+				if (store.getBoolean(PreferenceConstants.PARAM_STARTUP)) {
+					Activator.getDefault().startServer();
 				}
+				// }
 			}
 		});
 	}
@@ -99,6 +98,10 @@ public class Activator extends AbstractUIPlugin implements IStartup {
 		new Thread(tg, server).start();
 	}
 
+	public boolean isServerListening() {
+		return server.isListening();
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -108,6 +111,11 @@ public class Activator extends AbstractUIPlugin implements IStartup {
 	 */
 	@Override
 	public void stop(BundleContext context) throws Exception {
+
+		if (server != null) {
+			Activator.getDefault().stopServer();
+		}
+
 		// Get Persist Preference
 		boolean persist = plugin.getPreferenceStore().getBoolean(
 				PreferenceConstants.PARAM_PERSIST);
@@ -115,10 +123,6 @@ public class Activator extends AbstractUIPlugin implements IStartup {
 		// If not persisting, delete all messages
 		if (!persist) {
 			MessageStore.removeAll();
-		}
-
-		if (server != null) {
-			Activator.getDefault().stopServer();
 		}
 
 		super.stop(context);
