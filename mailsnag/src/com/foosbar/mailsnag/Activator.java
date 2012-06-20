@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010-2011 Foos-Bar.com
+ * Copyright (c) 2010-2012 Foos-Bar.com
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -7,6 +7,7 @@
  *
  * Contributors:
  * Kevin Kelley - initial API and implementation
+ * Enrico - Server & Message Event Listeners
  *******************************************************************************/
 package com.foosbar.mailsnag;
 
@@ -14,15 +15,20 @@ import java.util.ResourceBundle;
 
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IStartup;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
+import com.foosbar.mailsnag.events.ServerStateListener;
 import com.foosbar.mailsnag.preferences.PreferenceConstants;
 import com.foosbar.mailsnag.smtp.Server;
+import com.foosbar.mailsnag.smtp.ServerState;
 import com.foosbar.mailsnag.smtp.ServerThreadGroup;
 import com.foosbar.mailsnag.util.MessageStore;
+import com.foosbar.mailsnag.util.NotificationManager;
 
 /**
  * The activator class controls the plug-in life cycle. Its treated as a
@@ -45,6 +51,9 @@ public class Activator extends AbstractUIPlugin implements IStartup {
 	// SMTP Server
 	private final Server server = new Server();
 
+	// Handles message events with popups
+	private final NotificationManager notificationManager = new NotificationManager();
+
 	/**
 	 * The constructor
 	 */
@@ -63,20 +72,12 @@ public class Activator extends AbstractUIPlugin implements IStartup {
 		super.start(context);
 		plugin = this;
 
-		// Start Server if:
-		// a) View is open
-		// b) User preference selected autostart
+		// Start Server if User preference selected autostart
 		Display.getDefault().asyncExec(new Runnable() {
 			public void run() {
-				/*
-				 * // Check if view is loaded MessagesView view = (MessagesView)
-				 * PlatformUI.getWorkbench()
-				 * .getActiveWorkbenchWindow().getActivePage()
-				 * .findView(MessagesView.ID);
-				 * 
-				 * // If view is loaded, check user preference if (view != null)
-				 * {
-				 */
+
+				handleNotificationPreference();
+
 				// Get user preferences
 				IPreferenceStore store = Activator.getDefault()
 						.getPreferenceStore();
@@ -85,29 +86,47 @@ public class Activator extends AbstractUIPlugin implements IStartup {
 				if (store.getBoolean(PreferenceConstants.PARAM_STARTUP)) {
 					Activator.getDefault().startServer();
 				}
-				// }
+
+				store.addPropertyChangeListener(new IPropertyChangeListener() {
+					public void propertyChange(PropertyChangeEvent event) {
+						handleNotificationPreference();
+					}
+				});
 			}
 		});
+	}
+
+	private void handleNotificationPreference() {
+		IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+		if (store.getBoolean(PreferenceConstants.PARAM_NOTIFICATION_ENABLED)) {
+			MessageStore.addMessageListListener(notificationManager);
+		} else {
+			MessageStore.removeMessageListListener(notificationManager);
+		}
 	}
 
 	/**
 	 * Creates a new ThreadGroup for the SMTP Server.
 	 */
-	public void startServer() {
-		ThreadGroup tg = new ServerThreadGroup("SMTPServer");
-		new Thread(tg, server).start();
+	public synchronized void startServer() {
+		if (ServerState.STOPPED == server.getStatus()) {
+			ThreadGroup tg = new ServerThreadGroup("SMTPServer");
+			new Thread(tg, server).start();
+		}
 	}
 
-	public boolean isServerListening() {
-		return server.isListening();
-	}
-
-	/*
-	 * (non-Javadoc)
+	/**
+	 * Returns the status of the server
 	 * 
-	 * @see
-	 * org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext
-	 * )
+	 * @return the ServerStatus
+	 */
+	public ServerState getServerState() {
+		return server.getStatus();
+	}
+
+	/**
+	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext
+	 *      )
 	 */
 	@Override
 	public void stop(BundleContext context) throws Exception {
@@ -132,6 +151,13 @@ public class Activator extends AbstractUIPlugin implements IStartup {
 		server.close();
 	}
 
+	public void addServerStateListener(ServerStateListener listener) {
+		server.addServerStateListener(listener);
+	}
+
+	public void removeServerStateListener(ServerStateListener listener) {
+		server.removeServerStateListener(listener);
+	}
 	/**
 	 * Returns the shared instance
 	 * 

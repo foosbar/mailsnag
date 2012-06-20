@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010-2011 Foos-Bar.com
+ * Copyright (c) 2010-2012 Foos-Bar.com
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -7,6 +7,7 @@
  *
  * Contributors:
  * Kevin Kelley - initial API and implementation
+ * Enrico - Server & Message Event Listeners
  *******************************************************************************/
 package com.foosbar.mailsnag.util;
 
@@ -20,7 +21,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.mail.BodyPart;
@@ -30,6 +33,7 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
 import com.foosbar.mailsnag.Activator;
+import com.foosbar.mailsnag.events.MessageListListener;
 import com.foosbar.mailsnag.model.Message;
 import com.foosbar.mailsnag.model.Message.Attachment;
 import com.foosbar.mailsnag.model.MessageData;
@@ -38,7 +42,9 @@ import com.foosbar.mailsnag.model.MessageParser;
 public class MessageStore {
 
 	private static final int BUFFER_SIZE = 8192;
-	
+
+	private static final Set<MessageListListener> LISTENERS = new HashSet<MessageListListener>();
+
 	// Save message to directory
 	// workspace/.metadata/.plugins/com.foosbar.mailsnag
 	public static final Message persist(String data) {
@@ -60,6 +66,11 @@ public class MessageStore {
 			// Write file
 			out = new BufferedOutputStream(new FileOutputStream(file));
 			out.write(data.getBytes());
+
+			for (MessageListListener listener : LISTENERS) {
+				listener.messageAdded(message);
+			}
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -108,7 +119,7 @@ public class MessageStore {
 				try {
 					in = new BufferedInputStream(part.getInputStream());
 					out = new BufferedOutputStream(new FileOutputStream(file));
-					
+
 					int bytesRead;
 					long totalBytesRead = 0L;
 					byte[] buffer = new byte[BUFFER_SIZE];
@@ -266,6 +277,10 @@ public class MessageStore {
 				file.delete();
 			}
 
+			for (MessageListListener listener : LISTENERS) {
+				listener.messageRemoved(message);
+			}
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -379,6 +394,17 @@ public class MessageStore {
 				file.delete();
 			}
 		}
+		for (MessageListListener listener : LISTENERS) {
+			listener.messageAllRemoved();
+		}
+	}
+
+	public static boolean addMessageListListener(MessageListListener listener) {
+		return LISTENERS.add(listener);
+	}
+
+	public static boolean removeMessageListListener(MessageListListener listener) {
+		return LISTENERS.remove(listener);
 	}
 
 	public static final String getRandomFilename() {

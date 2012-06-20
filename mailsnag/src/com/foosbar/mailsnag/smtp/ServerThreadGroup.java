@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010-2011 Foos-Bar.com
+ * Copyright (c) 2010-2012 Foos-Bar.com
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -7,6 +7,7 @@
  *
  * Contributors:
  * Kevin Kelley - initial API and implementation
+ * Enrico - Server & Message Event Listeners
  *******************************************************************************/
 package com.foosbar.mailsnag.smtp;
 
@@ -17,11 +18,9 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.PlatformUI;
 
 import com.foosbar.mailsnag.Activator;
 import com.foosbar.mailsnag.preferences.PreferenceConstants;
-import com.foosbar.mailsnag.views.MessagesView;
 
 public class ServerThreadGroup extends ThreadGroup {
 
@@ -33,14 +32,6 @@ public class ServerThreadGroup extends ThreadGroup {
 	public void uncaughtException(Thread t, final Throwable e) {
 		Display.getDefault().asyncExec(new Runnable() {
 			public void run() {
-
-				MessagesView view = (MessagesView) PlatformUI.getWorkbench()
-						.getActiveWorkbenchWindow().getActivePage()
-						.findView(MessagesView.ID);
-
-				view.disableStopServer();
-				view.enableStartServer();
-
 				if (e.getCause() instanceof BindException) {
 
 					int port = Activator.getDefault().getPreferenceStore()
@@ -54,8 +45,7 @@ public class ServerThreadGroup extends ThreadGroup {
 
 					ResourceBundle bundle = Activator.getResourceBundle();
 
-					ErrorDialog.openError(view.getViewer().getControl()
-							.getShell(), null, String.format(
+					ErrorDialog.openError(null, null, String.format(
 							bundle.getString("exception.port.bind"), port),
 							status);
 				}

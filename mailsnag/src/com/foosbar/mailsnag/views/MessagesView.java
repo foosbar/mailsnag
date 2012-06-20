@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010-2011 Foos-Bar.com
+ * Copyright (c) 2010-2012 Foos-Bar.com
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -7,6 +7,7 @@
  *
  * Contributors:
  * Kevin Kelley - initial API and implementation
+ * Enrico - Server & Message Event Listeners
  *******************************************************************************/
 package com.foosbar.mailsnag.views;
 
@@ -27,7 +28,6 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
@@ -64,11 +64,12 @@ import org.eclipse.ui.progress.IWorkbenchSiteProgressService;
 import com.foosbar.mailsnag.Activator;
 import com.foosbar.mailsnag.editors.MessageEditor;
 import com.foosbar.mailsnag.editors.MessageEditorInput;
+import com.foosbar.mailsnag.events.MessageListListener;
+import com.foosbar.mailsnag.events.ServerStateListener;
 import com.foosbar.mailsnag.model.Message;
-import com.foosbar.mailsnag.preferences.PreferenceConstants;
+import com.foosbar.mailsnag.smtp.ServerState;
 import com.foosbar.mailsnag.util.EmailFilenameFilter;
 import com.foosbar.mailsnag.util.MessageStore;
-import com.foosbar.mailsnag.util.NotificationManager;
 
 /**
  * This is the main view for the plugin. It creates a table to display all
@@ -78,7 +79,7 @@ import com.foosbar.mailsnag.util.NotificationManager;
  * @author kkelley (dev@foos-bar.com)
  * 
  */
-public class MessagesView extends ViewPart {
+public class MessagesView extends ViewPart implements ServerStateListener {
 
 	public static final String ID = "com.foosbar.mailsnag.views.MessagesView";
 
@@ -121,6 +122,7 @@ public class MessagesView extends ViewPart {
 	private Action runServer;
 	private Action stopServer;
 	private Action openPreferences;
+	private ViewContentProvider contentProvider;
 
 	/**
 	 * The constructor.
@@ -134,7 +136,8 @@ public class MessagesView extends ViewPart {
 	 * 
 	 * @author kkelley (dev@foos-bar.com)
 	 */
-	public class ViewContentProvider implements IStructuredContentProvider {
+	public class ViewContentProvider implements IStructuredContentProvider,
+	MessageListListener {
 		List<Message> messages = new ArrayList<Message>();
 
 		public ViewContentProvider(List<Message> messages) {
@@ -161,29 +164,45 @@ public class MessagesView extends ViewPart {
 		 * 
 		 * @param message
 		 */
-		public void add(Message message) {
+		public void messageAdded(Message message) {
 			messages.add(message);
-
 			// Refresh the viewer
-			getViewer().refresh();
-
-			// Sets label bold if the view is unfocused.
-			IWorkbenchSiteProgressService service = (IWorkbenchSiteProgressService) getSite()
-					.getService(IWorkbenchSiteProgressService.class);
-
-			service.warnOfContentChange();
-
-			getSite().getPage().activate(getSite().getPart());
-			showNewMessages(message);
+			Display.getDefault().asyncExec(new Runnable() {
+				public void run() {
+					// Refresh the viewer
+					getViewer().refresh();
+					// Sets label bold if the view is unfocused.
+					IWorkbenchSiteProgressService service = (IWorkbenchSiteProgressService) getSite()
+							.getService(IWorkbenchSiteProgressService.class);
+					service.warnOfContentChange();
+					getSite().getPage().activate(getSite().getPart());
+					showNewMessages();
+				}
+			});
 		}
 
 		/**
 		 * Remove a message from the list
 		 */
-		public void remove(Message message) {
+		public void messageRemoved(Message message) {
 			messages.remove(message);
+			Display.getDefault().asyncExec(new Runnable() {
+				public void run() {
+					// Refresh the viewer
+					getViewer().refresh();
+				}
+			});
 		}
 
+		public void messageAllRemoved() {
+			messages.clear();
+			Display.getDefault().asyncExec(new Runnable() {
+				public void run() {
+					// Refresh the viewer
+					getViewer().refresh();
+				}
+			});
+		}
 		/**
 		 * Mark message as read. Note, this currently doesn't do anything, but
 		 * ideally, if new messages were bold...
@@ -331,7 +350,9 @@ public class MessagesView extends ViewPart {
 				| SWT.V_SCROLL | SWT.FULL_SELECTION);
 		createColumns(viewer, parent);
 
-		viewer.setContentProvider(new ViewContentProvider(loadMessages()));
+		contentProvider = new ViewContentProvider(loadMessages());
+		MessageStore.addMessageListListener(contentProvider);
+		viewer.setContentProvider(contentProvider);
 		viewer.setLabelProvider(new ViewLabelProvider());
 		viewer.setInput(getViewSite());
 		getSite().setSelectionProvider(viewer);
@@ -364,19 +385,17 @@ public class MessagesView extends ViewPart {
 
 	}
 
-	public void showNewMessages(Message message) {
-		this.setTitleImage(IMG_NEW_MESSAGES.createImage());
-
-		// Get Preferences
-		IPreferenceStore pStore = Activator.getDefault().getPreferenceStore();
-
-		// Display Debug Messages?
-		boolean popupEnabled = pStore
-				.getBoolean(PreferenceConstants.PARAM_NOTIFICATION_ENABLED);
-
-		if (popupEnabled) {
-			NotificationManager.notify(message, Display.getDefault());
+	@Override
+	public void dispose() {
+		if (contentProvider != null) {
+			MessageStore.removeMessageListListener(contentProvider);
 		}
+		Activator.getDefault().removeServerStateListener(this);
+		super.dispose();
+	}
+
+	public void showNewMessages() {
+		this.setTitleImage(IMG_NEW_MESSAGES.createImage());
 	}
 
 	public void showLogo() {
@@ -443,33 +462,10 @@ public class MessagesView extends ViewPart {
 		manager.add(stopServer);
 	}
 
-	public void enableStartServer() {
-		if (runServer != null) {
-			runServer.setEnabled(true);
-		}
-	}
-
-	public void disableStartServer() {
-		if (runServer != null) {
-			runServer.setEnabled(false);
-		}
-	}
-
-	public void enableStopServer() {
-		if (stopServer != null) {
-			stopServer.setEnabled(true);
-		}
-	}
-
-	public void disableStopServer() {
-		if (stopServer != null) {
-			stopServer.setEnabled(false);
-		}
-	}
-
 	private void makeActions() {
 
-		boolean isServerListening = Activator.getDefault().isServerListening();
+		boolean isServerListening = Activator.getDefault().getServerState()
+				.isListening();
 
 		openPreferences = new Action() {
 			@Override
@@ -497,7 +493,6 @@ public class MessagesView extends ViewPart {
 		runServer.setText(BUNDLE.getString("action.start"));
 		runServer.setToolTipText(BUNDLE.getString("action.start.tooltip"));
 		runServer.setImageDescriptor(IMG_RUN);
-		runServer.setEnabled(!isServerListening);
 
 		stopServer = new Action() {
 			@Override
@@ -509,7 +504,19 @@ public class MessagesView extends ViewPart {
 		stopServer.setText(BUNDLE.getString("action.stop"));
 		stopServer.setToolTipText(BUNDLE.getString("action.stop.tooltip"));
 		stopServer.setImageDescriptor(IMG_STOP);
-		stopServer.setEnabled(isServerListening);
+
+		Activator.getDefault().addServerStateListener(this);
+		serverStateChanged(Activator.getDefault().getServerState());
+	}
+
+	private void setServerButtonsState(ServerState state) {
+		boolean listening = state.isListening();
+		runServer.setEnabled(!listening);
+		stopServer.setEnabled(listening);
+	}
+
+	public void serverStateChanged(ServerState state) {
+		setServerButtonsState(state);
 	}
 
 	/**

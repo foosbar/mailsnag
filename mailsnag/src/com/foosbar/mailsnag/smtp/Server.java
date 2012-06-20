@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010-2011 Foos-Bar.com
+ * Copyright (c) 2010-2012 Foos-Bar.com
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -7,31 +7,35 @@
  *
  * Contributors:
  * Kevin Kelley - initial API and implementation
+ * Enrico - Server & Message Event Listeners
  *******************************************************************************/
 package com.foosbar.mailsnag.smtp;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.PlatformUI;
 
 import com.foosbar.mailsnag.Activator;
+import com.foosbar.mailsnag.events.ServerStateListener;
 import com.foosbar.mailsnag.preferences.PreferenceConstants;
-import com.foosbar.mailsnag.views.MessagesView;
 
 public class Server implements Runnable {
 
-	private boolean listening;
+	private ServerState status;
 	private ServerSocket serverSocket;
 
+	private final Set<ServerStateListener> listeners = new HashSet<ServerStateListener>();
+
 	public Server() {
+		status = ServerState.STOPPED;
 	}
 
 	public void run() {
 
-		listening = true;
+		setStatus(ServerState.STARTING);
 
 		// Get Preferences
 		IPreferenceStore pStore = Activator.getDefault().getPreferenceStore();
@@ -44,6 +48,9 @@ public class Server implements Runnable {
 
 		try {
 			serverSocket = new ServerSocket(port);
+
+			setStatus(ServerState.LISTENING);
+
 			if (debug) {
 				System.out.println("MailSnag Server listening on port " + port);
 			}
@@ -55,64 +62,61 @@ public class Server implements Runnable {
 			throw new RuntimeException(e);
 		}
 
-		Display.getDefault().syncExec(new Runnable() {
-			public void run() {
-				MessagesView view = (MessagesView) PlatformUI.getWorkbench()
-						.getActiveWorkbenchWindow().getActivePage()
-						.findView(MessagesView.ID);
-				if (view != null) {
-					view.disableStartServer();
-					view.enableStopServer();
-				}
-			}
-		});
-
 		try {
-			while (listening) {
+			while (ServerState.LISTENING == status) {
 				new MailHandler(serverSocket.accept()).start();
 			}
 		} catch (IOException e) {
 			if (debug) {
-				System.err.println(e);
+				// Print error to System.err
+				e.printStackTrace(System.err);
 			}
 		} finally {
-
-			if (serverSocket != null && !serverSocket.isClosed()) {
-				if (debug) {
-					System.out.println("Shutting down MailSnag");
-				}
-
-				try {
-					serverSocket.close();
-				} catch (IOException e) {
-				}
-			}
-
-			Display.getDefault().syncExec(new Runnable() {
-				public void run() {
-					MessagesView view = (MessagesView) PlatformUI
-							.getWorkbench().getActiveWorkbenchWindow()
-							.getActivePage().findView(MessagesView.ID);
-					view.disableStopServer();
-					view.enableStartServer();
-				}
-			});
+			close();
 		}
 	}
 
 	public void close() {
-		listening = false;
+		if (serverSocket != null && !serverSocket.isClosed()) {
+			// Get Preferences
+			IPreferenceStore pStore = Activator.getDefault()
+					.getPreferenceStore();
 
-		if (serverSocket != null) {
+			// Display Debug Messages?
+			boolean debug = pStore.getBoolean(PreferenceConstants.PARAM_DEBUG);
+
+			if (debug) {
+				System.out.println("Shutting down MailSnag Server");
+			}
+
 			try {
 				serverSocket.close();
+				setStatus(ServerState.STOPPED);
+
 			} catch (Exception e) {
-				e.printStackTrace(System.err);
+				if (debug) {
+					e.printStackTrace(System.err);
+				}
 			}
 		}
 	}
 
-	public boolean isListening() {
-		return listening;
+	public ServerState getStatus() {
+		return status;
+	}
+
+	private void setStatus(ServerState status) {
+		this.status = status;
+		for (ServerStateListener listener : listeners) {
+			listener.serverStateChanged(status);
+		}
+	}
+
+	public void addServerStateListener(ServerStateListener listener) {
+		listeners.add(listener);
+	}
+
+	public void removeServerStateListener(ServerStateListener listener) {
+		listeners.remove(listener);
 	}
 }

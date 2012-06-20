@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010-2011 Foos-Bar.com
+ * Copyright (c) 2010-2012 Foos-Bar.com
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -7,6 +7,7 @@
  *
  * Contributors:
  * Kevin Kelley - initial API and implementation
+ * Enrico - Server & Message Event Listeners
  *******************************************************************************/
 package com.foosbar.mailsnag.smtp;
 
@@ -19,16 +20,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PlatformUI;
 
 import com.foosbar.mailsnag.Activator;
-import com.foosbar.mailsnag.model.Message;
 import com.foosbar.mailsnag.preferences.PreferenceConstants;
 import com.foosbar.mailsnag.util.MessageStore;
-import com.foosbar.mailsnag.views.MessagesView;
-import com.foosbar.mailsnag.views.MessagesView.ViewContentProvider;
 
 /**
  * The MailHandler is responsible for conversing with the SMTP client. It
@@ -193,36 +188,7 @@ public class MailHandler extends Thread {
 	private void saveMessage(StringBuilder msgBody) {
 		if (msgBody != null && msgBody.length() > 0) {
 			// Persist message
-			final Message message = MessageStore.persist(msgBody.toString());
-
-			// Update the Content Provider
-			Display.getDefault().asyncExec(new Runnable() {
-				public void run() {
-					//boolean foundView = false;
-					for (IWorkbenchWindow bench : PlatformUI.getWorkbench()
-							.getWorkbenchWindows()) {
-						MessagesView view = (MessagesView) bench
-								.getActivePage().findView(MessagesView.ID);
-						if (view != null) {
-							//foundView = true;
-							ViewContentProvider provider = (ViewContentProvider) view
-									.getViewer().getContentProvider();
-							provider.add(message);
-						}
-					}
-					/* Need to move this code to a place where the popup can open the view.
-					if (!foundView) {
-						try {
-							PlatformUI.getWorkbench()
-									.getActiveWorkbenchWindow().getActivePage()
-									.showView(MessagesView.ID);
-						} catch (PartInitException e) {
-							e.printStackTrace(System.err);
-						}
-					}
-					*/
-				}
-			});
+			MessageStore.persist(msgBody.toString());
 		}
 	}
 

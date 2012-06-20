@@ -25,7 +25,6 @@ import com.foosbar.mailsnag.Activator;
 import com.foosbar.mailsnag.model.Message;
 import com.foosbar.mailsnag.util.MessageStore;
 import com.foosbar.mailsnag.views.MessagesView;
-import com.foosbar.mailsnag.views.MessagesView.ViewContentProvider;
 
 /**
  * Handler for deleting selected messages. One or more messages can be selected
@@ -99,10 +98,6 @@ public class DeleteMessage extends AbstractHandler {
 	 *            The viewer that contains the selected items
 	 */
 	private void deleteMessages(IStructuredSelection iss, MessagesView viewer) {
-
-		ViewContentProvider provider = (ViewContentProvider) viewer.getViewer()
-				.getContentProvider();
-
 		@SuppressWarnings("unchecked")
 		Iterator<Object> it = iss.iterator();
 		while (it.hasNext()) {
@@ -110,7 +105,6 @@ public class DeleteMessage extends AbstractHandler {
 			if (obj instanceof Message) {
 				Message m = (Message) obj;
 				MessageStore.delete(m);
-				provider.remove(m);
 			}
 		}
 		viewer.getViewer().refresh();
