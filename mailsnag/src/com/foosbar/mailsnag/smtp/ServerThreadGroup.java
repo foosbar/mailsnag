@@ -37,13 +37,13 @@ public class ServerThreadGroup extends ThreadGroup {
 					int port = Activator.getDefault().getPreferenceStore()
 							.getInt(PreferenceConstants.PARAM_PORT);
 
+					ResourceBundle bundle = Activator.getResourceBundle();
+
 					IStatus status = new Status(
 							IStatus.ERROR,
 							Activator.PLUGIN_ID,
-							"The application couldn't bind to the specified port.  Check to make sure the port isn't in use by another process or you have permission to bind to the port.",
+							bundle.getString("exception.port.bind.detailed"),
 							e);
-
-					ResourceBundle bundle = Activator.getResourceBundle();
 
 					ErrorDialog.openError(null, null, String.format(
 							bundle.getString("exception.port.bind"), port),
