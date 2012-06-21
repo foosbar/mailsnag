@@ -2,17 +2,21 @@
 <feature
       id="com.foosbar.mailsnag"
       label="MailSnag"
-      version="1.1.0">
+      version="1.2.0">
 
    <description>
-      An Eclipse plugin useful for testing applications that send emails.  The plugin
-sets up up a very simple SMTP server for digesting emails sent out by your application.
-It will bind to the port specified in the preferences page (default:
-25).
+      An Eclipse plugin useful for testing email generating applications.
+The plugin sets up up a very simple SMTP server on the developers 
+machine to intercept emails.  The raw content as well as the rendered
+view of the emails can be inspected.  Attachments are also listed with
+their mimetypes, size and link to download.
+
+By default, the plugin will bind to port 25, but the port assignment
+can be configured in the Eclipse Preferences.
    </description>
 
    <copyright>
-      Copyright 2010 - Foos-Bar.com [dev@foos-bar.com]
+      Copyright 2012 - Foos-Bar.com [dev@foos-bar.com]
    </copyright>
 
    <license url="http://www.eclipse.org/legal/epl-v10.html">
