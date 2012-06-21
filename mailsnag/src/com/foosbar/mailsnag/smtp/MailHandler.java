@@ -19,10 +19,7 @@ import java.net.Socket;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.eclipse.jface.preference.IPreferenceStore;
-
 import com.foosbar.mailsnag.Activator;
-import com.foosbar.mailsnag.preferences.PreferenceConstants;
 import com.foosbar.mailsnag.util.MessageStore;
 
 /**
@@ -58,15 +55,12 @@ public class MailHandler extends Thread {
 
 	private final Socket socket;
 
-	private final boolean debug;
-
-	private final IPreferenceStore pStore;
-
+	private final boolean debugMode;
+	
 	public MailHandler(Socket socket) {
 		super("Email Handler Thread");
 		this.socket = socket;
-		pStore = Activator.getDefault().getPreferenceStore();
-		debug = pStore.getBoolean(PreferenceConstants.PARAM_DEBUG);
+		debugMode = Activator.isDebugMode();
 	}
 
 	@Override
@@ -76,7 +70,7 @@ public class MailHandler extends Thread {
 
 			StringBuilder msgBody = null;
 
-			if (debug) {
+			if (debugMode) {
 				System.out.println("Incoming Message; Handler Thread Running");
 			}
 
@@ -90,7 +84,7 @@ public class MailHandler extends Thread {
 			String inputLine = null;
 			while ((inputLine = in.readLine()) != null) {
 
-				if (debug) {
+				if (debugMode) {
 					System.out.println("Client Command: " + inputLine);
 				}
 
@@ -139,7 +133,7 @@ public class MailHandler extends Thread {
 				m = CMD_QUIT.matcher(inputLine);
 				if (m.matches()) {
 					respond(RSPN_BYE, out);
-					if (debug) {
+					if (debugMode) {
 						System.out.println("Closing connection");
 					}
 					break;
@@ -207,7 +201,7 @@ public class MailHandler extends Thread {
 		String inputLine = null;
 		while ((inputLine = reader.readLine()) != null) {
 
-			if (debug) {
+			if (debugMode) {
 				System.out.println(inputLine);
 			}
 
@@ -222,7 +216,7 @@ public class MailHandler extends Thread {
 	}
 
 	private void respond(String response, PrintWriter writer) {
-		if (debug) {
+		if (debugMode) {
 			System.out.print("Server Response: " + response);
 		}
 		writer.print(response);

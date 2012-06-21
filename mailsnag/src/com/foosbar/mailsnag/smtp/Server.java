@@ -12,6 +12,7 @@
 package com.foosbar.mailsnag.smtp;
 
 import java.io.IOException;
+import java.net.BindException;
 import java.net.ServerSocket;
 import java.util.HashSet;
 import java.util.Set;
@@ -26,7 +27,7 @@ public class Server implements Runnable {
 
 	private ServerState status;
 	private ServerSocket serverSocket;
-
+	
 	private final Set<ServerStateListener> listeners = new HashSet<ServerStateListener>();
 
 	public Server() {
@@ -40,9 +41,6 @@ public class Server implements Runnable {
 		// Get Preferences
 		IPreferenceStore pStore = Activator.getDefault().getPreferenceStore();
 
-		// Display Debug Messages?
-		boolean debug = pStore.getBoolean(PreferenceConstants.PARAM_DEBUG);
-
 		// Port to listen on.
 		int port = pStore.getInt(PreferenceConstants.PARAM_PORT);
 
@@ -51,13 +49,20 @@ public class Server implements Runnable {
 
 			setStatus(ServerState.LISTENING);
 
-			if (debug) {
+			if (Activator.isDebugMode()) {
 				System.out.println("MailSnag Server listening on port " + port);
 			}
+		} catch (BindException e) {
+			System.err.println(String.format(Activator.getResourceBundle().getString("exception.port.bind"), port));
+			// Make sure server is marked as stopped
+			setStatus(ServerState.STOPPED);
+			// Exit thread execution
+			throw new RuntimeException(e);
 		} catch (IOException e) {
 			// Print error to System.err
 			e.printStackTrace(System.err);
-
+			// Make sure server is marked as stopped
+			setStatus(ServerState.STOPPED);
 			// Exit thread execution
 			throw new RuntimeException(e);
 		}
@@ -67,7 +72,7 @@ public class Server implements Runnable {
 				new MailHandler(serverSocket.accept()).start();
 			}
 		} catch (IOException e) {
-			if (debug) {
+			if (Activator.isDebugMode()) {
 				// Print error to System.err
 				e.printStackTrace(System.err);
 			}
@@ -77,27 +82,21 @@ public class Server implements Runnable {
 	}
 
 	public void close() {
-		if (serverSocket != null && !serverSocket.isClosed()) {
-			// Get Preferences
-			IPreferenceStore pStore = Activator.getDefault()
-					.getPreferenceStore();
-
-			// Display Debug Messages?
-			boolean debug = pStore.getBoolean(PreferenceConstants.PARAM_DEBUG);
-
-			if (debug) {
-				System.out.println("Shutting down MailSnag Server");
-			}
-
-			try {
-				serverSocket.close();
-				setStatus(ServerState.STOPPED);
-
-			} catch (Exception e) {
-				if (debug) {
-					e.printStackTrace(System.err);
+		try {
+			if (serverSocket != null && !serverSocket.isClosed()) {
+	
+				if (Activator.isDebugMode()) {
+					System.out.println("Shutting down MailSnag Server");
 				}
+
+				serverSocket.close();
 			}
+		} catch (Exception e) {
+			if (Activator.isDebugMode()) {
+				e.printStackTrace(System.err);
+			}
+		} finally {
+			setStatus(ServerState.STOPPED);
 		}
 	}
 
