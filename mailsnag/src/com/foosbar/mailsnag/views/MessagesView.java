@@ -464,9 +464,6 @@ public class MessagesView extends ViewPart implements ServerStateListener {
 
 	private void makeActions() {
 
-		boolean isServerListening = Activator.getDefault().getServerState()
-				.isListening();
-
 		openPreferences = new Action() {
 			@Override
 			public void run() {
