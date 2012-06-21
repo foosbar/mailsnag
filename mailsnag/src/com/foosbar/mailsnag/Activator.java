@@ -172,6 +172,15 @@ public class Activator extends AbstractUIPlugin implements IStartup {
 	}
 
 	/**
+	 * Checks the preference store for the debug flag.  If the option has been checked,
+	 * then this will return true.
+	 * @return
+	 */
+	public static boolean isDebugMode() {
+		return plugin.getPreferenceStore().getBoolean(PreferenceConstants.PARAM_DEBUG);
+	}
+	
+	/**
 	 * Returns an image descriptor for the image file at the given plug-in
 	 * relative path
 	 * 
