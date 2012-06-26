@@ -11,7 +11,7 @@
 package com.foosbar.mailsnag.editors;
 
 import java.text.DateFormat;
-import java.text.NumberFormat;
+import java.text.DecimalFormat;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -27,6 +27,7 @@ import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTError;
 import org.eclipse.swt.browser.Browser;
+import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -68,6 +69,10 @@ public class MessageEditor extends MultiPageEditorPart implements
 IResourceChangeListener {
 
 	public static final String ID = "com.foosbar.mailsnag.editors.MessageEditor";
+
+	// Formats the size of the attachment
+	private static final DecimalFormat FILE_SIZE_FORMATTER = new DecimalFormat(
+			"#,##0.##");
 
 	// Locale Specific Date Formatter
 	private static final DateFormat DATE_FORMATTER = DateFormat
@@ -131,12 +136,18 @@ IResourceChangeListener {
 		Composite body = form.getBody();
 		body.setLayout(twlayout);
 
+		// Add Headers
+		addStyleTextCell("No.", body, true);
+		addStyleTextCell("Filename", body, true);
+		addStyleTextCell("Mime-Type", body, true);
+		addStyleTextCell("Filesize", body, true).setAlignment(SWT.RIGHT);
+
 		int count = 0;
 		for (final Attachment attachment : attachments) {
-			StyledText text = new StyledText(body, SWT.WRAP);
-			text.setEditable(false);
-			text.setText(Integer.toString(++count));
-			text.setLayoutData(new TableWrapData());
+
+			// Add Counter Cell
+			addStyleTextCell(Integer.toString(++count) + ".", body, false)
+			.setAlignment(SWT.RIGHT);
 
 			Hyperlink link = toolkit.createHyperlink(body, "Click Here",
 					SWT.WRAP);
@@ -163,22 +174,65 @@ IResourceChangeListener {
 			link.setText(attachment.getName());
 			link.setLayoutData(new TableWrapData());
 
-			text = new StyledText(body, SWT.WRAP);
-			text.setEditable(false);
-			text.setText(attachment.getMimeType());
-			text.setLayoutData(new TableWrapData());
+			// Adds MimeType
+			StyledText mimetype = addStyleTextCell(
+					getMimeTypeBasic(attachment),
+					body, false);
+			// Because I can't set it on the link.
+			// mimetype.setLeftMargin(10);
 
-			NumberFormat format = NumberFormat.getInstance();
-
-			text = new StyledText(form.getBody(), SWT.WRAP);
-			text.setEditable(false);
-			text.setText(format.format(attachment.getSize()) + " bytes");
-			text.setLayoutData(new TableWrapData());
-
+			// Adds Filesize
+			addStyleTextCell(readableFileSize(attachment.getSize()), body,
+					false).setAlignment(SWT.RIGHT);
 		}
 
 		int index = addPage(composite);
 		setPageText(index, BUNDLE.getString("editor.attachments"));
+	}
+
+	private StyledText addStyleTextCell(String text, Composite composite,
+			boolean bolded) {
+		StyledText cell = new StyledText(composite, SWT.WRAP);
+		cell.setEditable(false);
+		cell.setText(text);
+		cell.setLayoutData(new TableWrapData());
+		cell.setMargins(10, 0, 10, 0);
+		if (bolded) {
+			StyleRange range = new StyleRange();
+			range.fontStyle = SWT.BOLD;
+			range.start = 0;
+			range.length = text.length();
+			cell.setStyleRange(range);
+		}
+		return cell;
+	}
+
+	/**
+	 * Formats a number of bytes into a human readable form. Copied from Will
+	 * work up until Terabytes.
+	 * 
+	 * @see <a
+	 *      href="http://stackoverflow.com/a/5599842">http://stackoverflow.com/a/5599842</a>
+	 * 
+	 * @param size
+	 * @return
+	 */
+	private String readableFileSize(long size) {
+		if (size <= 0) {
+			return "0";
+		}
+		final String[] units = new String[] { "B", "KB", "MB", "GB", "TB" };
+		int digitGroups = (int) (Math.log10(size) / Math.log10(1024));
+		return FILE_SIZE_FORMATTER.format(size / Math.pow(1024, digitGroups))
+				+ " " + units[digitGroups];
+	}
+
+	private String getMimeTypeBasic(Attachment attachment) {
+		String mimeType = attachment.getMimeType();
+		if (mimeType != null && mimeType.contains(";")) {
+			return mimeType.substring(0, mimeType.indexOf(';'));
+		}
+		return mimeType;
 	}
 
 	/**
