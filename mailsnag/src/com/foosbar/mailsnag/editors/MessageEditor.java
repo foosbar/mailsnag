@@ -62,7 +62,8 @@ import com.foosbar.mailsnag.util.InlineFilter;
  * <ul>
  * <li>page 0 (Optional) Html Message preview
  * <li>page 1 (Optional) Text Message preview
- * <li>page 2 Raw Data for inspecting the entire email stream.
+ * <li>page 2 (Optional) Attachments Preview
+ * <li>page 3 Raw Data for inspecting the entire email stream.
  * </ul>
  */
 public class MessageEditor extends MultiPageEditorPart implements
@@ -136,11 +137,15 @@ IResourceChangeListener {
 		Composite body = form.getBody();
 		body.setLayout(twlayout);
 
+		ResourceBundle bundle = Activator.getResourceBundle();
+
 		// Add Headers
-		addStyleTextCell("No.", body, true);
-		addStyleTextCell("Filename", body, true);
-		addStyleTextCell("Mime-Type", body, true);
-		addStyleTextCell("Filesize", body, true).setAlignment(SWT.RIGHT);
+		addStyleTextCell(bundle.getString("header.number.short"), body, true);
+		addStyleTextCell(bundle.getString("header.filename"), body, true)
+		.setLeftMargin(0);
+		addStyleTextCell(bundle.getString("header.mimetype"), body, true);
+		addStyleTextCell(bundle.getString("header.filesize"), body, true)
+		.setAlignment(SWT.RIGHT);
 
 		int count = 0;
 		for (final Attachment attachment : attachments) {
@@ -190,6 +195,17 @@ IResourceChangeListener {
 		setPageText(index, BUNDLE.getString("editor.attachments"));
 	}
 
+	/**
+	 * Adds a styled text element and bold the text if necessary.
+	 * 
+	 * @param text
+	 *            Text to display
+	 * @param composite
+	 *            Composite to add StyledText to
+	 * @param bolded
+	 *            if true, the entire text region will be bold
+	 * @return
+	 */
 	private StyledText addStyleTextCell(String text, Composite composite,
 			boolean bolded) {
 		StyledText cell = new StyledText(composite, SWT.WRAP);
@@ -227,6 +243,13 @@ IResourceChangeListener {
 				+ " " + units[digitGroups];
 	}
 
+	/**
+	 * Returns the first portion of the mime-type. Often times the mime-type
+	 * will contain the filename as well.
+	 * 
+	 * @param attachment
+	 * @return
+	 */
 	private String getMimeTypeBasic(Attachment attachment) {
 		String mimeType = attachment.getMimeType();
 		if (mimeType != null && mimeType.contains(";")) {
