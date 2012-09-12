@@ -158,6 +158,7 @@ public class Activator extends AbstractUIPlugin implements IStartup {
 	public void removeServerStateListener(ServerStateListener listener) {
 		server.removeServerStateListener(listener);
 	}
+
 	/**
 	 * Returns the shared instance
 	 * 
@@ -172,14 +173,16 @@ public class Activator extends AbstractUIPlugin implements IStartup {
 	}
 
 	/**
-	 * Checks the preference store for the debug flag.  If the option has been checked,
-	 * then this will return true.
+	 * Checks the preference store for the debug flag. If the option has been
+	 * checked, then this will return true.
+	 * 
 	 * @return
 	 */
 	public static boolean isDebugMode() {
-		return plugin.getPreferenceStore().getBoolean(PreferenceConstants.PARAM_DEBUG);
+		return plugin.getPreferenceStore().getBoolean(
+				PreferenceConstants.PARAM_DEBUG);
 	}
-	
+
 	/**
 	 * Returns an image descriptor for the image file at the given plug-in
 	 * relative path
@@ -200,5 +203,19 @@ public class Activator extends AbstractUIPlugin implements IStartup {
 	 */
 	public void earlyStartup() {
 		// TODO Auto-generated method stub
+	}
+
+	/**
+	 * Checks if
+	 * 
+	 * @return
+	 */
+	public static boolean isNotificationAvailable() {
+		try {
+			Class.forName("org.eclipse.mylyn.commons.ui.dialogs.AbstractNotificationPopup");
+			return true;
+		} catch (ClassNotFoundException e) {
+			return false;
+		}
 	}
 }

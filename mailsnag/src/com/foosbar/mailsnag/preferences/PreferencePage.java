@@ -13,6 +13,7 @@ package com.foosbar.mailsnag.preferences;
 import java.util.ResourceBundle;
 
 import org.eclipse.jface.preference.BooleanFieldEditor;
+import org.eclipse.jface.preference.FieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IntegerFieldEditor;
 import org.eclipse.ui.IWorkbench;
@@ -35,8 +36,12 @@ import com.foosbar.mailsnag.Activator;
 public class PreferencePage extends FieldEditorPreferencePage implements
 		IWorkbenchPreferencePage {
 
+	/** i18n message bundle */
 	private final ResourceBundle bundle;
 
+	/**
+	 * Default constructor
+	 */
 	public PreferencePage() {
 		super(GRID);
 		setPreferenceStore(Activator.getDefault().getPreferenceStore());
@@ -60,9 +65,11 @@ public class PreferencePage extends FieldEditorPreferencePage implements
 		// The message persistence field
 		addBooleanField(PreferenceConstants.PARAM_PERSIST, "preference.persist");
 
-		// The notification popup field
-		addBooleanField(PreferenceConstants.PARAM_NOTIFICATION_ENABLED,
-				"preference.notification");
+		if (Activator.isNotificationAvailable()) {
+			// The notification popup field
+			addBooleanField(PreferenceConstants.PARAM_NOTIFICATION_ENABLED,
+					"preference.notification");
+		}
 
 		// The debug output field
 		addBooleanField(PreferenceConstants.PARAM_DEBUG, "preference.debug");
@@ -79,10 +86,8 @@ public class PreferencePage extends FieldEditorPreferencePage implements
 	 * @return
 	 */
 	private BooleanFieldEditor addBooleanField(String fieldId, String messageId) {
-		BooleanFieldEditor field = new BooleanFieldEditor(fieldId,
-				bundle.getString(messageId), getFieldEditorParent());
-		addField(field);
-		return field;
+		return addPreferenceField(new BooleanFieldEditor(fieldId,
+				bundle.getString(messageId), getFieldEditorParent()));
 	}
 
 	/**
@@ -93,8 +98,17 @@ public class PreferencePage extends FieldEditorPreferencePage implements
 	 * @return
 	 */
 	private IntegerFieldEditor addIntField(String fieldId, String messageId) {
-		IntegerFieldEditor field = new IntegerFieldEditor(fieldId,
-				bundle.getString(messageId), getFieldEditorParent());
+		return addPreferenceField(new IntegerFieldEditor(fieldId,
+				bundle.getString(messageId), getFieldEditorParent()));
+	}
+
+	/**
+	 * Adds the new field to the collection of preferences fields and 
+	 * returns the field to the user.
+	 * @param field
+	 * @return
+	 */
+	private <X extends FieldEditor> X addPreferenceField(X field) {
 		addField(field);
 		return field;
 	}

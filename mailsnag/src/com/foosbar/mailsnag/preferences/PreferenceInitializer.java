@@ -26,9 +26,13 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 	public void initializeDefaultPreferences() {
 		IPreferenceStore store = Activator.getDefault().getPreferenceStore();
 		store.setDefault(PreferenceConstants.PARAM_PORT, 25);
-		store.setDefault(PreferenceConstants.PARAM_NOTIFICATION_ENABLED, true);
 		store.setDefault(PreferenceConstants.PARAM_DEBUG, false);
 		store.setDefault(PreferenceConstants.PARAM_PERSIST, true);
 		store.setDefault(PreferenceConstants.PARAM_STARTUP, false);
+
+		// The notification preference is only available if the mylyn
+		// notification class is available
+		store.setDefault(PreferenceConstants.PARAM_NOTIFICATION_ENABLED,
+				Activator.isNotificationAvailable());
 	}
 }

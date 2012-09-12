@@ -6,61 +6,101 @@ package com.foosbar.mailsnag.util;
 import java.util.ResourceBundle;
 
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.mylyn.internal.provisional.commons.ui.AbstractNotificationPopup;
+import org.eclipse.mylyn.commons.ui.dialogs.AbstractNotificationPopup;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Link;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 
 import com.foosbar.mailsnag.Activator;
 import com.foosbar.mailsnag.model.Message;
 
 /**
- * @author kevin
+ * Generates the actual popup notification message with some details about the new message
+ * received by the plugin.  This implementation is based on the mylyn framework and is an 
+ * optional feature as of MailSnag 1.3.
  * 
+ * The Activator provides a check to see if the mylyn AbstractNofiticationPopup class is
+ * available to the classloader.
+ * 
+ * @author Kevin Kelley (dev@foos-bar.com)
  */
-@SuppressWarnings("restriction")
 public class MessageNotification extends AbstractNotificationPopup implements
 		INotification {
 
+	/** Message notification being generated for */
 	private final Message message;
 
-	private static final ResourceBundle I18N = Activator.getResourceBundle();
+	/** I18n resource bundle */
+	private final ResourceBundle i18n;
 
+	/** Icon used in notification popup */
 	private static final Image IMG_LOGO = ImageDescriptor.createFromFile(
 			Activator.class, "/icons/mail.gif").createImage();
 
-	public MessageNotification(Message message, Display display) {
-		// super(display, SWT.NO_TRIM | SWT.NO_FOCUS | SWT.TOOL);
+	public MessageNotification(Message message, ResourceBundle i18n,
+			Display display) {
 		super(display);
 		setFadingEnabled(true);
 		this.message = message;
+		this.i18n = i18n;
 	}
 
 	@Override
 	protected void createContentArea(Composite parent) {
 
 		parent.setLayout(new GridLayout(1, true));
-		Label testLabel = new Label(parent, SWT.WRAP);
-		testLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
 		StringBuilder builder = new StringBuilder();
 
-		builder.append(getValue(message.getSubject(),
-				I18N.getString("notify.unknown.subject"), 75));
+		builder.append("<a>").append(
+				getValue(message.getSubject(),
+						i18n.getString("notify.unknown.subject"), 75));
 		builder.append("\n")
-				.append(I18N.getString("header.from"))
+				.append(i18n.getString("header.from"))
 				.append(": ")
 				.append(getValue(message.getFrom(),
-						I18N.getString("notify.unknown.from"), 75));
+						i18n.getString("notify.unknown.from"), 75));
+		builder.append("</a>");
+		Link link = new Link(parent, SWT.WRAP);
+		link.setBackground(parent.getBackground());
+		link.setText(builder.toString());
 
-		testLabel.setText(builder.toString());
-		testLabel.setBackground(parent.getBackground());
+		link.addListener(SWT.Selection, new Listener() {
+			public void handleEvent(Event event) {
+				IWorkbenchWindow window = PlatformUI.getWorkbench()
+						.getActiveWorkbenchWindow();
+				if (window != null) {
+					Shell windowShell = window.getShell();
+					if (windowShell != null) {
+						if (windowShell.getMinimized()) {
+							windowShell.setMinimized(false);
+						}
+
+						windowShell.open();
+						windowShell.forceActive();
+					}
+				}
+			}
+		});
 	}
 
+	/**
+	 * Checks for null or empty value. If the value meets either of these
+	 * conditions, the default value is used.
+	 * 
+	 * @param value
+	 * @param defaultValue
+	 * @param maxLength
+	 * @return
+	 */
 	private String getValue(String value, String defaultValue, int maxLength) {
 		if (value == null || "".equals(value.trim())) {
 			return defaultValue;
@@ -76,7 +116,7 @@ public class MessageNotification extends AbstractNotificationPopup implements
 
 	@Override
 	protected String getPopupShellTitle() {
-		return I18N.getString("notify.title");
+		return i18n.getString("notify.title");
 	}
 
 	@Override

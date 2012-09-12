@@ -13,6 +13,7 @@ package com.foosbar.mailsnag.util;
 
 import org.eclipse.swt.widgets.Display;
 
+import com.foosbar.mailsnag.Activator;
 import com.foosbar.mailsnag.events.MessageListListener;
 import com.foosbar.mailsnag.model.Message;
 
@@ -49,12 +50,20 @@ public final class NotificationManager implements MessageListListener {
 			this.message = message;
 		}
 
-		@SuppressWarnings("restriction")
 		public void run() {
-			MessageNotification n = new MessageNotification(message, Display
-					.getDefault());
-			n.create();
-			n.open();
+			INotification notification = new MessageNotification(message,
+					Activator.getResourceBundle(), Display.getDefault());
+			notification.create();
+			notification.open();
+
+			/**
+			 * Experimental try { // Open and/or focus on the messages view.
+			 * PlatformUI
+			 * .getWorkbench().getActiveWorkbenchWindow().getActivePage
+			 * ().showView(MessagesView.ID, null, IWorkbenchPage.VIEW_VISIBLE); }
+			 * catch(PartInitException e) { if(Activator.isDebugMode()) {
+			 * e.printStackTrace(System.err); } }
+			 */
 		}
 	}
 }
