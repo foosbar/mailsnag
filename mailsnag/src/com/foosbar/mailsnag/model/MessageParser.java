@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010-2011 Foos-Bar.com
+ * Copyright (c) 2010-2012 Foos-Bar.com
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -33,6 +33,13 @@ import javax.mail.internet.MimeMultipart;
 import com.foosbar.mailsnag.model.Message.Attachment;
 import com.foosbar.mailsnag.util.MessageStore;
 
+/**
+ * The MessageParser does the heavy lifting. This is where the bytes from an
+ * email message are processed, persisted and made usuable by the plugin. All
+ * content is persisted to the metadata directory allocated to the plugin.
+ * 
+ * @author Kevin Kelley (dev@foos-bar.com)
+ */
 public class MessageParser {
 
 	private static final String MIME_ALT = "multipart/alternative";
@@ -40,8 +47,23 @@ public class MessageParser {
 	private static final String MIME_HTML = "text/html";
 	private static final String MIME_PLAIN = "text/plain";
 
+	/* Used to get the unique id for the part */
 	private static final Pattern CONTENT_ID_REGEX = Pattern.compile("<(.*?)>");
 
+	/* Used to parse filename from bodypart headers */
+	private static final Pattern FILENAME_REGEX = Pattern
+			.compile("filename=\"(.*?)\"");
+
+	/**
+	 * Parses bytes from input String (message) as an incoming email message.
+	 * The contents of the message are stored in a Message object for easy
+	 * consumption by the Plugin UI. Any attachments are also parsed out and
+	 * persisted in the metadata directory for plugin.
+	 * 
+	 * @param message
+	 * @param filename
+	 * @return
+	 */
 	public static final Message parse(String message, String filename) {
 		Message m = new Message();
 
@@ -260,14 +282,20 @@ public class MessageParser {
 		return sb.toString();
 	}
 
+	/**
+	 * Finds the filename for an attachment. the filename is stored in the
+	 * header information for the part: filename="picture.gif"
+	 * 
+	 * @param part
+	 * @return
+	 * @throws MessagingException
+	 */
 	private static String getAttachmentFilename(BodyPart part)
 			throws MessagingException {
 
 		if (part.getFileName() != null) {
 			return part.getFileName();
 		}
-
-		Pattern p = Pattern.compile("filename=\"(.*?)\"");
 
 		@SuppressWarnings("unchecked")
 		Enumeration<Header> e = part.getAllHeaders();
@@ -276,7 +304,7 @@ public class MessageParser {
 			String name = header.getName();
 			if (name != null) {
 				if (name.startsWith("filename")) {
-					Matcher m = p.matcher(name);
+					Matcher m = FILENAME_REGEX.matcher(name);
 					if (m.find()) {
 						return m.group(1);
 					}
