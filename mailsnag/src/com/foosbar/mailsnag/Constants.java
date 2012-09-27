@@ -8,26 +8,22 @@
  * Contributors:
  * Kevin Kelley - initial API and implementation
  *******************************************************************************/
-package com.foosbar.mailsnag.util;
-
-import java.io.File;
-import java.io.FilenameFilter;
+package com.foosbar.mailsnag;
 
 /**
- * @author kevin
+ * Contains all the constants needed by the MailSnag Plugin
  * 
+ * @author Kevin Kelley (dev@foos-bar.com)
  */
-public class EmailFilenameFilter implements FilenameFilter {
+public final class Constants {
 
-	public EmailFilenameFilter() {
-	}
-
-	public boolean accept(File dir, String filename) {
-		if (filename == null) {
-			return false;
-		}
-
-		return filename.endsWith(".eml");
+	/**
+	 * Private constructor to prevent instantiating a utility class.
+	 * Could also create constants class as an interface which could in
+	 * turn be extended, but that is unlikely in the context of this plugin.
+	 */
+	private Constants() {
+		// This space intentionally left blank.
 	}
 
 }

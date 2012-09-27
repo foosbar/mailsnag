@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010-2011 Foos-Bar.com
+ * Copyright (c) 2010-2012 Foos-Bar.com
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -180,7 +180,8 @@ IResourceChangeListener {
 			link.setLayoutData(new TableWrapData());
 
 			// Adds MimeType
-			StyledText mimetype = addStyleTextCell(
+			//StyledText mimetype = 
+			addStyleTextCell(
 					getMimeTypeBasic(attachment),
 					body, false);
 			// Because I can't set it on the link.
