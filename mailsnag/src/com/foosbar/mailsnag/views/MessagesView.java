@@ -137,7 +137,7 @@ public class MessagesView extends ViewPart implements ServerStateListener {
 	 * @author kkelley (dev@foos-bar.com)
 	 */
 	public class ViewContentProvider implements IStructuredContentProvider,
-	MessageListListener {
+			MessageListListener {
 		List<Message> messages = new ArrayList<Message>();
 
 		public ViewContentProvider(List<Message> messages) {
@@ -203,6 +203,7 @@ public class MessagesView extends ViewPart implements ServerStateListener {
 				}
 			});
 		}
+
 		/**
 		 * Mark message as read. Note, this currently doesn't do anything, but
 		 * ideally, if new messages were bold...
@@ -225,7 +226,7 @@ public class MessagesView extends ViewPart implements ServerStateListener {
 	 * @author Kevin Kelley
 	 */
 	class ViewLabelProvider extends LabelProvider implements
-	ITableLabelProvider {
+			ITableLabelProvider {
 
 		/**
 		 * Based on the index of each column, return the proper value to
@@ -370,7 +371,7 @@ public class MessagesView extends ViewPart implements ServerStateListener {
 
 		// Create the help context id for the viewer's control
 		PlatformUI.getWorkbench().getHelpSystem()
-		.setHelp(viewer.getControl(), "com.foos-bar.mailsnag.viewer");
+				.setHelp(viewer.getControl(), "com.foos-bar.mailsnag.viewer");
 
 		// Create the actions
 		makeActions();
@@ -468,11 +469,11 @@ public class MessagesView extends ViewPart implements ServerStateListener {
 			@Override
 			public void run() {
 				PreferencesUtil
-				.createPreferenceDialogOn(
-						viewer.getControl().getShell(),
-						"com.foosbar.mailsnag.preferences.PreferencePage",
-						new String[] { "com.foosbar.mailsnag.preferences.PreferencePage" },
-						null).open();
+						.createPreferenceDialogOn(
+								viewer.getControl().getShell(),
+								"com.foosbar.mailsnag.preferences.PreferencePage",
+								new String[] { "com.foosbar.mailsnag.preferences.PreferencePage" },
+								null).open();
 			}
 		};
 

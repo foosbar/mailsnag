@@ -33,6 +33,7 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
 import com.foosbar.mailsnag.Activator;
+import com.foosbar.mailsnag.Constants;
 import com.foosbar.mailsnag.events.MessageListListener;
 import com.foosbar.mailsnag.model.Message;
 import com.foosbar.mailsnag.model.Message.Attachment;
@@ -408,6 +409,6 @@ public class MessageStore {
 	}
 
 	public static final String getRandomFilename() {
-		return UUID.randomUUID().toString() + Message.EXTENSION;
+		return UUID.randomUUID().toString() + Constants.EMAIL_EXTENSION;
 	}
 }

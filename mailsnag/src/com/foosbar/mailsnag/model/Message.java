@@ -21,8 +21,6 @@ import java.util.Map;
  */
 public class Message {
 
-	public static final String EXTENSION = ".eml";
-
 	private String cc;
 	private String filename;
 	private String from;

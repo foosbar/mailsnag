@@ -52,6 +52,7 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.MultiPageEditorPart;
 
 import com.foosbar.mailsnag.Activator;
+import com.foosbar.mailsnag.Constants;
 import com.foosbar.mailsnag.model.Message;
 import com.foosbar.mailsnag.model.Message.Attachment;
 import com.foosbar.mailsnag.model.MessageData;
@@ -67,7 +68,7 @@ import com.foosbar.mailsnag.util.InlineFilter;
  * </ul>
  */
 public class MessageEditor extends MultiPageEditorPart implements
-IResourceChangeListener {
+		IResourceChangeListener {
 
 	public static final String ID = "com.foosbar.mailsnag.editors.MessageEditor";
 
@@ -142,17 +143,17 @@ IResourceChangeListener {
 		// Add Headers
 		addStyleTextCell(bundle.getString("header.number.short"), body, true);
 		addStyleTextCell(bundle.getString("header.filename"), body, true)
-		.setLeftMargin(0);
+				.setLeftMargin(0);
 		addStyleTextCell(bundle.getString("header.mimetype"), body, true);
 		addStyleTextCell(bundle.getString("header.filesize"), body, true)
-		.setAlignment(SWT.RIGHT);
+				.setAlignment(SWT.RIGHT);
 
 		int count = 0;
 		for (final Attachment attachment : attachments) {
 
 			// Add Counter Cell
 			addStyleTextCell(Integer.toString(++count) + ".", body, false)
-			.setAlignment(SWT.RIGHT);
+					.setAlignment(SWT.RIGHT);
 
 			Hyperlink link = toolkit.createHyperlink(body, "Click Here",
 					SWT.WRAP);
@@ -180,10 +181,8 @@ IResourceChangeListener {
 			link.setLayoutData(new TableWrapData());
 
 			// Adds MimeType
-			//StyledText mimetype = 
-			addStyleTextCell(
-					getMimeTypeBasic(attachment),
-					body, false);
+			// StyledText mimetype =
+			addStyleTextCell(getMimeTypeBasic(attachment), body, false);
 			// Because I can't set it on the link.
 			// mimetype.setLeftMargin(10);
 
@@ -238,10 +237,9 @@ IResourceChangeListener {
 		if (size <= 0) {
 			return "0";
 		}
-		final String[] units = new String[] { "B", "KB", "MB", "GB", "TB" };
 		int digitGroups = (int) (Math.log10(size) / Math.log10(1024));
 		return FILE_SIZE_FORMATTER.format(size / Math.pow(1024, digitGroups))
-				+ " " + units[digitGroups];
+				+ " " + Constants.FILESIZE_UNITS[digitGroups];
 	}
 
 	/**
@@ -272,7 +270,8 @@ IResourceChangeListener {
 
 		populateEmailBanner(composite);
 
-		StyledText text = new StyledText(composite, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
+		StyledText text = new StyledText(composite, SWT.H_SCROLL | SWT.V_SCROLL
+				| SWT.BORDER);
 
 		GridData gridData = new GridData();
 		gridData.horizontalSpan = 2;
@@ -305,9 +304,9 @@ IResourceChangeListener {
 			populateEmailBanner(composite);
 
 			StringBuilder path = new StringBuilder("file:///")
-			.append(Activator.getDefault().getStateLocation().toString())
-			.append('/')
-			.append(message.getAttachmentDir());
+					.append(Activator.getDefault().getStateLocation()
+							.toString()).append('/')
+					.append(message.getAttachmentDir());
 
 			String filteredText = InlineFilter.filter(message,
 					messageData.getHtmlMessage(), path.toString());
@@ -331,9 +330,12 @@ IResourceChangeListener {
 				if (error.code == 2) {
 					IStatus status = new Status(IStatus.ERROR,
 							Activator.PLUGIN_ID, error.getLocalizedMessage());
-					ErrorDialog.openError(getSite().getShell(), null,
-							"MailSnag is unable to display the HTML output due to an Eclipse configuration error.\n\nSee http://blog.foos-bar.com/2012/05/eclipse-rcp-development-browser-control.html",
-							status);
+					ErrorDialog
+							.openError(
+									getSite().getShell(),
+									null,
+									"MailSnag is unable to display the HTML output due to an Eclipse configuration error.\n\nSee http://blog.foos-bar.com/2012/05/eclipse-rcp-development-browser-control.html",
+									status);
 				}
 			}
 			setPageText(addPage(composite),
@@ -347,9 +349,8 @@ IResourceChangeListener {
 	}
 
 	/**
-	 * Creates the display related to the email fields.  Allows
-	 * the text and html displays to look more like an actual email
-	 * message as viewed by a user.
+	 * Creates the display related to the email fields. Allows the text and html
+	 * displays to look more like an actual email message as viewed by a user.
 	 * 
 	 * @param composite
 	 */
@@ -358,37 +359,42 @@ IResourceChangeListener {
 		composite.setLayout(new GridLayout(2, false));
 
 		// From Line
-		addEmailBannerField(BUNDLE.getString("header.from"), message.getFrom(), composite);
+		addEmailBannerField(BUNDLE.getString("header.from"), message.getFrom(),
+				composite);
 
 		// Subject
-		addEmailBannerField(BUNDLE.getString("header.subject"), message.getSubject(), composite);
+		addEmailBannerField(BUNDLE.getString("header.subject"),
+				message.getSubject(), composite);
 
 		// Date Received
-		addEmailBannerField(BUNDLE.getString("header.received"), DATE_FORMATTER.format(message.getReceived()), composite);
+		addEmailBannerField(BUNDLE.getString("header.received"),
+				DATE_FORMATTER.format(message.getReceived()), composite);
 
 		// To Field
 		String to = message.getTo();
-		if(to != null && !"".equals(to)) {
-			addEmailBannerField(BUNDLE.getString("header.to"), message.getTo(), composite);
+		if (to != null && !"".equals(to)) {
+			addEmailBannerField(BUNDLE.getString("header.to"), message.getTo(),
+					composite);
 		}
 
 		// To Field
 		String cc = message.getCc();
-		if(cc != null && !"".equals(cc)) {
-			addEmailBannerField(BUNDLE.getString("header.cc"), message.getCc(), composite);
+		if (cc != null && !"".equals(cc)) {
+			addEmailBannerField(BUNDLE.getString("header.cc"), message.getCc(),
+					composite);
 		}
 
 		composite.layout(true);
 	}
 
-	private void addEmailBannerField(String label, String value, Composite parent) {
+	private void addEmailBannerField(String label, String value,
+			Composite parent) {
 		// Grid layout data
 		GridData gridData = new GridData();
 		gridData.horizontalAlignment = SWT.FILL;
 		gridData.grabExcessHorizontalSpace = true;
 
-		new Label(parent, SWT.NONE)
-		.setText(label);
+		new Label(parent, SWT.NONE).setText(label);
 
 		Text valueField = new Text(parent, SWT.BORDER | SWT.READ_ONLY);
 		valueField.setLayoutData(gridData);

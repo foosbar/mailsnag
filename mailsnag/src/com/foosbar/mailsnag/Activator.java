@@ -110,7 +110,7 @@ public class Activator extends AbstractUIPlugin implements IStartup {
 	 */
 	public synchronized void startServer() {
 		if (ServerState.STOPPED == server.getStatus()) {
-			ThreadGroup tg = new ServerThreadGroup("SMTPServer");
+			ThreadGroup tg = new ServerThreadGroup(Constants.SMTP_SERVER_NAME);
 			new Thread(tg, server).start();
 		}
 	}
@@ -212,7 +212,7 @@ public class Activator extends AbstractUIPlugin implements IStartup {
 	 */
 	public static boolean isNotificationAvailable() {
 		try {
-			Class.forName("org.eclipse.mylyn.commons.ui.dialogs.AbstractNotificationPopup");
+			Class.forName(Constants.MYLYN_NOTIFICATION_CLASS);
 			return true;
 		} catch (ClassNotFoundException e) {
 			return false;

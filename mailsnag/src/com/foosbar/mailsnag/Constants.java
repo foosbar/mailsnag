@@ -17,6 +17,14 @@ package com.foosbar.mailsnag;
  */
 public final class Constants {
 
+	public static final String EMAIL_EXTENSION = ".eml";
+
+	public static final String[] FILESIZE_UNITS = new String[] { "B", "KB", "MB", "GB", "TB" };
+	
+	public static final String MYLYN_NOTIFICATION_CLASS = "org.eclipse.mylyn.commons.ui.dialogs.AbstractNotificationPopup";
+
+	public static final String SMTP_SERVER_NAME = "SMTPServer";
+	
 	/**
 	 * Private constructor to prevent instantiating a utility class.
 	 * Could also create constants class as an interface which could in
@@ -25,5 +33,5 @@ public final class Constants {
 	private Constants() {
 		// This space intentionally left blank.
 	}
-
+	
 }
