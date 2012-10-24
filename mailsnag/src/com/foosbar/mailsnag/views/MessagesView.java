@@ -29,10 +29,13 @@ import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.ITableColorProvider;
+import org.eclipse.jface.viewers.ITableFontProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
@@ -41,6 +44,8 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
@@ -52,6 +57,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorRegistry;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.contexts.IContextService;
@@ -147,7 +153,12 @@ public class MessagesView extends ViewPart implements ServerStateListener {
 		}
 
 		public void inputChanged(Viewer v, Object oldInput, Object newInput) {
-			// Nothing to do.
+			//int idx = messages.indexOf(oldInput);
+			//if (idx >= 0) {
+			//	messages.remove(idx);
+			//	messages.add(idx, (Message) newInput);
+			//}
+			//v.refresh();
 		}
 
 		public void dispose() {
@@ -175,8 +186,20 @@ public class MessagesView extends ViewPart implements ServerStateListener {
 					IWorkbenchSiteProgressService service = (IWorkbenchSiteProgressService) getSite()
 							.getService(IWorkbenchSiteProgressService.class);
 					service.warnOfContentChange();
-					getSite().getPage().activate(getSite().getPart());
+					// PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(ID,
+					// null, IWorkbenchPage.VIEW_VISIBLE);
+					// getSite().getPage().activate(getSite().getPart());
+					IWorkbenchPage page = getSite().getPage();
+					IWorkbenchPart part = getSite().getPart();
 					showNewMessages();
+					boolean isVisible = page.isPartVisible(part);
+					if (!isVisible) {
+						try {
+							page.showView(ID, null, IWorkbenchPage.VIEW_VISIBLE);
+						} catch (PartInitException e) {
+							e.printStackTrace();
+						}
+					}
 				}
 			});
 		}
@@ -226,7 +249,7 @@ public class MessagesView extends ViewPart implements ServerStateListener {
 	 * @author Kevin Kelley
 	 */
 	class ViewLabelProvider extends LabelProvider implements
-			ITableLabelProvider {
+			ITableLabelProvider, ITableFontProvider, ITableColorProvider {
 
 		/**
 		 * Based on the index of each column, return the proper value to
@@ -278,7 +301,106 @@ public class MessagesView extends ViewPart implements ServerStateListener {
 		public Image getImage(Object obj) {
 			return IMG_ATTACHMENT.createImage();
 		}
+
+		public Color getForeground(Object element, int columnIndex) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		public Color getBackground(Object element, int columnIndex) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		public Font getFont(Object element, int columnIndex) {
+			return getFont((Message)element);
+		}
+
+		public Font getFont(Message message) {
+			if(message.isUnread()) {
+				return JFaceResources.getFontRegistry().getBold(
+						JFaceResources.DIALOG_FONT);
+			} else {
+				return null;
+			}
+		}
 	}
+
+	// class ViewLabelProvider extends StyledCellLabelProvider {
+	//
+	// private final Font boldFont;
+	//
+	// public ViewLabelProvider(Font boldFont) {
+	// this.boldFont = boldFont;
+	// }
+	//
+	// /**
+	// * Based on the index of each column, return the proper value to
+	// * populate the data.
+	// *
+	// * NOTE: This method was
+	// */
+	// public String getColumnText(Object obj, int index) {
+	// return getColumnValue((Message) obj, index);
+	// }
+	//
+	// @Override
+	// public void update(ViewerCell cell) {
+	// int index = cell.getColumnIndex();
+	// Message message = (Message) cell.getElement();
+	//
+	// if (index == 0) {
+	// if (message.hasAttachments()) {
+	// cell.setImage(getAttachmentImage());
+	// }
+	// } else {
+	// String value = getColumnValue(message, index);
+	// if (message.isUnread()) {
+	// Styler fBoldStyler = new Styler() {
+	// @Override
+	// public void applyStyles(TextStyle textStyle) {
+	// textStyle.font = boldFont;
+	// }
+	// };
+	//
+	// StyledString styledString = new StyledString(value,
+	// fBoldStyler);
+	// cell.setText(styledString.toString());
+	// cell.setStyleRanges(styledString.getStyleRanges());
+	// } else {
+	// cell.setText(value);
+	// }
+	// }
+	// super.update(cell);
+	// }
+	//
+	// private String getColumnValue(Message message, int index) {
+	// switch (index) {
+	// case 0:
+	// return "";
+	// case 1:
+	// return message.getFrom();
+	// case 2:
+	// return message.getTo();
+	// case 3:
+	// return message.getCc();
+	// case 4:
+	// return message.getSubject();
+	// case 5:
+	// if (message.getReceived() == null) {
+	// return "";
+	// } else {
+	// return DATE_FORMATTER.format(message.getReceived());
+	// }
+	// default:
+	// throw new RuntimeException("Should not happen");
+	// }
+	// }
+	//
+	// public Image getAttachmentImage() {
+	// return IMG_ATTACHMENT.createImage();
+	// }
+	// }
 
 	private void createColumns(final TableViewer viewer, Composite parent) {
 
@@ -354,7 +476,15 @@ public class MessagesView extends ViewPart implements ServerStateListener {
 		contentProvider = new ViewContentProvider(loadMessages());
 		MessageStore.addMessageListListener(contentProvider);
 		viewer.setContentProvider(contentProvider);
+
+		/**
+		FontData[] boldFontData = getModifiedFontData(viewer.getTable()
+				.getFont().getFontData(), SWT.BOLD);
+		Font boldFont = new Font(Display.getCurrent(), boldFontData);
+		viewer.setLabelProvider(new ViewLabelProvider(boldFont));
+		*/
 		viewer.setLabelProvider(new ViewLabelProvider());
+		
 		viewer.setInput(getViewSite());
 		getSite().setSelectionProvider(viewer);
 
@@ -385,6 +515,19 @@ public class MessagesView extends ViewPart implements ServerStateListener {
 		contextService.activateContext("com.foos-bar.mailsnag.contexts");
 
 	}
+
+	/*
+	private static FontData[] getModifiedFontData(FontData[] originalData,
+			int additionalStyle) {
+		FontData[] styleData = new FontData[originalData.length];
+		for (int i = 0; i < styleData.length; i++) {
+			FontData base = originalData[i];
+			styleData[i] = new FontData(base.getName(), base.getHeight(),
+					base.getStyle() | additionalStyle);
+		}
+		return styleData;
+	}
+	*/
 
 	@Override
 	public void dispose() {
