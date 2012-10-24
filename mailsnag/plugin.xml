@@ -94,6 +94,14 @@
             id="com.foosbar.mailsnag.commands.open.system.editor"
             name="OpenMessageWithSystemEditor">
       </command>
+      <command
+            id="com.foosbar.mailsnag.commands.mark.read"
+            name="MarkRead">
+      </command>
+      <command
+            id="com.foosbar.mailsnag.commands.mark.unread"
+            name="MarkUnRead">
+      </command>
    </extension>
    <extension
          point="org.eclipse.ui.handlers">
@@ -124,6 +132,24 @@
             </reference>
          </enabledWhen>
       </handler>
+      <handler
+            class="com.foosbar.mailsnag.commands.MarkRead"
+            commandId="com.foosbar.mailsnag.commands.mark.read">
+         <enabledWhen>
+            <reference
+                  definitionId="oneElementSelected">
+            </reference>
+         </enabledWhen>
+      </handler>
+      <handler
+            class="com.foosbar.mailsnag.commands.MarkUnRead"
+            commandId="com.foosbar.mailsnag.commands.mark.unread">
+         <enabledWhen>
+            <reference
+                  definitionId="oneElementSelected">
+            </reference>
+         </enabledWhen>
+      </handler>
    </extension>
    <extension
          point="org.eclipse.ui.menus">
@@ -141,7 +167,21 @@
                style="push">
          </command>
          <separator
-               name="mailsnag.separator1"
+               name="mailsnag.separator1a"
+               visible="true">
+         </separator>
+         <command
+               commandId="com.foosbar.mailsnag.commands.mark.read"
+               label="%action.mark.read"
+               style="push">
+         </command>
+         <command
+               commandId="com.foosbar.mailsnag.commands.mark.unread"
+               label="%action.mark.unread"
+               style="push">
+         </command>
+         <separator
+               name="mailsnag.separator1b"
                visible="true">
          </separator>
          <command
