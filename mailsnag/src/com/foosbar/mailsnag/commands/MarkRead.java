@@ -10,17 +10,22 @@
  *******************************************************************************/
 package com.foosbar.mailsnag.commands;
 
+import java.util.Iterator;
+
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 
+import com.foosbar.mailsnag.commands.AbstractStatusCommand.Status;
+import com.foosbar.mailsnag.model.Message;
 import com.foosbar.mailsnag.views.MessagesView;
+import com.foosbar.mailsnag.views.MessagesView.ViewContentProvider;
 
 /**
- * Handler for marking a message read.  From the view standpoint,
- * the message entry text will be "un-bolded".
+ * Handler for marking a message read. From the view standpoint, the message
+ * entry text will be "un-bolded".
  * 
  * @author kkelley (dev@foos-bar.com)
  * 
@@ -40,10 +45,20 @@ public class MarkRead extends AbstractStatusCommand {
 
 			viewer.showLogo();
 
+			// Get collection of messages to mark as read
 			IStructuredSelection iss = (IStructuredSelection) HandlerUtil
 					.getCurrentSelection(event);
 
-			markReadStatus(iss, Status.READ);
+			// Get Content Provider
+			ViewContentProvider provider = (ViewContentProvider) viewer
+					.getViewer().getContentProvider();
+
+			for (Iterator<Object> it = iss.iterator(); it.hasNext();) {
+				Message m = getMessage(it.next());
+				if (m != null) {
+					provider.setRead(m);
+				}
+			}
 		}
 		return null;
 	}

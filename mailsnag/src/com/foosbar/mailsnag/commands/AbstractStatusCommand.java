@@ -10,10 +10,7 @@
  *******************************************************************************/
 package com.foosbar.mailsnag.commands;
 
-import java.util.Iterator;
-
 import org.eclipse.core.commands.AbstractHandler;
-import org.eclipse.jface.viewers.IStructuredSelection;
 
 import com.foosbar.mailsnag.model.Message;
 
@@ -26,28 +23,12 @@ import com.foosbar.mailsnag.model.Message;
 public abstract class AbstractStatusCommand extends AbstractHandler {
 
 	/**
-	 * Iterates over all the selected messages and marks their read status to either
-	 * READ or UNREAD.
-	 * 
-	 * @param iss
-	 * @param status
-	 */
-	protected void markReadStatus(IStructuredSelection iss, Status status) {
-		for(Iterator<Object> it = iss.iterator(); it.hasNext(); ) {
-			Message m = getMessage(it.next());
-			if(m != null) {
-				m.setUnread(status == Status.UNREAD);
-			}
-		}
-	}
-
-	/**
 	 * If the Object passed in is a Message, it casts the Object to Message, otherwise it
 	 * just returns null so processing will skip this.
 	 * @param obj
 	 * @return
 	 */
-	private Message getMessage(Object obj) {
+	protected Message getMessage(Object obj) {
 		if(obj instanceof Message) {
 			return (Message) obj;
 		}

@@ -220,15 +220,36 @@ public class MessagesView extends ViewPart implements ServerStateListener {
 		}
 
 		/**
-		 * Mark message as read. Note, this currently doesn't do anything, but
-		 * ideally, if new messages were bold...
+		 * Mark message as read - which removes the bold formatting for the
+		 * message line item.
 		 * 
 		 * @param message
 		 */
 		public void setRead(Message message) {
+			setReadStatus(message, true);
+		}
+
+		/**
+		 * Mark message as unread - which removes the bold formatting for the
+		 * message line item.
+		 * 
+		 * @param message
+		 */
+		public void setUnRead(Message message) {
+			setReadStatus(message, false);
+		}
+
+		/**
+		 * 
+		 * @param message
+		 *            the message to assign the status too
+		 * @param unread
+		 *            true if message is read
+		 */
+		private void setReadStatus(Message message, boolean read) {
 			int idx = messages.indexOf(message);
 			if (idx >= 0) {
-				messages.get(idx).setUnread(false);
+				messages.get(idx).setUnread(!read);
 			}
 			getViewer().refresh();
 		}
@@ -643,7 +664,13 @@ public class MessagesView extends ViewPart implements ServerStateListener {
 		return new FileStoreEditorInput(store);
 	}
 
-	private void setMessageRead(Message message) {
+	public void setMessageRead(Message message) {
+		ViewContentProvider provider = (ViewContentProvider) getViewer()
+				.getContentProvider();
+		provider.setRead(message);
+	}
+
+	public void setMessageUnRead(Message message) {
 		ViewContentProvider provider = (ViewContentProvider) getViewer()
 				.getContentProvider();
 		provider.setRead(message);

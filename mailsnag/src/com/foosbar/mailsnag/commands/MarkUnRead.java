@@ -10,13 +10,17 @@
  *******************************************************************************/
 package com.foosbar.mailsnag.commands;
 
+import java.util.Iterator;
+
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 
+import com.foosbar.mailsnag.model.Message;
 import com.foosbar.mailsnag.views.MessagesView;
+import com.foosbar.mailsnag.views.MessagesView.ViewContentProvider;
 
 /**
  * Handler for marking a message "un-read". From the view standpoint, the
@@ -40,10 +44,20 @@ public class MarkUnRead extends AbstractStatusCommand {
 
 			viewer.showLogo();
 
+			// Get collection of messages to mark as unread
 			IStructuredSelection iss = (IStructuredSelection) HandlerUtil
 					.getCurrentSelection(event);
 
-			markReadStatus(iss, Status.UNREAD);
+			// Get Content Provider
+			ViewContentProvider provider = (ViewContentProvider) viewer
+					.getViewer().getContentProvider();
+
+			for (Iterator<Object> it = iss.iterator(); it.hasNext();) {
+				Message m = getMessage(it.next());
+				if (m != null) {
+					provider.setUnRead(m);
+				}
+			}
 		}
 		return null;
 	}
