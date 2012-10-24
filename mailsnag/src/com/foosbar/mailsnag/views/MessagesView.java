@@ -57,7 +57,6 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorRegistry;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.contexts.IContextService;
@@ -181,20 +180,18 @@ public class MessagesView extends ViewPart implements ServerStateListener {
 					IWorkbenchSiteProgressService service = (IWorkbenchSiteProgressService) getSite()
 							.getService(IWorkbenchSiteProgressService.class);
 					service.warnOfContentChange();
-					// PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(ID,
-					// null, IWorkbenchPage.VIEW_VISIBLE);
-					// getSite().getPage().activate(getSite().getPart());
-					IWorkbenchPage page = getSite().getPage();
-					IWorkbenchPart part = getSite().getPart();
+					getSite().getPage().activate(getSite().getPart());
 					showNewMessages();
-					boolean isVisible = page.isPartVisible(part);
-					if (!isVisible) {
-						try {
-							page.showView(ID, null, IWorkbenchPage.VIEW_VISIBLE);
-						} catch (PartInitException e) {
-							e.printStackTrace();
-						}
-					}
+
+					/*
+					 * Trying to get part to make itself visible if its hidden
+					 * or not open. IWorkbenchPage page = getSite().getPage();
+					 * showNewMessages(); boolean isVisible =
+					 * page.isPartVisible(getSite().getPart()); if (!isVisible)
+					 * { try { page.showView(ID, null,
+					 * IWorkbenchPage.VIEW_VISIBLE); } catch (PartInitException
+					 * e) { e.printStackTrace(); } }
+					 */
 				}
 			});
 		}
