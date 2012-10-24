@@ -153,12 +153,7 @@ public class MessagesView extends ViewPart implements ServerStateListener {
 		}
 
 		public void inputChanged(Viewer v, Object oldInput, Object newInput) {
-			//int idx = messages.indexOf(oldInput);
-			//if (idx >= 0) {
-			//	messages.remove(idx);
-			//	messages.add(idx, (Message) newInput);
-			//}
-			//v.refresh();
+			// Nothing to do.
 		}
 
 		public void dispose() {
@@ -313,11 +308,11 @@ public class MessagesView extends ViewPart implements ServerStateListener {
 		}
 
 		public Font getFont(Object element, int columnIndex) {
-			return getFont((Message)element);
+			return getFont((Message) element);
 		}
 
 		public Font getFont(Message message) {
-			if(message.isUnread()) {
+			if (message.isUnread()) {
 				return JFaceResources.getFontRegistry().getBold(
 						JFaceResources.DIALOG_FONT);
 			} else {
@@ -325,82 +320,6 @@ public class MessagesView extends ViewPart implements ServerStateListener {
 			}
 		}
 	}
-
-	// class ViewLabelProvider extends StyledCellLabelProvider {
-	//
-	// private final Font boldFont;
-	//
-	// public ViewLabelProvider(Font boldFont) {
-	// this.boldFont = boldFont;
-	// }
-	//
-	// /**
-	// * Based on the index of each column, return the proper value to
-	// * populate the data.
-	// *
-	// * NOTE: This method was
-	// */
-	// public String getColumnText(Object obj, int index) {
-	// return getColumnValue((Message) obj, index);
-	// }
-	//
-	// @Override
-	// public void update(ViewerCell cell) {
-	// int index = cell.getColumnIndex();
-	// Message message = (Message) cell.getElement();
-	//
-	// if (index == 0) {
-	// if (message.hasAttachments()) {
-	// cell.setImage(getAttachmentImage());
-	// }
-	// } else {
-	// String value = getColumnValue(message, index);
-	// if (message.isUnread()) {
-	// Styler fBoldStyler = new Styler() {
-	// @Override
-	// public void applyStyles(TextStyle textStyle) {
-	// textStyle.font = boldFont;
-	// }
-	// };
-	//
-	// StyledString styledString = new StyledString(value,
-	// fBoldStyler);
-	// cell.setText(styledString.toString());
-	// cell.setStyleRanges(styledString.getStyleRanges());
-	// } else {
-	// cell.setText(value);
-	// }
-	// }
-	// super.update(cell);
-	// }
-	//
-	// private String getColumnValue(Message message, int index) {
-	// switch (index) {
-	// case 0:
-	// return "";
-	// case 1:
-	// return message.getFrom();
-	// case 2:
-	// return message.getTo();
-	// case 3:
-	// return message.getCc();
-	// case 4:
-	// return message.getSubject();
-	// case 5:
-	// if (message.getReceived() == null) {
-	// return "";
-	// } else {
-	// return DATE_FORMATTER.format(message.getReceived());
-	// }
-	// default:
-	// throw new RuntimeException("Should not happen");
-	// }
-	// }
-	//
-	// public Image getAttachmentImage() {
-	// return IMG_ATTACHMENT.createImage();
-	// }
-	// }
 
 	private void createColumns(final TableViewer viewer, Composite parent) {
 
@@ -477,14 +396,8 @@ public class MessagesView extends ViewPart implements ServerStateListener {
 		MessageStore.addMessageListListener(contentProvider);
 		viewer.setContentProvider(contentProvider);
 
-		/**
-		FontData[] boldFontData = getModifiedFontData(viewer.getTable()
-				.getFont().getFontData(), SWT.BOLD);
-		Font boldFont = new Font(Display.getCurrent(), boldFontData);
-		viewer.setLabelProvider(new ViewLabelProvider(boldFont));
-		*/
 		viewer.setLabelProvider(new ViewLabelProvider());
-		
+
 		viewer.setInput(getViewSite());
 		getSite().setSelectionProvider(viewer);
 
@@ -517,17 +430,13 @@ public class MessagesView extends ViewPart implements ServerStateListener {
 	}
 
 	/*
-	private static FontData[] getModifiedFontData(FontData[] originalData,
-			int additionalStyle) {
-		FontData[] styleData = new FontData[originalData.length];
-		for (int i = 0; i < styleData.length; i++) {
-			FontData base = originalData[i];
-			styleData[i] = new FontData(base.getName(), base.getHeight(),
-					base.getStyle() | additionalStyle);
-		}
-		return styleData;
-	}
-	*/
+	 * private static FontData[] getModifiedFontData(FontData[] originalData,
+	 * int additionalStyle) { FontData[] styleData = new
+	 * FontData[originalData.length]; for (int i = 0; i < styleData.length; i++)
+	 * { FontData base = originalData[i]; styleData[i] = new
+	 * FontData(base.getName(), base.getHeight(), base.getStyle() |
+	 * additionalStyle); } return styleData; }
+	 */
 
 	@Override
 	public void dispose() {
