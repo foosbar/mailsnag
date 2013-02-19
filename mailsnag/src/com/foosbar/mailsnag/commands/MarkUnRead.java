@@ -19,8 +19,8 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import com.foosbar.mailsnag.model.Message;
+import com.foosbar.mailsnag.views.MessageContentProvider;
 import com.foosbar.mailsnag.views.MessagesView;
-import com.foosbar.mailsnag.views.MessagesView.ViewContentProvider;
 
 /**
  * Handler for marking a message "un-read". From the view standpoint, the
@@ -49,7 +49,7 @@ public class MarkUnRead extends AbstractStatusCommand {
 					.getCurrentSelection(event);
 
 			// Get Content Provider
-			ViewContentProvider provider = (ViewContentProvider) viewer
+			MessageContentProvider provider = (MessageContentProvider) viewer
 					.getViewer().getContentProvider();
 
 			for (Iterator<Object> it = iss.iterator(); it.hasNext();) {

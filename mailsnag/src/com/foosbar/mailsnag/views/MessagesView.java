@@ -12,11 +12,9 @@
 package com.foosbar.mailsnag.views;
 
 import java.io.File;
-import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.eclipse.core.filesystem.EFS;
@@ -28,25 +26,14 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
-import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.ITableColorProvider;
-import org.eclipse.jface.viewers.ITableFontProvider;
-import org.eclipse.jface.viewers.ITableLabelProvider;
-import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
-import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
@@ -69,7 +56,6 @@ import org.eclipse.ui.progress.IWorkbenchSiteProgressService;
 import com.foosbar.mailsnag.Activator;
 import com.foosbar.mailsnag.editors.MessageEditor;
 import com.foosbar.mailsnag.editors.MessageEditorInput;
-import com.foosbar.mailsnag.events.MessageListListener;
 import com.foosbar.mailsnag.events.ServerStateListener;
 import com.foosbar.mailsnag.model.Message;
 import com.foosbar.mailsnag.smtp.ServerState;
@@ -88,31 +74,6 @@ public class MessagesView extends ViewPart implements ServerStateListener {
 
 	public static final String ID = "com.foosbar.mailsnag.views.MessagesView";
 
-	// Attachments Icon
-	private static final ImageDescriptor IMG_ATTACHMENT = ImageDescriptor
-			.createFromFile(Activator.class, "/icons/attachment.png");
-
-	// Start Server Icon
-	private static final ImageDescriptor IMG_RUN = ImageDescriptor
-			.createFromFile(Activator.class, "/icons/run.gif");
-
-	// Stop Server
-	private static final ImageDescriptor IMG_STOP = ImageDescriptor
-			.createFromFile(Activator.class, "/icons/stop.gif");
-
-	// New Messages
-	private static final ImageDescriptor IMG_NEW_MESSAGES = ImageDescriptor
-			.createFromFile(Activator.class, "/icons/mail_new.gif");
-
-	// Logo for View
-	private static final ImageDescriptor IMG_LOGO = ImageDescriptor
-			.createFromFile(Activator.class, "/icons/mail.gif");
-
-	// Locale Specific Date Formatter
-	private static final DateFormat DATE_FORMATTER = DateFormat
-			.getDateTimeInstance(DateFormat.LONG, DateFormat.SHORT,
-					Locale.getDefault());
-
 	// Locale Specific Resource Bundle
 	private static final ResourceBundle BUNDLE = Activator.getResourceBundle();
 
@@ -127,216 +88,13 @@ public class MessagesView extends ViewPart implements ServerStateListener {
 	private Action runServer;
 	private Action stopServer;
 	private Action openPreferences;
-	private ViewContentProvider contentProvider;
+	private MessageContentProvider contentProvider;
 
 	/**
 	 * The constructor.
 	 */
 	public MessagesView() {
 		super();
-	}
-
-	/**
-	 * Provides the data necessary to populate the Mail View.
-	 * 
-	 * @author kkelley (dev@foos-bar.com)
-	 */
-	public class ViewContentProvider implements IStructuredContentProvider,
-			MessageListListener {
-		List<Message> messages = new ArrayList<Message>();
-
-		public ViewContentProvider(List<Message> messages) {
-			if (messages != null) {
-				this.messages = messages;
-			}
-		}
-
-		public void inputChanged(Viewer v, Object oldInput, Object newInput) {
-			// Nothing to do.
-		}
-
-		public void dispose() {
-			messages = null;
-		}
-
-		public Object[] getElements(Object parent) {
-			return messages.toArray();
-		}
-
-		/**
-		 * Adds a message to the current list of messages and updates the
-		 * control.
-		 * 
-		 * @param message
-		 */
-		public void messageAdded(Message message) {
-			messages.add(message);
-			// Refresh the viewer
-			Display.getDefault().asyncExec(new Runnable() {
-				public void run() {
-					// Refresh the viewer
-					getViewer().refresh();
-					// Sets label bold if the view is unfocused.
-					IWorkbenchSiteProgressService service = (IWorkbenchSiteProgressService) getSite()
-							.getService(IWorkbenchSiteProgressService.class);
-					service.warnOfContentChange();
-					getSite().getPage().activate(getSite().getPart());
-					showNewMessages();
-
-					/*
-					 * Trying to get part to make itself visible if its hidden
-					 * or not open. IWorkbenchPage page = getSite().getPage();
-					 * showNewMessages(); boolean isVisible =
-					 * page.isPartVisible(getSite().getPart()); if (!isVisible)
-					 * { try { page.showView(ID, null,
-					 * IWorkbenchPage.VIEW_VISIBLE); } catch (PartInitException
-					 * e) { e.printStackTrace(); } }
-					 */
-				}
-			});
-		}
-
-		/**
-		 * Remove a message from the list
-		 */
-		public void messageRemoved(Message message) {
-			messages.remove(message);
-			Display.getDefault().asyncExec(new Runnable() {
-				public void run() {
-					// Refresh the viewer
-					getViewer().refresh();
-				}
-			});
-		}
-
-		public void messageAllRemoved() {
-			messages.clear();
-			Display.getDefault().asyncExec(new Runnable() {
-				public void run() {
-					// Refresh the viewer
-					getViewer().refresh();
-				}
-			});
-		}
-
-		/**
-		 * Mark message as read - which removes the bold formatting for the
-		 * message line item.
-		 * 
-		 * @param message
-		 */
-		public void setRead(Message message) {
-			setReadStatus(message, true);
-		}
-
-		/**
-		 * Mark message as unread - which removes the bold formatting for the
-		 * message line item.
-		 * 
-		 * @param message
-		 */
-		public void setUnRead(Message message) {
-			setReadStatus(message, false);
-		}
-
-		/**
-		 * 
-		 * @param message
-		 *            the message to assign the status too
-		 * @param unread
-		 *            true if message is read
-		 */
-		private void setReadStatus(Message message, boolean read) {
-			int idx = messages.indexOf(message);
-			if (idx >= 0) {
-				messages.get(idx).setUnread(!read);
-			}
-			getViewer().refresh();
-		}
-	}
-
-	/**
-	 * Returns the label for each of the columns based on the index for that
-	 * column.
-	 * 
-	 * @author Kevin Kelley
-	 */
-	class ViewLabelProvider extends LabelProvider implements
-			ITableLabelProvider, ITableFontProvider, ITableColorProvider {
-
-		/**
-		 * Based on the index of each column, return the proper value to
-		 * populate the data.
-		 */
-		public String getColumnText(Object obj, int index) {
-			Message message = (Message) obj;
-			switch (index) {
-			case 0:
-				return null;
-			case 1:
-				return message.getFrom();
-			case 2:
-				return message.getTo();
-			case 3:
-				return message.getCc();
-			case 4:
-				return message.getSubject();
-			case 5:
-				if (message.getReceived() == null) {
-					return "";
-				} else {
-					return DATE_FORMATTER.format(message.getReceived());
-				}
-			default:
-				throw new RuntimeException("Should not happen");
-			}
-		}
-
-		/**
-		 * Returns an attachment icon for the first column (index == 0) if the
-		 * message contains an attachment
-		 */
-		public Image getColumnImage(Object obj, int index) {
-			if (index > 0) {
-				return null;
-			}
-
-			Message message = (Message) obj;
-
-			if (message.hasAttachments()) {
-				return getImage(obj);
-			}
-
-			return null;
-		}
-
-		@Override
-		public Image getImage(Object obj) {
-			return IMG_ATTACHMENT.createImage();
-		}
-
-		public Color getForeground(Object element, int columnIndex) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		public Color getBackground(Object element, int columnIndex) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		public Font getFont(Object element, int columnIndex) {
-			return getFont((Message) element);
-		}
-
-		public Font getFont(Message message) {
-			if (message.isUnread()) {
-				return JFaceResources.getFontRegistry().getBold(
-						JFaceResources.DIALOG_FONT);
-			} else {
-				return null;
-			}
-		}
 	}
 
 	private void createColumns(final TableViewer viewer, Composite parent) {
@@ -360,7 +118,7 @@ public class MessagesView extends ViewPart implements ServerStateListener {
 
 			if (i == 0) {
 				column.setAlignment(SWT.CENTER);
-				column.setImage(IMG_ATTACHMENT.createImage());
+				column.setImage(Images.ATTACHMENT.createImage());
 				column.setResizable(false);
 				column.setMoveable(false);
 			} else {
@@ -410,11 +168,33 @@ public class MessagesView extends ViewPart implements ServerStateListener {
 				| SWT.V_SCROLL | SWT.FULL_SELECTION);
 		createColumns(viewer, parent);
 
-		contentProvider = new ViewContentProvider(loadMessages());
+		contentProvider = new MessageContentProvider(loadMessages()) {
+			@Override
+			public void refreshView(final boolean notifyNewMessage) {
+				Display.getDefault().asyncExec(new Runnable() {
+					public void run() {
+						// Refresh the viewer
+						getViewer().refresh();
+						
+						// If this refresh is due to a new message being added,
+						// we need to change the icon for the viewer to indicate 
+						// as such.
+						if (notifyNewMessage) {
+							IWorkbenchSiteProgressService service = (IWorkbenchSiteProgressService) getSite()
+									.getService(IWorkbenchSiteProgressService.class);
+							service.warnOfContentChange();
+							getSite().getPage().activate(getSite().getPart());
+							showNewMessages();
+						}
+					}
+				});
+			}
+		};
+		
 		MessageStore.addMessageListListener(contentProvider);
 		viewer.setContentProvider(contentProvider);
 
-		viewer.setLabelProvider(new ViewLabelProvider());
+		viewer.setLabelProvider(new MessageLabelProvider());
 
 		viewer.setInput(getViewSite());
 		getSite().setSelectionProvider(viewer);
@@ -466,11 +246,11 @@ public class MessagesView extends ViewPart implements ServerStateListener {
 	}
 
 	public void showNewMessages() {
-		this.setTitleImage(IMG_NEW_MESSAGES.createImage());
+		this.setTitleImage(Images.NEW_MESSAGES.createImage());
 	}
 
 	public void showLogo() {
-		this.setTitleImage(IMG_LOGO.createImage());
+		this.setTitleImage(Images.MAILSNAG_LOGO.createImage());
 	}
 
 	private List<Message> loadMessages() {
@@ -560,7 +340,7 @@ public class MessagesView extends ViewPart implements ServerStateListener {
 
 		runServer.setText(BUNDLE.getString("action.start"));
 		runServer.setToolTipText(BUNDLE.getString("action.start.tooltip"));
-		runServer.setImageDescriptor(IMG_RUN);
+		runServer.setImageDescriptor(Images.RUN_SERVER);
 
 		stopServer = new Action() {
 			@Override
@@ -571,7 +351,7 @@ public class MessagesView extends ViewPart implements ServerStateListener {
 
 		stopServer.setText(BUNDLE.getString("action.stop"));
 		stopServer.setToolTipText(BUNDLE.getString("action.stop.tooltip"));
-		stopServer.setImageDescriptor(IMG_STOP);
+		stopServer.setImageDescriptor(Images.STOP_SERVER);
 
 		Activator.getDefault().addServerStateListener(this);
 		serverStateChanged(Activator.getDefault().getServerState());
@@ -583,6 +363,7 @@ public class MessagesView extends ViewPart implements ServerStateListener {
 		stopServer.setEnabled(listening);
 	}
 
+	
 	public void serverStateChanged(ServerState state) {
 		setServerButtonsState(state);
 	}
@@ -657,6 +438,12 @@ public class MessagesView extends ViewPart implements ServerStateListener {
 		return new MessageEditorInput(message);
 	}
 
+	/**
+	 * This will open the email message (.eml) up in the system's preferred application.
+	 * 
+	 * @param message The message to be opened.
+	 * @return IEditorInput
+	 */
 	private IEditorInput getSystemEditorInput(Message message) {
 		String path = Activator.getDefault().getStateLocation().toOSString()
 				+ File.separator + message.getFilename();
@@ -664,18 +451,33 @@ public class MessagesView extends ViewPart implements ServerStateListener {
 		return new FileStoreEditorInput(store);
 	}
 
+	/**
+	 * Mark message as being read.  This effectively unbolds the entry in the data table.
+	 * 
+	 * @param message
+	 *            the message for which the status will be changed!
+	 */
 	public void setMessageRead(Message message) {
-		ViewContentProvider provider = (ViewContentProvider) getViewer()
-				.getContentProvider();
-		provider.setRead(message);
+		if(contentProvider != null) {
+			contentProvider.setRead(message);
+		}
 	}
 
+	/**
+	 * Mark message as being unread.  This effectively re-bolds the entry in the data table.
+	 * 
+	 * @param message
+	 *            the message for which the status will be changed!
+	 */
 	public void setMessageUnRead(Message message) {
-		ViewContentProvider provider = (ViewContentProvider) getViewer()
-				.getContentProvider();
-		provider.setRead(message);
+		if(contentProvider != null) {
+			contentProvider.setUnRead(message);
+		}
 	}
 
+	/**
+	 * Double click event for a message entry.  It will open the message up in the default editor.
+	 */
 	private void hookDoubleClickAction() {
 		viewer.addDoubleClickListener(new IDoubleClickListener() {
 			public void doubleClick(DoubleClickEvent event) {
