@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: MailSnag
 Bundle-SymbolicName: com.foosbar.mailsnag;singleton:=true
-Bundle-Version: 1.3.3
+Bundle-Version: 1.3.5
 Bundle-Activator: com.foosbar.mailsnag.Activator
 Bundle-Localization: i18n/Resources
 Require-Bundle: org.eclipse.ui,
@@ -32,6 +32,7 @@ Export-Package: com.foosbar.mailsnag;
    org.eclipse.ui,
    org.eclipse.core.resources,
    org.eclipse.ui.part",
+ com.foosbar.mailsnag.events,
  com.foosbar.mailsnag.model,
  com.foosbar.mailsnag.preferences;uses:="org.eclipse.jface.preference,org.eclipse.ui,org.eclipse.core.runtime.preferences",
  com.foosbar.mailsnag.smtp;uses:="com.foosbar.mailsnag.events",
