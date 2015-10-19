@@ -259,11 +259,7 @@ public class MessagesView extends ViewPart implements ServerStateListener {
 		File dir = Activator.getDefault().getStateLocation().toFile();
 
 		if (dir.isDirectory()) {
-
 			File[] files = dir.listFiles(new EmailFilenameFilter());
-
-			// Don't store contents of emails in memory. Pass file to Editor.
-
 			for (File file : files) {
 				Message message = MessageStore.load(file.getName());
 				messages.add(message);
