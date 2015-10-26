@@ -5,7 +5,7 @@ MailSnag is an Eclipse plugin to support development of email generating applica
 
 Support
 =======
-The plugin has been verified to work with Eclipse 3.5 (Galileo) through 4.4 (Luna).  There is an optional dependency on Mylyn.  If Mylyn is installed, you can receive popup notifications when a new email arrives.
+The plugin has been verified to work with Eclipse 3.5 (Galileo) through 4.5 (Mars).  There is an optional dependency on Mylyn.  If Mylyn is installed, you can receive popup notifications when a new email arrives.
 
 Installation
 ============
