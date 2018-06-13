@@ -33,7 +33,3 @@ You can go directly to MailSnag's preferences by selecting the downward pointing
 ![ScreenShot](http://foosbar.github.com/images/mailsnag-preferences.png)
 
 The option "Enable notification popup when new messages arrive" will only appear if Mylyn Commons is installed.
-
-License
-=======
-The code for MailSnag is licensed under Eclipse Public License v1.0 - http://www.eclipse.org/legal/epl-v10.html
