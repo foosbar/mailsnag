@@ -15,7 +15,7 @@ Alternatively, you can install it directly from the update site:
 1. From the Eclipse menubar, select: "Help" > "Install New Software..."
 2. Click the "Add" button to add a new repository.
 3. Enter a Name:  FoosBar
-4. Enter a Location: http://foosbar.github.com/update/site.xml
+4. Enter a Location: http://foosbar.github.io/update/site.xml
 5. Click Ok.
 
 Select "Foos-Bar Development" > "MailSnag" and click "Next >" a few times until it eventually installs.
