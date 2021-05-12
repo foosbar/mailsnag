@@ -26,10 +26,10 @@ Getting Around
 ==============
 To use, you need to open the MailSnag Viewer from the Eclipse Menubar: "Window" > "Show View" > "Other...".  Find "MailSnag" from the list and select "Email Messages".
 
-![ScreenShot](http://foosbar.github.com/images/mailsnag-default.png)
+![ScreenShot](http://foosbar.github.io/images/mailsnag-default.png)
 
 You can go directly to MailSnag's preferences by selecting the downward pointing triangle in the upper right side of the view or navigating through the general Eclipse preferences.  That is where you can set the port to listen for incoming emails.  On non-windows systems you will probably have to pick a port number greater than 1024 unless running as root - but why would you do that!
 
-![ScreenShot](http://foosbar.github.com/images/mailsnag-preferences.png)
+![ScreenShot](http://foosbar.github.io/images/mailsnag-preferences.png)
 
 The option "Enable notification popup when new messages arrive" will only appear if Mylyn Commons is installed.
